@@ -1,0 +1,175 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Group.ViewModels.Groups;
+@model IEnumerable<GroupViewModel>
+@{
+    ViewData["Title"] = "مدیریت گروه دسترسی‌ها";
+    int i = 1;
+}
+<div class="bg-light rounded p-4">
+    <h3>لیست گروه دسترسی‌ها</h3>
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateGroup()" value="افزودن گروه دسترسی" />
+    </div>
+    <table class="table-hover table-striped table text-center" id="tbl_group">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAll">
+                        <label class="custom-control-label" for="selectAll"></label>
+                    </div>
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.GroupName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreatorUserName)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.IsActive)
+                </th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.Id)">
+                    <th scope="row">@i</th>
+                    <th scope="row">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="@item.Id">
+                            <label class="custom-control-label" for="@item.Id"></label>
+                        </div>
+
+                    </th>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.GroupName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CreatorUserName)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.IsActiveName)
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-warning" onclick="EditGroup('@item.Id')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteGroup" title="حذف کاربر"><i class="fa fa-trash"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="GroupUsers('@item.Id')" title="فهرست کاربران گروه"><i class="fa fa-users"></i></a>
+                        <a class="btn btn-sm btn-outline-dark" onclick="AccessMenusGroup('@item.Id')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+    <div id="Modal_AddEdit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Modal_AddEdit" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="align-content-end">
+                        <h5 class="modal-title" id="lbl_Modal_AddEdit"></h5>
+                    </div>
+                    <div class="align-content-start">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                </div>
+                <div class="modal-body" id="body_Modal_AddEdit">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <span>در حال بارگزاری</span>
+                        </div>
+                        <div class="col-md-12">
+                            <img src="~/img/background/2.svg" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript">
+        $(function () {
+            $('#tbl_group').DataTable({
+                "paging": true,
+                "searching": true,
+                "lengthChange": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": true,
+                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+        });
+
+        $('.selectAll').click(function (e) {
+            var table = $(e.target).closest('table');
+            $('th input:checkbox', table).prop('checked', this.checked);
+        });
+
+        $('.modal-dialog').draggable({
+            "handle": ".modal-header"
+        });
+
+        $('[data-toggle="DeleteGroup"]').confirmation({
+            title: 'آیا از حذف مطمئن هستید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () { DeleteGroup($(this).attr('id')) }
+        });
+
+    function CreateGroup() {
+
+          openModal('افزودن گروه دسترسی', window.__env.baseUrl + window.routes.groups.groups_creategroup,false);
+    };
+     function EditGroup(userId) {
+
+           openModal('ویرایش گروه دسترسی ', window.__env.baseUrl + window.routes.groups.groups_editgroup+'?groupId=' + userId,false);
+    };
+    function AccessMenusGroup(userId) {
+         openModal('اصلاح سطح دسترسی گروه ', window.__env.baseUrl + window.routes.groups.groups_groupaccessmenu+'?groupId=' + userId,false);
+
+    };
+
+    function GroupUsers(userId) {
+         openModal('فهرست کاربران گروه', window.__env.baseUrl + window.routes.groupusers.groupusers_index+'?groupId=' + userId,true);
+    };
+
+     function DeleteGroup(GroupID) {
+             $.ajax({
+                    method: "POST",
+                    url: window.__env.baseUrl + window.routes.groups.groups_deletegroup+"?groupid=" + GroupID,
+                       success: function (response) {
+                           if (response.isSuccess) {
+                                $("#tr_" + GroupID).addClass("bg-danger").hide('slow', function() {
+                                  Toast.fire({
+                                        icon: 'success',
+                                        title: response.message,
+                                  })
+                                $("#groupList").load(window.__env.baseUrl  + window.routes.groups.groups_groupslist);
+                            });
+                           } else {
+                               var errors = response.message.split(' | ');
+                               errors.forEach((item) => {
+                                   iziToast.error({
+                                       message: response.message,
+                                   });
+                               });
+                           }
+                   },
+                   error: function () {
+                       iziToast.error({
+                           message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                       });
+                   }
+                });
+        };
+</script>

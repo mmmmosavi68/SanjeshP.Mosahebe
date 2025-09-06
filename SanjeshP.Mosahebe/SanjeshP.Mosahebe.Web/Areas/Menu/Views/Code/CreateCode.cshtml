@@ -1,0 +1,105 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Menu.ViewModels.Code
+@model CodeCreateViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="create-code-form" asp-action="CreateCode" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" id="validation-summary"></div>
+
+            <!-- نمایش ParentTitle -->
+            <div class="form-group">
+                <label class="control-label col-sm-4">عنوان والد:</label>
+                <input type="text" class="form-control col-sm-7 d-inline-block" value="@ViewBag.ParentTitle" disabled />
+            </div>
+
+            <!-- نمایش ParentTitle -->
+            <div class="form-group">
+                <label class="control-label col-sm-4">کد اصلی والد:</label>
+                <input type="text" class="form-control col-sm-7 d-inline-block" value="@ViewBag.ParentId" disabled />
+            </div>
+
+            <!-- فیلد ParentId -->
+            <input type="hidden" asp-for="ParentId" value="@ViewBag.ParentId" />
+
+            <!-- عنوان -->
+            <div class="form-group">
+                <label asp-for="Title" class="control-label col-sm-4"></label>
+                <input asp-for="Title" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <!-- کد استاندارد -->
+            <div class="form-group">
+                <label asp-for="StandardCode" class="control-label col-sm-4"></label>
+                <input asp-for="StandardCode" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="StandardCode" class="text-danger"></span>
+            </div>
+
+            <!-- کد اصلی -->
+            <div class="form-group">
+                <label asp-for="PrimaryCode" class="control-label col-sm-4"></label>
+                <input asp-for="PrimaryCode" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="PrimaryCode" class="text-danger"></span>
+            </div>
+
+            <!-- کد فرعی -->
+            <div class="form-group">
+                <label asp-for="SubCode" class="control-label col-sm-4"></label>
+                <input asp-for="SubCode" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="SubCode" class="text-danger"></span>
+            </div>
+
+            <!-- اطلاعات تکمیلی-->
+            <div class="form-group">
+                <label asp-for="AdditionalInformation" class="control-label col-sm-4"></label>
+                <input asp-for="AdditionalInformation" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="AdditionalInformation" class="text-danger"></span>
+            </div>
+
+            <!-- نمایش کد -->
+            <div class="form-group">
+                <label class="control-label col-sm-4">نمایش کد</label>
+                <input asp-for="IsActive" type="checkbox" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="IsActive" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="button" id="save-button" value="افزودن کد" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+
+<script>
+    $(document).ready(function () {
+        $('#save-button').click(function () {
+            $.ajax({
+                url: window.__env.baseUrl + window.routes.code.code_createcode,
+                type: 'POST',
+                data: $('#create-code-form').serialize(),  // این خط صحیح است
+                success: function(response) {
+                    if (response.isSuccess) {
+                        $('#Modal_AddEdit').modal('hide');
+                        iziToast.success({ message: response.message });
+                        $("#codeTree").load(window.__env.baseUrl + window.routes.code.code_codetree);
+                    } else {
+                        var errors = response.message.split(' | ');
+                        errors.forEach((item) => {
+                            iziToast.error({ message: item });
+                        });
+                    }
+                },
+                error: function() {
+                    console.log(data);
+                    iziToast.error({
+                        message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                    });
+                }
+            });
+        });
+    });
+</script>

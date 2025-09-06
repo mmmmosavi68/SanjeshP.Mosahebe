@@ -1,0 +1,95 @@
+﻿<div class="row">
+    <div class="col-md-1">
+        <a onclick="ExpandAll()" title="گسترش دادن" style="cursor:pointer" class="ml-3">
+            <i class="fa fa-expand" aria-hidden="true"></i>
+        </a>
+        <a onclick="CollapseAll()" title="جمع کردن" style="cursor:pointer">
+            <i class="fa fa-compress" aria-hidden="true"></i>
+        </a>
+    </div>
+    <div class="col-md-5">
+        <input id="deliverable_search" type="text" class="form-control" placeholder="جستجو">
+    </div>
+</div>
+<div class="row overflow-auto border">
+    <div class="col-md-6 p-2">
+        <div id="accesstree"></div>
+    </div>
+</div>
+
+<link href="/Admin/plugins/jstree/style.min.css" rel="stylesheet" />
+<script src="/Admin/plugins/jstree/jstree.min.js"></script>
+<script>
+    $(function () {
+        $.post(window.__env.baseUrl + window.routes.code.code_getcodetree, function (data) {
+            createJSTree(JSON.parse(data));  // دریافت داده‌ها برای نمایش درخت
+        });
+
+        // ساخت درخت
+        function createJSTree(data) {
+            var tree = $('#accesstree').jstree({
+                "core": {
+                    "data": data
+                },
+                "demo": {
+                    "icon": "glyphicon glyphicon-ok"
+                },
+                'search': {
+                    'case_insensitive': true,
+                    'show_only_matches': true
+                },
+                'plugins': ['search', "themes", "html_data", "ui", "crrm", "contextmenu"],
+                "contextmenu": {
+                    "select_node": true, // نود را به صورت خودکار انتخاب می‌کند
+                    "show_at_node": true, // منو درست در زیر نود ظاهر می‌شود
+                    "items": function(node) {
+                        var tmp = {
+                            "create": {
+                                "label": "افزودن زیر مجموعه",
+                                "action": function (obj) {
+                                    // تابعی که آیدی نود را alert می‌کند
+                                    // alert('افزودن به نود با ID: ' + node.id);
+                                     openModal('افزودن کد جدید', window.__env.baseUrl + window.routes.code.code_createcode+'?parentId=' + node.id,false);
+                                }
+                            },
+                            "edit": {
+                                "label": "ویرایش کد انتخابی",
+                                "action": function (obj) {
+                                    openModal('ویرایش کد', window.__env.baseUrl + window.routes.code.code_editcode+'?id=' + node.id,false);
+                                }
+                            },
+                              "delete": {
+                                "label": "حذف کد انتخابی",
+                                "action": function (obj) {
+                                    // تابعی که آیدی نود را alert می‌کند
+                                     openModal('حذف کد', window.__env.baseUrl + window.routes.code.code_deletecode+'?id=' + node.id,false);
+                                }
+                            }
+                        };
+                        return tmp;
+                    }
+                }
+            });
+
+            // جستجو درخت
+            $('#deliverable_search').keyup(function () {
+                $('#accesstree').jstree(true).show_all();
+                $('#accesstree').jstree('search', $(this).val());
+            });
+        };
+    });
+
+    var open = false;
+
+    // جمع کردن درخت
+    function CollapseAll() {
+        $("#accesstree").jstree('close_all');
+        open = false;
+    }
+
+    // گسترش دادن درخت
+    function ExpandAll() {
+        $("#accesstree").jstree('open_all');
+        open = true;
+    }
+</script>

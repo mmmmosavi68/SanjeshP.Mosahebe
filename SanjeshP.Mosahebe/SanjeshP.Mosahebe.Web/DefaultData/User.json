@@ -1,0 +1,32 @@
+ [
+  {
+    "userName": "Administrator",
+    "normalizedUserName": "ADMINISTRATOR",
+    "emailAddress": "mmmosavi68@gmail.com",
+    "normalizedEmailAddress": "MMMOSAVI68@GMAIL.COM",
+    "emailAddressConfirmed": true,
+    "passwordHash": "$2a$11$ys6/LSATgKsCv7ZjMzgzpu0FiKtpmAO/tj4HRtOUPYYHU6.iP7ZvG",
+    "securityStamp": "8de20ba5-a48e-4676-b40b-d72049e715e4",
+    "concurrencyStamp": null,
+    "phoneNumber": "09373221160",
+    "phoneNumberConfirmed": true,
+    "twoFactorEnabled": false,
+    "lockoutEnd": null,
+    "lockoutEnabled": null,
+    "accessFailedCount": null,
+    "isActive": true,
+    "isDelete": false,
+    "lastLoginDate": "0001-01-01T00:00:00+00:00",
+    "createDate": "2024-03-11T09:11:19.0776774",
+    "expireDate": "2025-03-11T09:11:19.0777336",
+    "creator": "00000000-0000-0000-0000-000000000000",
+    "hostIp": "::1",
+    "userProfiles": [],
+    "userRoles": [],
+    "userTablesLogs": [],
+    "userTokens": [],
+    "menusGroupAccesses": [],
+    "menusAccesses": [],
+    "id": "29f48a89-338f-4a3e-b971-eb15f525f920"
+  }
+  ]

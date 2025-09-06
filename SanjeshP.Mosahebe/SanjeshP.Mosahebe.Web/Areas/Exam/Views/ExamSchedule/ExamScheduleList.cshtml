@@ -1,0 +1,111 @@
+﻿@{
+    ViewData["Title"] = "ExamScheduleList";
+}
+
+@using SanjeshP.Mosahebe.Common.Utilities
+@using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.ExamSchedule
+@model IEnumerable<ExamScheduleViewModel>
+
+@{
+    int i = 1;
+    var examId = ViewBag.ExamId as Guid?;
+}
+
+<div class="bg-light rounded p-4">
+    @* <h4>فهرست رویدادهای زمان‌بندی آزمون</h4> *@
+
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateExamSchedule('@examId')" value="افزودن رویداد جدید" />
+    </div>
+
+    <table class="table-hover table-striped table text-center" id="tbl_examSchedule">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>عنوان آزمون</th>
+                <th>نوع رویداد</th>
+                <th>زمان شروع</th>
+                <th>زمان پایان</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.Id)">
+                    <td>@i</td>
+                    <td>@item.ExamTitle</td>
+                    <td>@item.EventType.ToDisplay()</td>
+                    <td>@item.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>@item.EndTime.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-warning" onclick="EditExamSchedule('@item.Id')" title="ویرایش"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteExamSchedule" title="حذف"><i class="fa fa-trash"></i></a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $('#tbl_examSchedule').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false
+        });
+
+        $('[data-toggle="DeleteExamSchedule"]').confirmation({
+            title: 'آیا از حذف این رویداد مطمئن هستید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () {
+                DeleteExamSchedule($(this).attr('id'));
+            }
+        });
+    });
+
+    function CreateExamSchedule(examId) {
+        openModal('افزودن رویداد آزمون', '/Exam/ExamSchedule/CreateExamSchedule?examId=' + examId, false);
+    }
+
+    function EditExamSchedule(id) {
+        openModal('ویرایش رویداد آزمون', '/Exam/ExamSchedule/EditExamSchedule?id=' + id, false);
+    }
+
+    function DeleteExamSchedule(id) {
+        $.ajax({
+            method: "POST",
+            url: "/Exam/ExamSchedule/DeleteExamSchedule?examScheduleId=" + id,
+            success: function (response) {
+                if (response.isSuccess) {
+                    $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
+                        Toast.fire({ icon: 'success', title: response.message });
+                    });
+                    $("#examList").load("/Exam/ExamSchedule/ExamScheduleList?Id=@examId");
+                } else {
+                    Toast.fire({ icon: 'warning', title: response.message });
+                }
+            },
+            error: function () {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'خطایی در حذف رویداد رخ داده است.'
+                });
+            }
+        });
+    }
+</script>

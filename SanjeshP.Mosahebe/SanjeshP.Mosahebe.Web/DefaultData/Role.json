@@ -1,0 +1,12 @@
+ [
+  {
+    "RoleNameEn": "Admin",
+    "NormalizedRoleNameEn": "ADMIN",
+    "RoleNameFa": "مدیر سیستم",
+    "isActive": true,
+    "isDelete": false,
+    "createDate": "2024-03-10T14:33:16.577",
+    "creator": "7a28344e-495d-4d94-d62d-08dc3ce9132c",
+    "hostIp": "::1"
+  }
+  ]

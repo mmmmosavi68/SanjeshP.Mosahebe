@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+	  <LangVersion>9.0</LangVersion>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Filters\UserAuthorization\**" />
+    <EmbeddedResource Remove="Filters\UserAuthorization\**" />
+    <None Remove="Filters\UserAuthorization\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Middlewares\AccessChecker.cs" />
+    <Compile Remove="Middlewares\AccessControlMiddleware.cs" />
+    <Compile Remove="Middlewares\AccessService.cs" />
+    <Compile Remove="Middlewares\RedisCacheService.cs" />
+    <Compile Remove="Middlewares\TokenValidationMiddleware.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="ElmahCore" Version="2.1.2" />
+    <PackageReference Include="ElmahCore.Sql" Version="2.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.32" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.32" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.32" />
+    <PackageReference Include="NLog" Version="5.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SanjeshP.Mosahebe.Services\SanjeshP.Mosahebe.Services.csproj" />
+  </ItemGroup>
+
+</Project>

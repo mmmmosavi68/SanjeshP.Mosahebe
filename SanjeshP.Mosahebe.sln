@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34518.117
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanjeshP.Mosahebe.Web", "SanjeshP.Mosahebe\SanjeshP.Mosahebe.Web\SanjeshP.Mosahebe.Web.csproj", "{62CC84B1-FAC5-4BD6-B8A2-749B0AB06E83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanjeshP.Mosahebe.Common", "SanjeshP.Mosahebe\SanjeshP.Mosahebe.Common\SanjeshP.Mosahebe.Common.csproj", "{6ED0D7B2-4345-42D8-A50E-064906B048EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanjeshP.Mosahebe.Data", "SanjeshP.Mosahebe\SanjeshP.Mosahebe.Data\SanjeshP.Mosahebe.Data.csproj", "{6ECBFFD1-FC0F-4F80-92E3-B98B63C881F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanjeshP.Mosahebe.Entities", "SanjeshP.Mosahebe\SanjeshP.Mosahebe.Entities\SanjeshP.Mosahebe.Entities.csproj", "{16004DD2-3F50-438A-AC69-7E3B1FF27DDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanjeshP.Mosahebe.Services", "SanjeshP.Mosahebe\SanjeshP.Mosahebe.Services\SanjeshP.Mosahebe.Services.csproj", "{00ADC152-782F-430B-ACB0-6A53108F4B66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanjeshP.Mosahebe.WebFramework", "SanjeshP.Mosahebe\SanjeshP.Mosahebe.WebFramework\SanjeshP.Mosahebe.WebFramework.csproj", "{F85FBE55-E1F6-4FD5-BDD6-BAE9B9AA40E3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62CC84B1-FAC5-4BD6-B8A2-749B0AB06E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62CC84B1-FAC5-4BD6-B8A2-749B0AB06E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62CC84B1-FAC5-4BD6-B8A2-749B0AB06E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62CC84B1-FAC5-4BD6-B8A2-749B0AB06E83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ED0D7B2-4345-42D8-A50E-064906B048EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ED0D7B2-4345-42D8-A50E-064906B048EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ED0D7B2-4345-42D8-A50E-064906B048EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ED0D7B2-4345-42D8-A50E-064906B048EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ECBFFD1-FC0F-4F80-92E3-B98B63C881F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ECBFFD1-FC0F-4F80-92E3-B98B63C881F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ECBFFD1-FC0F-4F80-92E3-B98B63C881F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ECBFFD1-FC0F-4F80-92E3-B98B63C881F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16004DD2-3F50-438A-AC69-7E3B1FF27DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16004DD2-3F50-438A-AC69-7E3B1FF27DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16004DD2-3F50-438A-AC69-7E3B1FF27DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16004DD2-3F50-438A-AC69-7E3B1FF27DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00ADC152-782F-430B-ACB0-6A53108F4B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00ADC152-782F-430B-ACB0-6A53108F4B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00ADC152-782F-430B-ACB0-6A53108F4B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00ADC152-782F-430B-ACB0-6A53108F4B66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F85FBE55-E1F6-4FD5-BDD6-BAE9B9AA40E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F85FBE55-E1F6-4FD5-BDD6-BAE9B9AA40E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F85FBE55-E1F6-4FD5-BDD6-BAE9B9AA40E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F85FBE55-E1F6-4FD5-BDD6-BAE9B9AA40E3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {29118E70-F4FD-4B65-BB8D-D3AAB27C9A0D}
+	EndGlobalSection
+EndGlobal

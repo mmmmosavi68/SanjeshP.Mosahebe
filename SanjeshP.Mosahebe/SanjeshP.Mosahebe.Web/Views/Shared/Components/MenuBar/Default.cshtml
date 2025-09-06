@@ -1,0 +1,72 @@
+﻿@using System.Diagnostics
+@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.Menu
+@model List<MenuTreeViewModel>
+
+@{
+    ViewData["Title"] = "MenuBar";
+}
+@{
+    Debug.WriteLine(Model);
+}
+@if (Model != null && Model.Any())
+{
+    @foreach (var mod1 in Model.ToList())
+    {
+        @foreach (var mod12 in mod1.children.ToList())
+        {
+            @foreach (var parent in mod12.children.ToList())
+            {
+                <li class="@parent.CssClass">
+                    @if (parent.children.Count > 0)
+                    {
+                        <a asp-area="@parent.Area" asp-controller="@parent.ControllerName" asp-action="@parent.ActionName" class="nav-link">
+
+                            <i class="nav-icon @parent.Icon"></i>
+                            <p>
+                                @parent.Title
+                                <span class="right badge badge-danger"></span>
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-route-area="@parent.Area" asp-route-controller="@parent.ControllerName" asp-route-action="@parent.ActionName" class="nav-link">
+                            <i class="nav-icon @parent.Icon"></i>
+                            <p>
+                                @parent.Title
+                                <span class="right badge badge-danger"></span>
+                            </p>
+                        </a>
+                    }
+                    @if (parent.children.Count > 0)
+                    {
+                        <ul class="nav nav-treeview pr-4">
+
+                            @foreach (var child in parent.children.ToList())
+                            {
+                                <li class="nav-item">
+                                    <a asp-controller="@child.ControllerName" asp-action="@child.ActionName" asp-area="@child.Area" data-original-title="" title="" class="nav-link">
+                                        <i class="@child.Icon nav-icon"></i>
+                                        <p>@child.Title</p>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+
+                    }
+                </li>
+            }
+        }
+    }
+}
+else
+{
+    <p>No menu items available.</p>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

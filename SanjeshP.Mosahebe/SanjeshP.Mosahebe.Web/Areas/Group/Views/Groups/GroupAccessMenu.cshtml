@@ -1,0 +1,123 @@
+﻿<div class="row">
+    <div class="col-md-1">
+        <a onclick="ExpandAll()" title="گسترش دادن">
+            <i class="fa fa-expand" aria-hidden="true"></i>
+        </a>
+        <a onclick="CollapseAll()" title="جمع کردن">
+            <i class="fa fa-compress" aria-hidden="true"></i>
+        </a>
+    </div>
+    <div class="col-md-11">
+        <input id="deliverable_search" type="text" class="form-control" placeholder="جستجو">
+    </div>
+</div>
+<div class="row overflow-auto border">
+    <div class="col-md-12 p-2">
+        <div id="accesstree"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <input class="btnGetCheckedItem btn btn-success mt-3" value="ثبت دسترسی" type="button" />
+    </div>
+</div>
+<span id="idshow"></span>
+
+
+<link href="/Admin/plugins/jstree/style.min.css" rel="stylesheet" />
+<script src="/Admin/plugins/jstree/jstree.min.js"></script>
+<script>
+    $(function () {
+        var nodeid;
+        var groupid = ('@ViewData["groupId"]');
+        listLoader.load("usersList", );
+
+        $.post(window.__env.baseUrl + window.routes.groups.groups_getgroupaccessmenuitem+"?groupId=" + groupid, function (data) {
+            createJSTree(JSON.parse(data));  // Get Data For Tree View
+        });
+        // Create Tree View
+        function createJSTree(data) {
+
+            $("my_spinner").addClass("show");
+            var tree = $('#accesstree').jstree({
+                "core": {
+                    "data": data
+                },
+                "check_callback": true,
+                "checkbox": {
+                    "keep_selected_style": true
+                },
+                "demo": {
+                    "icon": "glyphicon glyphicon-ok"
+                },
+                'search': {
+                    'case_insensitive': true,
+                    'show_only_matches': true
+                },
+                'plugins': ['search', 'checkbox', 'wholerow']
+            }).on('search.jstree', function (nodes, str, res) {
+                if (str.nodes.length === 0) {
+                    $('#deliverables').jstree(true).hide_all();
+                }
+            })
+            $('#deliverable_search').keyup(function () {
+                $('#accesstree').jstree(true).show_all();
+                $('#accesstree').jstree('search', $(this).val());
+            });
+        };
+    });
+
+      $('.btnGetCheckedItem').click(function () {
+        document.getElementById("overlay").style.display = "flex";
+        var checked_ids = [];
+        var selectedNodes = $('#accesstree').jstree("get_undetermined", true);
+        $.each(selectedNodes, function () {
+            checked_ids.push(this.id);
+        });
+        var selectedNodes = $('#accesstree').jstree("get_selected", true);
+        $.each(selectedNodes, function () {
+            checked_ids.push(this.id);
+        });
+
+        $.ajax({
+            method: "POST",
+            url:window.__env.baseUrl + window.routes.groups.groups_modify_selectednodes_selectedgroup,
+            contentType: "application/json",
+            data: JSON.stringify({
+                list: checked_ids.join(',').split(',').map(id => id.trim()), // تبدیل آرایه به رشته و سپس تقسیم آن به آرایه
+                groupId: '@ViewData["groupId"]'
+            }),
+            success: function (response) {
+                if (response.isSuccess) {
+                    document.getElementById("overlay").style.display = "none";
+                    Toast.fire({
+                        icon: 'success',
+                        title: response.message,
+                    })
+                } else {
+                    document.getElementById("overlay").style.display = "none";
+                    Toast.fire({
+                        icon: 'warning',
+                        title: response.message,
+                    })
+                }
+            },
+            error: function () {
+                document.getElementById("overlay").style.display = "none";
+                Toast.fire({
+                    icon: 'error',
+                    title: 'خطایی رخ داده.',
+                })
+            }
+        });
+    });
+    var open = false;
+    function CollapseAll() {
+        $("#accesstree").jstree('close_all');
+        open = false;
+    }
+    function ExpandAll() {
+        $("#accesstree").jstree('open_all');
+        open = true;
+    }
+</script>

@@ -1,0 +1,34 @@
+﻿@using SanjeshP.Mosahebe.Web.SharedViewModels
+@model RegisterViewModel
+
+<div class="container">
+    <h2>ثبت‌نام</h2>
+    <form asp-action="Register" method="post">
+        <div class="form-group">
+            <label for="username">نام کاربری:</label>
+            <input type="text" class="form-control" id="username" name="UserName" asp-for="UserName">
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="email">ایمیل:</label>
+            <input type="email" class="form-control" id="email" name="EmailAddress" asp-for="EmailAddress">
+            <span asp-validation-for="EmailAddress" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="password">رمز عبور:</label>
+            <input type="password" class="form-control" id="password" name="Password" asp-for="Password">
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">تکرار رمز عبور:</label>
+            <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" asp-for="ConfirmPassword">
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="phoneNumber">شماره تلفن:</label>
+            <input type="text" class="form-control" id="phoneNumber" name="PhoneNumber" asp-for="PhoneNumber">
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">ثبت ‌نام</button>
+    </form>
+</div>

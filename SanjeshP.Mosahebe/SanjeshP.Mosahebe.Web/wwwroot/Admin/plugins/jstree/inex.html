@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Simple jsTree with two-state checkbox</title>
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="bootstrap-rtl.min.css" />
+    <link rel="stylesheet" href="glyphicon.css" />
+    <link rel="stylesheet" href="style.min.css" />
+    <script src="jquery.min.js"></script>
+    <script src="jstree.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            var jsondata = [{ "id": 2, "parent": "#", "text": "لیست صفحات" },
+            { "id": 3, "parent": "2", "text": "صفحه اصلی" },
+            { "id": 4, "parent": "2", "text": "لیست منو ها" },
+            { "id": 5, "parent": "2", "text": "مدیریت کاربران" },
+            { "id": 6, "parent": "2", "text": "اطلاعات پایه" },
+            { "id": 7, "parent": "5", "text": "دسترسی منو ها" },
+            { "id": 8, "parent": "2", "text": "خبر ها" },
+            { "id": 9, "parent": "8", "text": "افزودن خبر" },
+            { "id": 10, "parent": "8", "text": "ویرایش خبر" },
+            { "id": 11, "parent": "2", "text": "منابع آزمون" },
+            { "id": 12, "parent": "11", "text": "افزودن منبع" },
+            { "id": 13, "parent": "11", "text": "ویرایش منبع" }];
+
+            createJSTree(jsondata);  // Create Tree View
+
+            $('.btnGetCheckedItem').click(function () {
+                var checked_ids = [];
+                var selectedNodes = $('#SimpleJSTree').jstree("get_undetermined", true);
+                $.each(selectedNodes, function () {
+                    checked_ids.push(this.id);
+                });
+                var selectedNodes = $('#SimpleJSTree').jstree("get_selected", true);
+                $.each(selectedNodes, function () {
+                    checked_ids.push(this.id);
+                });
+                // You can assign checked_ids to a hidden field of a form before submitting to the server
+                $('#idshow').text(checked_ids);
+            });
+
+
+
+        });
+
+        function createJSTree(jsondata) {
+            $('#SimpleJSTree').jstree({
+                "core": {
+                    "themes": {
+                        "variant": "large"
+                    },
+                    "check_callback": true,
+                    'data': jsondata
+                },
+                "checkbox": {
+                    "keep_selected_style": true
+                },
+                "demo": {
+                    "icon": "glyphicon glyphicon-ok"
+                },
+                "plugins": ["sort", "checkbox", "dnd", "search"]
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="SimpleJSTree"></div>
+    <input class="btnGetCheckedItem" value="Get all checked items" type="button" />
+    <span id="idshow"></span>
+</body>
+</html>

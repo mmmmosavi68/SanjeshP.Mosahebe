@@ -1,0 +1,15 @@
+[
+    {
+      "userId": "29f48a89-338f-4a3e-b971-eb15f525f920",
+      "groupId": "29f48a89-338f-4a3e-b971-eb15f525f932",
+      "isActive": true,
+      "isDelete": false,
+      "createDate": "2024-03-11T09:45:16.7233126",
+      "creator": "00000000-0000-0000-0000-000000000000",
+      "hostIp": null,
+      "accessMenusGroups": [],
+      "user": null,
+      "group": null,
+      "id": "92ac247c-504b-4c65-2a33-08dc41929ef0"
+    }
+  ]

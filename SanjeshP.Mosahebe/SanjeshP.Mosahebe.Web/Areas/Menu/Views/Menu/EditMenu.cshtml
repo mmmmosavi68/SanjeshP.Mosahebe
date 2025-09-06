@@ -1,0 +1,127 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Menu.ViewModels.Menu
+@model MenuEditViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="edit-menu-form" asp-action="EditMenu" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" id="validation-summary"></div>
+
+            <!-- نمایش ParentTitle -->
+            <div class="form-group">
+                <label class="control-label col-sm-4">عنوان والد:</label>
+                <input type="text" class="form-control col-sm-7 d-inline-block" value="@Model.Parent_title" disabled />
+            </div>
+
+            <!-- فیلد ParentId -->
+            <input type="hidden" asp-for="Id" value="@Model.Id" />
+
+            <!-- عنوان -->
+            <div class="form-group">
+                <label asp-for="MenuTitle" class="control-label col-sm-4"></label>
+                <input asp-for="MenuTitle" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="MenuTitle" class="text-danger"></span>
+            </div>
+
+            <!-- کد صفحه -->
+            <div class="form-group">
+                <label asp-for="PageCode" class="control-label col-sm-4"></label>
+                <input asp-for="PageCode" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="PageCode" class="text-danger"></span>
+            </div>
+
+            <!-- مسیر -->
+            <div class="form-group">
+                <label asp-for="Path" class="control-label col-sm-4"></label>
+                <input asp-for="Path" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Path" class="text-danger"></span>
+            </div>
+
+            <!-- منطقه -->
+            <div class="form-group">
+                <label asp-for="Area" class="control-label col-sm-4"></label>
+                <input asp-for="Area" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Area" class="text-danger"></span>
+            </div>
+
+            <!-- نام کنترلر -->
+            <div class="form-group">
+                <label asp-for="ControllerName" class="control-label col-sm-4"></label>
+                <input asp-for="ControllerName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="ControllerName" class="text-danger"></span>
+            </div>
+
+            <!-- نام اکشن -->
+            <div class="form-group">
+                <label asp-for="ActionName" class="control-label col-sm-4"></label>
+                <input asp-for="ActionName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="ActionName" class="text-danger"></span>
+            </div>
+
+            <!-- نمایش منو -->
+            <div class="form-group">
+                <label class="control-label col-sm-4">نمایش منو</label>
+                <input asp-for="ShowMenu" type="checkbox" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="ShowMenu" class="text-danger"></span>
+            </div>
+
+            <!-- کلاس CSS -->
+            <div class="form-group">
+                <label asp-for="CssClass" class="control-label col-sm-4"></label>
+                <input asp-for="CssClass" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="CssClass" class="text-danger"></span>
+            </div>
+
+            <!-- آیکن -->
+            <div class="form-group">
+                <label asp-for="Icon" class="control-label col-sm-4"></label>
+                <input asp-for="Icon" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Icon" class="text-danger"></span>
+            </div>
+
+            <!-- لینک -->
+            <div class="form-group">
+                <label asp-for="Link" class="control-label col-sm-4"></label>
+                <input asp-for="Link" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Link" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="button" id="edit-button" value="ویرایش منو" class="btn btn-warning" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script>
+    $(document).ready(function () {
+        $('#edit-button').click(function () {
+            $.ajax({
+                url:window.__env.baseUrl + window.routes.menu.menu_editmenu,
+                type: 'POST',
+                data: $('#edit-menu-form').serialize(),
+                success: function (response) {
+                    console.log(response)
+                    if (response.isSuccess) {
+                        $('#Modal_AddEdit').modal('hide');
+                        iziToast.success({ message: response.message });
+                        $("#menuTree").load(window.__env.baseUrl + window.routes.menu.menu_currentusermenu);
+                    } else {
+                        var errors = response.message.split(' | ');
+                        errors.forEach((item) => {
+                            iziToast.error({ message: item });
+                        });
+                    }
+                },
+                error: function () {
+                    console.log('asdas')
+                    iziToast.error({
+                        message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                    });
+                }
+            });
+        });
+    });
+</script>

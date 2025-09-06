@@ -1,0 +1,14 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Auth.ViewModels
+@model TwoFactorViewModel
+
+<div class="container">
+    <h2>احراز هویت دو مرحله‌ای</h2>
+    <form asp-action="TwoFactorAuthentication" method="post">
+        <div class="form-group">
+            <label for="verificationCode">کد تایید:</label>
+            <input type="text" class="form-control" id="verificationCode" name="VerificationCode" asp-for="VerificationCode">
+            <span asp-validation-for="VerificationCode" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">تایید</button>
+    </form>
+</div>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+	  <LangVersion>9.0</LangVersion>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AuthSetting\**" />
+    <EmbeddedResource Remove="AuthSetting\**" />
+    <None Remove="AuthSetting\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.32" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SanjeshP.Mosahebe.Common\SanjeshP.Mosahebe.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Student\" />
+  </ItemGroup>
+
+</Project>

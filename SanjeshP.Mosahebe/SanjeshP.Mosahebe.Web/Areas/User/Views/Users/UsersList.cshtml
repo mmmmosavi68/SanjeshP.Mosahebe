@@ -1,0 +1,233 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User;
+@using Microsoft.Extensions.Caching.Memory;
+@using System.Security.Claims
+@using SanjeshP.Mosahebe.WebFramework.Configuration;
+@model IEnumerable<UserViewModel>
+@{
+    int i = 1;
+    var memoryCache = ViewData["MemoryCache"] as IMemoryCache;
+    var token = User.Claims.FirstOrDefault(c => c.Type == "Token")?.Value;
+}
+
+<div class="bg-light rounded p-4">
+    <h3>لیست کاربران</h3>
+    @if (memoryCache.HasAccess(token, "CreateUser"))
+    {
+        <div class="row mb-3">
+            <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن کاربر" />
+        </div>
+    }
+    <table class="table-hover table-striped table text-center" id="tbl_user">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAll">
+                        <label class="custom-control-label" for="selectAll"></label>
+                    </div>
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.LastName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.UserName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.NationalCode)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.PhoneNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmailAddress)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.UserTypeTitle)
+                </th>
+
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.IsActive)
+                </th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.UserId)">
+                    <th scope="row">@i</th>
+                    <th scope="row">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="@item.UserId">
+                            <label class="custom-control-label" for="@item.UserId"></label>
+                        </div>
+
+                    </th>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FirstName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LastName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.NationalCode)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PhoneNumber)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.EmailAddress)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserTypeTitle)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.IsActiveName)
+                    </td>
+                    <td>
+
+                        @if (memoryCache.HasAccess(token, "DetailUser"))
+                        {
+                            <a class="btn btn-sm btn-outline-info" onclick="DetailUser('@item.UserId')" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>
+                        }
+                        @if (memoryCache.HasAccess(token, "EditUser"))
+                        {
+                            <a class="btn btn-sm btn-outline-warning" onclick="EditUser('@item.UserId')" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
+                        }
+                        @if (memoryCache.HasAccess(token, "DeleteUser"))
+                        {
+                            <a class="btn btn-sm btn-outline-danger" id="@item.UserId" data-toggle="DeleteUser" title="حذف کاربر"><i class="fa fa-trash"></i></a>
+                        }
+                        @if (memoryCache.HasAccess(token, "UserAccessMenu"))
+                        {
+                            <a class="btn btn-sm btn-outline-dark" onclick="UserAccessMenu('@item.UserId')" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
+                        }
+
+                        @* <a class="btn btn-sm btn-outline-info action-button" data-action="detail" data-id="@item.UserId"><i class="fa fa-info"></i></a>
+                        <a class="btn btn-sm btn-outline-warning action-button" data-action="edit" data-id="@item.UserId"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-danger action-button" data-action="delete" data-id="@item.UserId"><i class="fa fa-trash"></i></a>
+                        <a class="btn btn-sm btn-outline-dark action-button" data-action="access" data-id="@item.UserId"><i class="fa fa-sitemap"></i></a>*@
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#tbl_user').DataTable({
+            "paging": true,
+            "searching": true,
+            "lengthChange": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": true,
+            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    });
+
+    $('.selectAll').click(function (e) {
+        var table = $(e.target).closest('table');
+        $('th input:checkbox', table).prop('checked', this.checked);
+    });
+
+    $('.modal-dialog').draggable({
+        "handle": ".modal-header"
+    });
+
+    $('[data-toggle="DeleteUser"]').confirmation({
+        title: 'آیا از حذف مطمئن هستید؟',
+        btnCancelClass: 'btn btn-sm btn-primary',
+        btnCancelLabel: 'انصراف',
+        btnOkClass: 'btn btn-sm btn-danger',
+        btnOkLabel: 'حذف',
+        onConfirm: function () { DeleteUser($(this).attr('id')) }
+    });
+
+    function DetailUser(UserID) {
+         openModal('مشخصات کاربر', '/User/Users/DetailUser?userid=' + UserID,false);
+    };
+    function CreateUser() {
+          openModal('افزودن کاربر ', '/User/Users/CreateUser',false);
+    };
+    function EditUser(UserID) {
+        openModal('ویرایش کاربراصلاح سطح دسترسی', '/User/Users/EditUser?userid=' + UserID,false);
+    };
+    function UserAccessMenu(UserID) {
+        openModal(' اصلاح سطح دسترسی', '/User/Users/UserAccessMenu?userid=' + UserID,false);
+    };
+
+
+    //     $(document).on('click', '.action-button', function () {
+    //     const action = $(this).data('action');
+    //     const userId = $(this).data('id');
+
+    //     if (userActions[action]) {
+    //         userActions[action](userId);
+    //     } else {
+    //         console.warn(`اکشن "${action}" تعریف نشده.`);
+    //     }
+    // });
+
+    // const userActions = {
+    //     detail: id => openModal('مشخصات کاربر', `${window.__env.baseUrl}/User/Users/DetailUser?userid=${id}`, false),
+    //     create: () => openModal('افزودن کاربر', `${window.__env.baseUrl}/User/Users/CreateUser`, false),
+    //     edit: id => openModal('ویرایش کاربر', `${window.__env.baseUrl}/User/Users/EditUser?userid=${id}`, false),
+    //     delete: id => {
+    //         $.ajax({
+    //             method: "POST",
+    //             url: `${window.__env.baseUrl}/User/Users/DeleteUser?userid=${id}`,
+    //             success: response => { /* هندل موفقیت */ },
+    //             error: () => { /* هندل خطا */ }
+    //         });
+    //     },
+    //     access: id => openModal('سطح دسترسی کاربر', `${window.__env.baseUrl}/User/Users/UserAccessMenu?userid=${id}`, false)
+    // };
+
+    function DeleteUser(UserID) {
+        $(".skeleton-table").show();
+         $.ajax({
+                method: "POST",
+                url: window.__env.baseUrl + "/User/Users/DeleteUser?userid=" + UserID,
+                success: function (response) {
+                    if (response.isSuccess) {
+                         $("#tr_" + UserID).addClass("bg-danger").hide('slow', function() {
+                              Toast.fire({
+                                    icon: 'success',
+                                    title: response.message,
+                              })
+                        });
+
+                        // این کد PartialView را بارگذاری می‌کند
+                        $("#usersList").load("/User/UserS/UsersList", function () {
+                            // حذف اسکلتی جدول بعد از بارگذاری
+                            $(".skeleton-table").remove();
+                        });
+                    } else {
+                         Toast.fire({
+                                icon: 'warning',
+                                title: response.message,
+                         })
+                    }
+                },
+                error: function () {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'کاربری جهت حذف ارسال نشده است یا خطایی رخ داده.',
+                    })
+                }
+            });
+    };
+</script>

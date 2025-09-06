@@ -1,0 +1,68 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Group.ViewModels.Groups
+@model GroupCreateViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="create-group-form" asp-action="CreateGroup" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" id="validation-summary"></div>
+
+            <div class="form-group">
+                <label asp-for="GroupName" class="control-label col-sm-4"></label>
+                <input asp-for="GroupName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="GroupName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" asp-for="IsActive" class="custom-control-input" id="IsActive" />
+                    <label class="custom-control-label" for="IsActive">
+                        @Html.DisplayNameFor(model => model.IsActive)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="button" id="save-button" value="افزودن گروه" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script>
+    $(document).ready(function () {
+        $('#save-button').click(function () {
+            // تنظیم URL مناسب براساس نوع عملیات
+            const actionUrl =window.__env.baseUrl + window.routes.groups.groups_creategroup;
+            // ارسال اطلاعات فرم به سمت سرور
+            $.ajax({
+                url: actionUrl,
+                type: 'POST',
+                data: $('#create-group-form').serialize(),
+                success: function (response) {
+                    if (response.isSuccess) {
+                        // نمایش پیام موفقیت
+                        iziToast.success({
+                            message: response.message,
+                        });
+                         $('#Modal_AddEdit').modal('hide');
+                        // بروزرسانی لیست گروه‌ها
+                        $("#groupList").load(window.__env.baseUrl  + window.routes.groups.groups_groupslist);
+                    } else {
+                        // نمایش خطاها در صورت وجود
+                        iziToast.error({
+                            message: response.message,
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    iziToast.error({
+                        message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                    });
+                }
+            });
+        });
+    });
+</script>

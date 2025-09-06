@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="bg-light rounded p-4">
+    <h2>فهست منوهای سامانه</h2>
+    <div id="menuTree">
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // این کد باعث می‌شود که پنجره‌های مودال قابل جابه‌جایی باشند
+            $('.modal-dialog').draggable({
+                handle: ".modal-header"
+            });
+            // این کد PartialView را بارگذاری می‌کند
+            $("#menuTree").load(window.__env.baseUrl + window.routes.menu.menu_currentusermenu);
+        });
+    </script>
+}
+
+
+

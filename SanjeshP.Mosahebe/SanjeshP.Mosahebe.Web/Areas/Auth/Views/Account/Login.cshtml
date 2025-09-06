@@ -1,0 +1,94 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Auth.ViewModels
+@model LoginPageViewModel
+@{
+    ViewData["Title"] = "ورود به سامانه";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Context.Request.Query["reason"] == "tokenExpired")
+{
+    <p class="text-danger">توکن شما منقضی شده است. لطفاً دوباره وارد شوید.</p>
+}
+<h3 class="title">ورود به سامانه</h3>
+<div class="login-line"></div>
+
+<div class="errorMessages" style="display: none;"></div>
+<div class="warningMessages" style="display: none;"></div>
+
+
+<form asp-action="Login" method="post">
+    <div class="row align-items-center">
+        <div class="mt-2">
+            <span asp-validation-for="Login.UserName" class="text-danger h6 d-md-block"></span>
+            <span asp-validation-for="Login.Password" class="text-danger h6 d-md-block"></span>
+        </div>
+        <div class="mt-2">
+            <label class="radio-container">
+                <input type="radio" name="Uu" value="password" checked="checked">ورود با کد ملی
+                <span class="checkmark"></span>
+            </label>
+            <label class="radio-container">
+                <input type="radio" name="Uu" value="password-foreign">ورود با کد فیدا (اتباع خارجی)
+                <span class="checkmark"></span>
+            </label>
+        </div>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="col-md-12 mt-2">
+            <div class="row align-items-center">
+                <div class="form-group">
+                    <label asp-for="Login.UserName" placeholder="" class="control-label col-sm-4"></label>
+                    <input asp-for="Login.UserName" class="form-control col-sm-7 d-inline-block" placeholder=@Html.DisplayNameFor(m=>m.Login.UserName) />
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-2">
+            <div class="row align-items-center">
+                <div class="form-group">
+                    <label asp-for="Login.Password" placeholder="" class="control-label col-sm-4"></label>
+                    <input asp-for="Login.Password" class="form-control col-sm-7 d-inline-block" placeholder=@Html.DisplayNameFor(m=>m.Login.Password) />
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Settings.IsCaptchaEnabled)
+        {
+            <div class="col-md-12 mt-2">
+                <div class="form-group row">
+
+                    <label asp-for="Login.CaptchaCode" class="col-sm-4 col-form-label">کد امنیتی</label>
+
+                    <div class="col-sm-4 float-right">
+                        <input asp-for="Login.CaptchaCode" class="form-control" placeholder="کد را وارد کنید" />
+                        <span asp-validation-for="Login.CaptchaCode" class="text-danger h6 d-md-block"></span>
+                    </div>
+
+                    <div class="col-sm-4 float-left">
+                        <img src="/captcha-image" alt="کپچا"
+                             onclick="this.src='/captcha-image?' + Math.random();"
+                             title="برای بارگذاری مجدد کلیک کنید"
+                             style="cursor:pointer; height: 42px;" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="rememberMe" name="RememberMe" asp-for="Login.RememberMe">
+            <label class="form-check-label" for="rememberMe">مرا به خاطر بسپار</label>
+        </div>
+        <div class="forgotten-password"><a asp-controller="ForgotPassword" asp-action="ForgotPassword">گذرواژه را فراموش کرده ام</a></div>
+        @if (Model.Settings.IsTwoFactorEnabled)
+        {
+            <div style="text-align: right ">
+                <button type="submit" class="btn btn-success login-button">ارسال رمز یکبار مصرف</button>
+            </div>
+        }
+        else{
+            <div style="text-align: right ">
+                <button type="submit" class="btn btn-success login-button">ورود</button>
+            </div>
+        }
+    </div>
+</form>
+<div class="login-line"></div>
+<p class="registration-text mt-2"> حساب کاربری ندارید؟ <a asp-controller="Account" asp-action="Register">ثبت نام  </a></p>

@@ -1,0 +1,138 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Group.ViewModels.GroupUsers;
+@model IEnumerable<GroupUserViewModel>
+
+
+@{
+    int i = 1;
+    var groupId = ViewData["groupId"];
+}
+
+<div class="bg-light rounded p-4">
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" id="@groupId" onclick="AddUserGroup(this.id)" value="افزودن کاربر به گروه" />
+    </div>
+
+    <table class="table-hover table-striped table text-center" id="tbl_userGroup">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAllUserGroup" onclick="selectAll()">
+                        <label class="custom-control-label" for="selectAllUserGroup"></label>
+                    </div>
+                </th>
+                <th>@Html.DisplayNameFor(model => model.FirstName)</th>
+                <th>@Html.DisplayNameFor(model => model.LastName)</th>
+                <th>@Html.DisplayNameFor(model => model.UserName)</th>
+                <th>@Html.DisplayNameFor(model => model.NationalCode)</th>
+                <th>@Html.DisplayNameFor(model => model.GroupName)</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.GroupUserId)">
+                    <th scope="row">@i</th>
+                    <th scope="row">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="@item.GroupUserId">
+                            <label class="custom-control-label" for="@item.GroupUserId"></label>
+                        </div>
+                    </th>
+                    <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.UserName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
+                    <td>@Html.DisplayFor(modelItem => item.GroupName)</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.GroupUserId/@groupId" data-toggle="DeleteUser" title="حذف کاربر">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- افزودن مقدار groupId در اسکریپت جاوا اسکریپت -->
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#tbl_userGroup').DataTable({
+            "paging": true,
+            "searching": true,
+            "lengthChange": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": true,
+            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+            "columnDefs": [
+                { "orderable": false, "targets": 1 } // جلوگیری از مرتب‌سازی ستون checkbox
+            ],
+            "initComplete": function (settings, json) {
+                $('#example1_wrapper .col-md-6:eq(0)').append(
+                    this.api().buttons().container()
+                );
+            }
+        });
+    });
+
+    function selectAll() {
+        var table = $('#tbl_userGroup');
+        var isChecked = $('#selectAllUserGroup').prop('checked');
+        $('tbody input:checkbox', table).prop('checked', isChecked);
+    }
+
+    $('[data-toggle="DeleteUser"]').confirmation({
+        title: 'آیا از حذف مطمئن هستید؟',
+        btnCancelClass: 'btn btn-sm btn-primary',
+        btnCancelLabel: 'انصراف',
+        btnOkClass: 'btn btn-sm btn-danger',
+        btnOkLabel: 'حذف',
+        onConfirm: function () { DeleteUser($(this).attr('id')) }
+    });
+
+    function AddUserGroup(groupid) {
+        openModal('افزودن کاربر به گروه',window.__env.baseUrl  + window.routes.groupusers.groupusers_usersnotingroup+'?groupId=' + groupid, true);
+    }
+
+    function DeleteUser(id) {
+            var ids = id.split('/');
+            var usergroupId = ids[0];
+            var groupId = ids[1];
+        $.ajax({
+            method: "POST",
+            url: "/Group/GroupUsers/DeleteUserGroup?id=" + usergroupId,
+            success: function(response) {
+                if (response.isSuccess) {
+                    $("#tr_" + usergroupId).addClass("bg-danger").hide('slow', function() {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.message,
+                        });
+                        $("#user-group-list").load(window.__env.baseUrl  + window.routes.groupusers.groupusers_groupuserslist+'?groupId=' + groupId);
+                    });
+                } else {
+                    var errors = response.message.split(' | ');
+                    errors.forEach((item) => {
+                        iziToast.error({
+                            message: response.message,
+                        });
+                    });
+                }
+            },
+            error: function() {
+                iziToast.error({
+                    message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                });
+            }
+        });
+    }
+</script>

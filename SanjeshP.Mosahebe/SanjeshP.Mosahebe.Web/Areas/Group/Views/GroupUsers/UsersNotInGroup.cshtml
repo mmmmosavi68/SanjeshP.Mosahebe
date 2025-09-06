@@ -1,0 +1,115 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User
+@model IEnumerable<UserViewModel>
+@{
+    int i = 1;
+    var groupId = ViewData["groupId"];
+}
+
+<div class="bg-light rounded p-4">
+    <table class="table-hover table text-center" id="tbl_usersNotGroup">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAllUserNotGroup" onclick="selectAll()">
+                        <label class="custom-control-label" for="selectAllUserGroup"></label>
+                    </div>
+                </th>
+                <th>@Html.DisplayNameFor(model => model.FirstName)</th>
+                <th>@Html.DisplayNameFor(model => model.LastName)</th>
+                <th>@Html.DisplayNameFor(model => model.UserName)</th>
+                <th>@Html.DisplayNameFor(model => model.NationalCode)</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.UserId)">
+                    <th scope="row">@i</th>
+                    <th scope="row">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="@item.UserId">
+                            <label class="custom-control-label" for="@item.UserId"></label>
+                        </div>
+                    </th>
+                    <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.UserName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-success" id="@item.UserId/@groupId" onclick="AddUserToGroup(this.id)" title="افزودن کاربر به گروه"><i class="fa fa-user-plus"></i></a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#tbl_usersNotGroup').DataTable({
+            "paging": true,
+            "searching": true,
+            "lengthChange": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": true,
+            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+            "columnDefs": [
+                { "orderable": false, "targets": 1 } // جلوگیری از مرتب‌سازی ستون checkbox
+            ],
+            "initComplete": function (settings, json) {
+                $('#example1_wrapper .col-md-6:eq(0)').append(
+                    this.api().buttons().container()
+                );
+            }
+        });
+    });
+
+    function selectAll() {
+             var table = $('#tbl_usersNotGroup');
+        var isChecked = $('#selectAllUserGroup').prop('checked');
+        $('tbody input:checkbox', table).prop('checked', isChecked);
+    }
+
+        function AddUserToGroup(id) {
+        var ids = id.split('/');
+        var userId = ids[0];
+        var groupId = ids[1];
+        $.ajax({
+            method: "POST",
+            url: window.__env.baseUrl  + window.routes.groupusers.groupusers_addusergroup+"?userId=" + userId + "&groupId=" + groupId,
+            success: function(response) {
+                if (response.isSuccess) {
+                    $("#tr_" + userId).addClass("bg-success").hide('slow', function() {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.message,
+                        });
+                        $("#user-group-list").load(window.__env.baseUrl  + window.routes.groupusers.groupusers_groupuserslist+"?groupId=" + groupId);
+                    });
+                } else {
+                    var errors = response.message.split(' | ');
+                    errors.forEach((item) => {
+                        iziToast.error({
+                            message: response.message,
+                        });
+                    });
+                }
+            },
+            error: function() {
+                iziToast.error({
+                    message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                });
+            }
+        });
+    }
+
+</script>

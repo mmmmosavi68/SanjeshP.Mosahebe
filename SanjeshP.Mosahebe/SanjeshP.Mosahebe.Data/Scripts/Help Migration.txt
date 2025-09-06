@@ -1,0 +1,74 @@
+﻿1- Run this ########################### 
+Add-Migration InitializeDb
+Add-Migration AddInitialazeViewAndStoreProc
+
+2- add > ExistItem > Select SqlFile ###########################
+
+3- Select File > Right Click > Properties > Build Action = Embedded resource ###########################
+
+4- Copy this code to AddInitialazeViewAndStoreProc ###########################
+public partial class AddInitialazeViewAndStoreProc : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var sqlFiles = assembly.GetManifestResourceNames().Where(file => file.EndsWith(".sql"));
+            foreach (var sqlFile in sqlFiles)
+            {
+                using (Stream stream = assembly.GetManifestResourceStream(sqlFile))
+                {
+                    if (stream == null)
+                    {
+                        throw new InvalidOperationException($"Embedded resource '{sqlFile}' not found.");
+                    }
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        var sqlScript = reader.ReadToEnd();
+                        migrationBuilder.Sql($@"
+                        USE [SanjeshP_RDC1];
+                        {sqlScript}
+                    ");
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            var command = "DROP PROCEDURE GetDepartmentSalary";
+            migrationBuilder.Sql(command);
+        }
+}
+5 - Copy this Item to Data.csproj
+
+<PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+ ############################## this Line #######################################
+	<ItemGroup>
+		<None Remove="Scripts\View_UserMenubars.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Scripts\View_UserMenubars.sql" />
+	</ItemGroup>
+  <ItemGroup>
+  ############################################################
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.32" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.32">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SanjeshP.Mosahebe.Entities\SanjeshP.Mosahebe.Entities.csproj" />
+  </ItemGroup>
+
+</Project>
+6- Update-Database
+
+

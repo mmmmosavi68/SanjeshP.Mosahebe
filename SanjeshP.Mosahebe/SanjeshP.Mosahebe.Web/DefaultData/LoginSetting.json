@@ -1,0 +1,18 @@
+[
+  {
+    "Id": "ABD90A1A-4654-F011-AC6A-98AF6517E66F",
+    "CreatedDate": "2025-06-26 16:32:11.0488052",
+    "IsActive": true,
+    "IsDeleted": false,
+    "CreatedBy": "29F48A89-338F-4A3E-B971-EB15F525F920",
+    "HostIp": "::1",
+    "IsCaptchaEnabled": true,
+    "IsOtpLoginEnabled": false,
+    "IsUsernamePasswordLoginEnabled": true,
+    "IsTwoFactorEnabled": true,
+    "OtpExpirySeconds": "20",
+    "MaxFailedLoginAttempts": "10",
+    "SessionExpiryTimeMinutes": "10"
+
+  }
+]

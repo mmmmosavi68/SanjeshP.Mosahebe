@@ -1,0 +1,61 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Menu.ViewModels.Code
+@model CodeDeleteViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="delete-code-form" asp-action="DeleteCode" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" id="validation-summary"></div>
+
+            <!-- نمایش ParentTitle -->
+            <div class="form-group">
+                <label class="control-label col-sm-4">کد انتخابی جهت حذف:</label>
+                <input type="text" class="form-control col-sm-7 d-inline-block" value="@Model.Title" disabled />
+            </div>
+
+            <div class="form-group">
+                <label asp-for=ConfirmDelete class="control-label col-sm-4"></label>
+                <input asp-for="ConfirmDelete" type="checkbox" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="ConfirmDelete" class="text-danger"></span>
+            </div>
+
+            <!-- فیلد ParentId -->
+            <input type="hidden" asp-for="Id" value="@Model.Id" />
+
+            <div class="form-group">
+                <input type="button" id="delete-button" value="حذف کد" class="btn btn-danger" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script>
+    $(document).ready(function () {
+        $('#delete-button').click(function () {
+            $.ajax({
+                url:window.__env.baseUrl + window.routes.code.code_deletecode,
+                type: 'POST',
+                data: $('#delete-code-form').serialize(),
+                success: function (response) {
+                    if (response.isSuccess) {
+                        $('#Modal_AddEdit').modal('hide');
+                        iziToast.success({ message: response.message });
+                        $("#codeTree").load(window.__env.baseUrl + window.routes.code.code_codetree);
+                    } else {
+                        var errors = response.message.split(' | ');
+                        errors.forEach((item) => {
+                            iziToast.error({ message: item });
+                        });
+                    }
+                },
+                error: function () {
+                    iziToast.error({
+                        message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                    });
+                }
+            });
+        });
+    });
+</script>

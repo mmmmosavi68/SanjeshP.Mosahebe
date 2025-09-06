@@ -1,0 +1,108 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User.UserEditViewModel
+
+@{
+    // فرض کنیم که UserId مقداری است که می‌خواهید رمزنگاری کنید
+    var userId = Model.UserId;
+    var encryptedUserId = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(userId.ToString()));
+}
+<div class="row">
+    <div class="col-md-12">
+        <form id="edit-user-form" asp-action="EditUser" method="post">
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.UserId)
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label col-sm-4"></label>
+                <input asp-for="FirstName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label col-sm-4"></label>
+                <input asp-for="LastName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NationalCode" class="control-label col-sm-4"></label>
+                <input asp-for="NationalCode" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="NationalCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserName" class="control-label col-sm-4"></label>
+                <input asp-for="UserName" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label col-sm-4"></label>
+                <input asp-for="Password" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmailAddress" class="control-label col-sm-4"></label>
+                <input asp-for="EmailAddress" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label col-sm-4"></label>
+                <input asp-for="PhoneNumber" class="form-control col-sm-7 d-inline-block" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RoleId" class="control-label col-sm-4"></label>
+                <select asp-for="RoleId" class="form-control col-sm-7 d-inline-block" asp-items="@(new SelectList(ViewBag.ListofRoles,"Id","RoleNameFa"))"></select>
+            </div>
+            <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" asp-for="IsActive" class="custom-control-input" id="IsActive" />
+                    <label class="custom-control-label" for="IsActive">
+                        @Html.DisplayNameFor(model => model.IsActive)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="button" id="edit-button" value="ویرایش کاربر" class="btn btn-warning" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script>
+    $(document).ready(function () {
+        $('#edit-button').click(function () {
+            $.ajax({
+                url:window.__env.baseUrl + window.routes.users.users_edituser ,
+                type: 'POST',
+                data: $('#edit-user-form').serialize(),
+                success: function (response) {
+                    if (response.isSuccess) {
+                        $('#Modal_AddEdit').modal('hide');
+                        iziToast.success({
+                            message: response.message,
+                            icon: 'fa fa-check',
+                            class: 'iziToast-green'
+                        });
+                        listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged);
+                    } else {
+                        var errors = response.message.split(' | ');
+                        errors.forEach((item) => {
+                            iziToast.error({
+                                message: item,
+                                icon: 'fa fa-times',
+                                class: 'iziToast-color-red'
+                            });
+                        });
+                    }
+                },
+                error: function () {
+                    iziToast.error({
+                        message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'
+                    });
+                }
+            });
+        });
+    });
+</script>

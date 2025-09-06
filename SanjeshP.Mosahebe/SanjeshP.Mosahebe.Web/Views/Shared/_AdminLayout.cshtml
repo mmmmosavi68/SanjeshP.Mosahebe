@@ -1,0 +1,472 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>سامانه بررسی مدارک</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="~/Admin/plugins/fontawesome-free/css/all.min.css">    <!-- Font Awesome -->
+    <!--<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">   Ionicons -->
+    <link rel="stylesheet" href="~/Admin/plugins/icheck-bootstrap/icheck-bootstrap.min.css">    <!-- iCheck -->
+    <link rel="stylesheet" href="~/Admin/css/adminlte.min.css">    <!-- Theme style -->
+    <link rel="stylesheet" href="~/Admin/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">    <!-- overlayScrollbars -->
+    <link rel="stylesheet" href="~/Admin/css/rtl.css">
+    <link rel="stylesheet" href="~/Admin/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+    <link rel="stylesheet" href="~/css/spinner.css" />
+    <link rel="stylesheet" href="~/Admin/plugins/iziToast/iziToast.min.css" />
+    @* jalalidatepicker *@
+    <link href="~/admin/plugins/jalalidatepicker-main/jalalidatepicker.min.css" rel="stylesheet" />
+
+    <style>
+        .content-wrapper {
+            background-image: url(/img/5.jpg);
+        }
+
+        .modal-header {
+            cursor: move;
+        }
+
+        .back_img {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url(../../../../Admin/img/bg1.jpg);
+        }
+
+            .back_img::after {
+                max-height: calc(100% -35px);
+                height: calc(100% - 35px);
+                overflow-y: scroll;
+                position: relative;
+            }
+
+        .swal2-popup {
+            direction: rtl !important;
+        }
+
+            .swal2-popup.swal2-success {
+                background-color: #28a745 !important;
+            }
+
+            .swal2-popup.swal2-info {
+                background-color: #17a2b8 !important;
+            }
+
+            .swal2-popup.swal2-error {
+                background-color: #dc3545 !important;
+            }
+
+            .swal2-popup.swal2-warning {
+                background-color: #ffc107 !important;
+            }
+
+            .swal2-popup.swal2-question {
+                background-color: #6c757d !important;
+            }
+
+        .iziToast {
+            background: #fff !important;
+            box-shadow: 0 0 1px rgba(0, 0, 0, .075), 0 1px 2px rgba(0, 0, 0, .075), 1px 2px 4px rgba(0, 0, 0, .075), 1px 3px 8px rgba(0, 0, 0, .075), 2px 4px 16px rgba(0, 0, 0, .075) !important;
+        }
+
+        .iziToast-success .iziToast-message,
+        .iziToast-success .iziToast-title {
+            color: #28a745 !important; /* سبز */
+        }
+
+        .iziToast-error.iziToast-message,
+        .iziToast-error.iziToast-title {
+            color: #dc3545 !important;
+        }
+
+        .rtl-modal .modal-header, .rtl-modal .modal-body, .rtl-modal .modal-footer {
+            direction: rtl;
+            text-align: right;
+        }
+
+        table thead {
+            background: #7e9a7e;
+        }
+        table tbody tr {
+            line-height: 1 !important;
+            height: auto !important;
+            padding: 0 !important;
+        }
+
+        table tbody td, table tbody th {
+            padding: 4px !important; /* کاهش فضای داخلی سلول‌ها */
+            vertical-align: middle !important; /* تنظیم متن به وسط از نظر ارتفاع */
+            text-align: center; /* تنظیم متن به وسط از نظر افقی */
+        }
+
+        .dataTables_filter label, .dataTables_length label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        /* اضافه کردن استایل راست به چپ */
+        .fc {
+            direction: rtl;
+        }
+
+        .modal-fullscreen {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            top: 0;
+            left: 0;
+            position: fixed;
+            max-width: none;
+            max-height: none;
+        }
+
+        .btn-full-screen {
+            background-color: transparent;
+            border: 0;
+            cursor: pointer;
+            padding: 1rem;
+            margin: -1rem -1rem -1rem auto;
+            margin: -1rem auto -1rem -1rem;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Preloader -->
+        <div class="preloader flex-column justify-content-center align-items-center">
+            سامانه بررسی مدارک
+            <img class="animation__shake" src="/Admin/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
+        </div>
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a asp-controller="Home" asp-action="index" class="nav-link">صفحه نخست</a>
+                </li>
+            </ul>
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4 back_img">
+            <!-- Brand Logo -->
+            <a href="index3.html" class="brand-link">
+                <img src="/Admin/img/logo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">سامانه بررسی مدارک</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel d-flex flex-column justify-content-center align-items-center mb-3 mt-3 pb-3">
+                    <div class="image">
+                        <img src="/Admin/img/user.jpg" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info text-center">
+                        <a href="#" class="d-block">@User.Identity.Name</a>
+                    </div>
+                    <div class="info text-center">
+                        <a href="#" class="d-block">@User.FindFirst("RoleNameFa").Value.ToString()</a>
+                    </div>
+                    <div class="row text-center">
+                        <form method="post" asp-controller="Account" asp-action="Logout" asp-area="">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-block">
+                                <i class="fas fa-sign-out-alt"></i> خروج
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- SidebarSearch Form -->
+                <div class="form-inline">
+                    <div class="input-group" data-widget="sidebar-search">
+                        <div class="input-group-append">
+                            <button class="btn btn-sidebar">
+                                <i class="fas fa-search fa-fw"></i>
+                            </button>
+                        </div>
+                        <input class="form-control form-control-sidebar" id="side_search" type="search" placeholder="جستجو صفحه" aria-label="Search">
+                    </div>
+                </div>
+
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        @await Component.InvokeAsync("MenuBar")
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper p-4">
+            @RenderBody()
+        </div>
+        @*         <!-- /.content-wrapper -->
+        <footer class="main-footer">
+        <strong>کپی رایت &copy; 2014-2021 <a href="">میر محمد موسوی | Mir Mohammad Mousavi</a>.</strong>
+        تمام حقوق محفوظ می باشد.
+        <div class="d-none d-sm-inline-block float-right">
+        <b>نسخه</b> 3.2.0
+        </div>
+        </footer> *@
+    </div>
+    <div id="overlay" onclick="off()">
+        <div class="w-100 d-flex justify-content-center align-items-center">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div id="modalContainer"></div>
+    <script src="~/env.js"></script>
+    <script src="~/routes.js"></script>
+    <script src="/Admin/plugins/jquery/jquery.min.js"></script>    <!-- jQuery v3.6.0 -->
+    <script src="/Admin/plugins/jquery-ui/jquery-ui.min.js"></script>    <!-- jQuery UI 1.11.4 -->
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script>
+        $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <script src="~/admin/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Admin/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>    <!-- Bootstrap 4 -->
+    <script src="~/Admin/plugins/moment/moment.min.js"></script>
+    <!-- fullCalendar 2.2.5 -->
+    <script src="~/Admin/plugins/fullcalendar/main.js"></script>
+    <script src="~/Admin/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>     <!-- overlayScrollbars -->
+    <script src="~/Admin/js/adminlte.js"></script>    <!-- AdminLTE App -->
+
+    <script src="~/admin/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="~/admin/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/Admin/plugins/iziToast/iziToast.min.js"></script>
+    @* jalalidatepicker *@
+    <script src="~/admin/plugins/jalalidatepicker-main/jalalidatepicker.min.js"></script>
+
+    <script>
+        $(function () {
+            $('a').tooltip();
+            $('i').tooltip()
+        })
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 6000,
+            timerProgressBar: true,
+            showCloseButton: true,
+            grow: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        })
+        iziToast.settings({
+            position: 'topRight',
+            timeout: 5000,
+            rtl: true,
+            animateInside: true,
+            progressBar: true,
+            success: {
+                titleColor: '#28a745',
+                messageColor: '#28a745'
+            },
+            error: {
+                titleColor: '#dc3545',
+                messageColor: '#dc3545'
+            }
+
+        });
+        function on() {
+            document.getElementById("overlay").style.display = "flex";
+        }
+        function off() {
+            document.getElementById("overlay").style.display = "none";
+        }
+        let modalCount = 0;
+        function openModal(title, url, isLarge = false) {
+            modalCount++;
+            const modalId = `dynamicModal${modalCount}`;
+            const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
+            const modalTemplate = `
+                        <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                            <div class="${modalDialogClass}">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <div class="align-content-end">
+                                            <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
+                                        </div>
+                                            <div class="align-content-start">
+                                                <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                                                <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
+                                            </div>
+                                    </div>
+                                    <div class="modal-body" id="body_${modalId}">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-12 mb-4 text-center">
+                                                <span class="h3">در حال بارگزاری</span>
+                                            </div>
+                                            <div class="col-md-12 text-center">
+                                                 <div class="spinner-container">
+                                <div class="spinner-border" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+            document.getElementById('modalContainer').insertAdjacentHTML('beforeend', modalTemplate);
+            $(`#${modalId}`).modal('show');
+
+            // Clean the previous content
+            $(`#${modalId}`).on('hidden.bs.modal', function () {
+                $(this).remove();
+            });
+
+            // Make the modal draggable
+            $(`#${modalId} .modal-dialog`).draggable({
+                handle: ".modal-header"
+            });
+
+            $(`#btn_expand_${modalId}`).on('click', function () {
+                const modalDialog = $(`#${modalId} .modal-dialog`);
+
+                // تغییر کلاس‌های مودال برای تمام صفحه شدن
+                modalDialog.toggleClass('modal-dialog-centered');
+                modalDialog.toggleClass('modal-fullscreen');
+
+                // جستجوی آیکن و تغییر کلاس‌ها
+                const icon = $(this).find('i.fa-expand-arrows-alt');
+                if (icon.length > 0) {
+                    icon.removeClass('fa-expand-arrows-alt').addClass('fa-compress-arrows-alt');
+                } else {
+                    const reverseIcon = $(this).find('i.fa-compress-arrows-alt');
+                    reverseIcon.removeClass('fa-compress-arrows-alt').addClass('fa-expand-arrows-alt');
+                }
+            });
+            // Load the content dynamically
+            $.ajax({
+                url: url,
+                method: 'GET',
+                success: function (data) {
+                    $(`#body_${modalId}`).html(data);
+                },
+                error: function (xhr) {
+                    if (xhr.status === 403) {
+                        $(`#body_${modalId}`).html('<div class="alert alert-danger">شما مجوز دسترسی به این بخش را ندارید.</div>');
+                    } else {
+                        $(`#body_${modalId}`).html('<div class="alert alert-danger">خطایی رخ داده است. لطفاً دوباره تلاش کنید.</div>');
+                    }
+                }
+            });
+        }
+
+        jalaliDatepicker.startWatch({
+            minDate: "attr",
+            maxDate: "attr",
+            minTime: "attr",
+            maxTime: "attr",
+            zIndex: 9999,
+            time: true,
+            date: true,
+            hasSecond: true,
+            hideAfterChange: false,
+            autoHide: true,
+            showTodayBtn: true,
+            showEmptyBtn: true,
+            topSpace: 10,
+            bottomSpace: 30,
+            overflowSpace: -10,
+            dayRendering(opt, input) {
+                return {
+                    isHollyDay: opt.day == 1,
+                };
+            },
+        });
+
+        // تابع جنریک برای نمایش لیست دارای صفحه بندی سرور و جستجو فیلدهای جنریک
+         $(document).ready(function () {
+                window.columnFilters = {};
+
+                window.listLoader = {
+                filters: {},
+
+                load: function (containerId, url, pageIndex = 1, pageSize = 10) {
+                    const query = $.param({
+                        pageIndex,
+                        pageSize,
+                        ...this.filters
+                    });
+
+                    $(`#${containerId}`).load(`${url}?${query}`, () => {
+                        // بازگردانی فیلترها
+                        Object.entries(this.filters).forEach(([field, value]) => {
+                            $(`#${containerId} .column-filter[data-field='${field}']`).val(value);
+                        });
+
+                        // ثبت رویداد Enter در فیلترها
+                        $(`#${containerId} .column-filter`).off("keyup").on("keyup", function (e) {
+                            if (e.key === "Enter") {
+                                const field = $(this).data("field");
+                                const value = $(this).val().trim();
+                                if (value !== "") {
+                                    listLoader.filters[field] = value;
+                                } else {
+                                    delete listLoader.filters[field];
+                                }
+                                listLoader.load(containerId, url, 1, pageSize);
+                            }
+                        });
+
+                        // // صفحه‌بندی
+                        // $(`#${containerId} .page-link`).off("click").on("click", function () {
+                        //     const page = $(this).data("page");
+                        //     console.log(page)
+                        //     listLoader.load(containerId, url, page, pageSize);
+                        // });
+                    });
+                },
+
+                resetFilters: function () {
+                    this.filters = {};
+                }
+            };
+         });
+          // 🎯 ثبت رویداد برای فیلتر هر ستون (Enter)
+        $(document).on("keyup", ".column-filter", function (e) {
+            if (e.key === "Enter") {
+                loadUsers(1); // جستجو از صفحه اول
+            }
+        });
+
+        // ✅ در بارگذاری اولیه صفحه، دکمه‌های صفحه‌بندی رو ثبت کن
+        // $(document).ready(function () {
+        //      $(".page-link").off("click").on("click", function () {
+        //         const page = $(this).data("page");
+        //         loadUsers(page);
+        //     });
+        // });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+

@@ -1,0 +1,269 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User
+@using SanjeshP.Mosahebe.Web.SharedViewModels
+@using System.ComponentModel.DataAnnotations
+@model PagedListAccessViewModel<UserViewModel>
+
+@{
+    bool canCreateUser = ViewData["CreateUser"] as bool? ?? false;
+    // فیلدهای قابل نمایش در جدول
+    var visibleFields = new List<string>
+    {
+        nameof(UserViewModel.FirstName),
+        nameof(UserViewModel.LastName),
+        nameof(UserViewModel.UserName),
+        nameof(UserViewModel.PhoneNumber),
+        nameof(UserViewModel.EmailAddress),
+        nameof(UserViewModel.IsActiveName) // فقط نمایش؛ اگر بخوای اصلاح کنیم
+    };
+
+    var properties = typeof(UserViewModel).GetProperties();
+}
+<style>
+    .column-filter {
+        height: 28px;
+        padding: 4px 8px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .filter-container {
+        height: 0;
+        display:none;
+        overflow: hidden;
+        transition: all 1s ease-in-out;
+    }
+
+    .filter-row{
+        height:0;
+    }
+    .filter-row .active  {
+        height: auto; /* یا هر مقدار کافی برای فیلترها */
+    }
+
+</style>
+<div class="bg-light rounded p-4">
+    <h3>لیست کاربران</h3>
+
+    @if (canCreateUser)
+    {
+        <div class="row mb-3">
+            <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن کاربر" />
+        </div>
+    }
+    <div style="overflow-x: auto;">
+        <table class="table-sm table-bordered table-hover table-striped table text-center" id="tbl_user">
+            <thead>
+                <tr class='trhead'>
+                    <th>
+                        <a class="btn btn-sm toggle-filter-row" title="جستجو"> <i class="fas fa-search text-primary"></i></a>
+                    </th>
+                    <th>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input selectAll" id="selectAll">
+                            <label class="custom-control-label" for="selectAll"></label>
+                        </div>
+                    </th>
+                    @foreach (var prop in properties)
+                    {
+                        if (visibleFields.Contains(prop.Name))
+                        {
+                            var displayAttr = prop.GetCustomAttributes(typeof(DisplayAttribute), false)
+                            .Cast<DisplayAttribute>()
+                            .FirstOrDefault();
+                            var displayName = displayAttr?.Name ?? prop.Name;
+                            <th>@displayName</th>
+                        }
+                    }
+                    <th>عملیات</th>
+                </tr>
+                <tr class="filter-row d-none">
+                    <td></td>
+                    <td></td>
+                    @foreach (var prop in properties)
+                    {
+                        if (visibleFields.Contains(prop.Name))
+                        {
+                            var displayAttr = prop.GetCustomAttributes(typeof(DisplayAttribute), false)
+                            .Cast<DisplayAttribute>()
+                            .FirstOrDefault();
+                            var displayName = displayAttr?.Name ?? prop.Name;
+                            <td>
+                                <input name="txt_search_@(prop.Name)" type="text" class="form-control column-filter w-100" data-field="@prop.Name" placeholder="@displayName" />
+                            </td>
+                        }
+                    }
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    var item = Model.Items[i];
+                    <tr id="tr_@(item.Data.UserId)">
+                        <td>@(i + 1)</td>
+                        <td>
+                            <input type="checkbox" class="user-checkbox" value="@item.Data.UserId" />
+                        </td>
+                        @foreach (var prop in properties)
+                        {
+                            if (visibleFields.Contains(prop.Name))
+                            {
+                                var value = prop.GetValue(item.Data);
+                                <td>@(value ?? "-")</td>
+                            }
+                        }
+                        <td>
+                            @if (item.Permissions["DetailUser"])
+                            {
+                                <a onclick="DetailUser('@item.Data.UserId')" class="btn btn-sm btn-outline-info" title="اطلاعات کاربر"><i class="fa fa-info"></i></a>
+                            }
+                            @if (item.Permissions["EditUser"])
+                            {
+                                <a onclick="EditUser('@item.Data.UserId')" class="btn btn-sm btn-outline-warning" title="ویرایش کاربر"><i class="fa fa-edit"></i></a>
+                            }
+                            @if (item.Permissions["DeleteUser"])
+                            {
+                                <a id="@item.Data.UserId" data-toggle="DeleteUser" class="btn btn-sm btn-outline-danger" title="حذف کاربر"><i class="fa fa-trash"></i></a>
+                            }
+                            @if (item.Permissions["UserAccessMenu"])
+                            {
+                                <a onclick="UserAccessMenu('@item.Data.UserId')" class="btn btn-sm btn-outline-dark" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-center align-items-center position-relative mt-3">
+        <div class="text-muted position-absolute" style="right:0">
+            نمایش @Model.StartRow تا @Model.EndRow از @Model.TotalCount ردیف
+        </div>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+
+                <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadUsers(1)">اولین</a>
+                </li>
+                <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadUsers(@(Model.PageIndex - 1))">قبلی</a>
+                </li>
+
+                @{
+                    // نمایش تا 5 صفحه اطراف صفحه فعلی
+                    int pageWindow = 2;
+                    int start = Math.Max(1, Model.PageIndex - pageWindow);
+                    int end = Math.Min(Model.PageCount, Model.PageIndex + pageWindow);
+
+                    for (int i = start; i <= end; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                            <a class="page-link" href="javascript:void(0)" onclick="loadUsers(@i)">@i</a>
+                        </li>
+                    }
+
+                    if (end < Model.PageCount)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <li class="page-item">
+                            <a class="page-link" href="javascript:void(0)" onclick="loadUsers(@Model.PageCount)">@Model.PageCount</a>
+                        </li>
+                    }
+                }
+
+                <li class="page-item @(Model.PageIndex == Model.PageCount ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadUsers(@(Model.PageIndex + 1))">بعدی</a>
+                </li>
+                <li class="page-item @(Model.PageIndex == Model.PageCount ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadUsers(@Model.PageCount)">آخرین</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script>
+    // ✅ تابع اصلی بارگذاری کاربران با فیلترها و صفحه‌بندی
+    function loadUsers(pageIndex = 1) {
+        listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged,pageIndex);
+    }
+
+        $(".toggle-filter-row").on("click", function () {
+            console.log('asdas')
+            $(".filter-row").toggleClass("d-none"); // نمایش ردیف
+            setTimeout(() => {
+                $(".filter-row").toggleClass("active");
+            }, 10); // اجازه‌ی رندر به مرورگر برای فعال کردن انیمیشن
+        });
+   
+
+    $('.selectAll').click(function (e) {
+        var table = $(e.target).closest('table');
+        $('th input:checkbox', table).prop('checked', this.checked);
+    });
+
+    $('.modal-dialog').draggable({
+        "handle": ".modal-header"
+    });
+
+    $('[data-toggle="DeleteUser"]').confirmation({
+        title: 'آیا از حذف مطمئن هستید؟',
+        btnCancelClass: 'btn btn-sm btn-primary',
+        btnCancelLabel: 'انصراف',
+        btnOkClass: 'btn btn-sm btn-danger',
+        btnOkLabel: 'حذف',
+        onConfirm: function () { DeleteUser($(this).attr('id')) }
+    });
+
+    function DetailUser(UserID) {
+        openModal('مشخصات کاربر',window.__env.baseUrl + window.routes.users.users_detailuser + '?userid=' + UserID,false);
+
+    };
+    function CreateUser() {
+        openModal('افزودن کاربر ', window.__env.baseUrl + window.routes.users.users_createuser ,false);
+    };
+    function EditUser(UserID) {
+        openModal('ویرایش کاربراصلاح سطح دسترسی',window.__env.baseUrl + window.routes.users.users_edituser + '?userid=' + UserID,false);
+    };
+    function UserAccessMenu(UserID) {
+        openModal(' اصلاح سطح دسترسی',  window.__env.baseUrl + window.routes.users.users_useraccessmenu + '?userid=' + UserID,false);
+    };
+
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    async function DeleteUser(UserID) {
+        $(".skeleton-table").show();
+
+        try {
+            const response = await $.ajax({
+                method: "POST",
+                url: window.__env.baseUrl + window.routes.users.users_deleteuser + '?userid=' + UserID
+            });
+
+            if (response.isSuccess) {
+                $("#tr_" + UserID).addClass("bg-danger");
+                await delay(500);
+
+                Toast.fire({
+                    icon: 'success',
+                    title: response.message,
+                });
+
+                listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged);
+                $(".skeleton-table").remove();
+            } else {
+                Toast.fire({
+                    icon: 'warning',
+                    title: response.message,
+                });
+            }
+        } catch {
+            Toast.fire({
+                icon: 'error',
+                title: 'کاربری جهت حذف ارسال نشده است یا خطایی رخ داده.',
+            });
+        }
+    }
+</script>

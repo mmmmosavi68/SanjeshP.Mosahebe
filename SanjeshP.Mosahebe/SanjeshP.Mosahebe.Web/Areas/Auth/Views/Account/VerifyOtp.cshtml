@@ -1,0 +1,46 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Auth.ViewModels.VerifyOtpViewModel
+
+@{
+    ViewData["Title"] = "تایید کد امنیتی";
+}
+
+<h3 class="title">ورود به سامانه</h3>
+<div class="login-line"></div>
+
+
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <form asp-action="VerifyOtp" method="post">
+            @Html.AntiForgeryToken()
+            <div class="col-md-12 mt-2">
+                <div class="row align-items-center">
+                    <div class="form-group">
+                        <label asp-for="Code" placeholder="" class="control-label col-sm-4"></label>
+                        <input asp-for="Code" class="form-control col-sm-7 d-inline-block" placeholder="کد ارسال شده را وارد کنید" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-3 text-center">
+                <button type="submit" class="btn btn-primary px-4">تایید</button>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="alert alert-danger mt-3">
+                    @foreach (var modelState in ViewData.ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    }
+                </div>
+            }
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "ExamsList";
+}
+
+@using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.Exam
+@model IEnumerable<ExamViewModel>
+
+@{
+    int i = 1;
+}
+
+<div class="bg-light rounded p-4">
+    <h3>فهرست آزمون‌های مرکز سنجش آموزش پزشکی</h3>
+
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateExam()" value="افزودن آزمون جدید" />
+    </div>
+
+    <table class="table-hover table-striped table text-center" id="tbl_exam">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAll">
+                        <label class="custom-control-label" for="selectAll"></label>
+                    </div>
+                </th>
+                <th>عنوان</th>
+                <th>توضیحات</th>
+                <th>نوع آزمون</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.Id)">
+                    <td>@i</td>
+                    <td>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="@item.Id">
+                            <label class="custom-control-label" for="@item.Id"></label>
+                        </div>
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                    <td>@item.TypeOfExamTitle</td>
+                    <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-info" onclick="DetailExam('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
+                        <a class="btn btn-sm btn-outline-warning" onclick="EditExam('@item.Id')" title="ویرایش آزمون"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="ExamScheduleList('@item.Id')" title="فهرست زمان‌بندی‌های آزمون"><i class="fa fa-calendar"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteExam" title="حذف آزمون"><i class="fa fa-trash"></i></a>
+
+
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+
+<script type="text/javascript">
+      $(function () {
+          $('#tbl_exam').DataTable({
+              paging: true,
+              searching: true,
+              lengthChange: true,
+              ordering: true,
+              info: true,
+              autoWidth: false,
+              buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+          }).buttons().container().appendTo('#tbl_exam_wrapper .col-md-6:eq(0)');
+
+          $('.selectAll').click(function () {
+              var table = $(this).closest('table');
+              $('input:checkbox', table).prop('checked', this.checked);
+          });
+
+          $('[data-toggle="DeleteExam"]').confirmation({
+              title: 'آیا از حذف مطمئن هستید؟',
+              btnCancelClass: 'btn btn-sm btn-primary',
+              btnCancelLabel: 'انصراف',
+              btnOkClass: 'btn btn-sm btn-danger',
+              btnOkLabel: 'حذف',
+              onConfirm: function () {
+                  DeleteExam($(this).attr('id'));
+              }
+          });
+      });
+
+      function CreateExam() {
+          console.log('asdasd')
+          openModal('افزودن آزمون جدید', '/Exam/Exam/CreateExam', false);
+      }
+
+      function DetailExam(id) {
+          openModal('جزئیات آزمون', '/Exam/Exam/DetailExam?Id=' + id, false);
+      }
+
+      function EditExam(id) {
+          openModal('ویرایش آزمون', '/Exam/Exam/EditExam?Id=' + id, false);
+      }
+
+      function ExamScheduleList(id) {
+          openModal('فهرست زمان‌بندی‌های آزمون', '/Exam/ExamSchedule/Index?examId=' + id, true);
+      }
+
+      function DeleteExam(id) {
+          $.ajax({
+              method: "POST",
+              url: "/Exam/Exam/DeleteExam?examId=" + id,
+              success: function (response) {
+                  if (response.isSuccess) {
+                      $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
+                          Toast.fire({ icon: 'success', title: response.message });
+                      });
+                      $("#examList").load("/Exam/Exam/ExamsList");
+                  } else {
+                      Toast.fire({ icon: 'warning', title: response.message });
+                  }
+              },
+              error: function () {
+                  Toast.fire({
+                      icon: 'error',
+                      title: 'آزمونی جهت حذف ارسال نشده است یا خطایی رخ داده.'
+                  });
+              }
+          });
+      }
+</script>
+

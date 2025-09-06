@@ -1,0 +1,20 @@
+ [
+    {
+      "userId": "29f48a89-338f-4a3e-b971-eb15f525f920",
+      "firstName": "میرمحمد",
+      "lastName": "موسوی",
+      "fatherName": "پدر",
+      "nationalCode": "0011720328",
+      "gender": 10,
+      "maritalStatus": 10,
+      "religion": 10,
+      "leftHanded": 0,
+      "nationality": 10,
+      "isActive": true,
+      "isDelete": false,
+      "createDate": "2024-03-11T09:11:19.3458474",
+      "creator": "00000000-0000-0000-0000-000000000000",
+      "hostIp": "::1",
+      "user": null,
+    }
+  ]

@@ -1,0 +1,52 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using SanjeshP.Mosahebe.Web.Areas.Group.ViewModels.GroupUsers
+<div id="user-group-list">
+    <table class="skeleton-table">
+        <thead>
+            <tr>
+                @{
+                    // لیست فیلدهایی که باید مستثنی شوند
+                    var excludedFields = new List<string> { "UserId", "IsActiveName" };
+
+                    // دریافت تمام خصوصیات مدل
+                    var properties = typeof(GroupUserViewModel).GetProperties();
+                    <th>#</th>
+                    foreach (var property in properties)
+                    {
+                        // چک کردن اینکه آیا فیلد در لیست استثناها هست یا خیر
+                        if (!excludedFields.Contains(property.Name))
+                        {
+                            var displayName = property.GetCustomAttributes(typeof(DisplayAttribute), false)
+                            .Cast<DisplayAttribute>()
+                            .FirstOrDefault()?.Name ?? property.Name;
+                            <th>@displayName</th>
+                        }
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="12" class="skeleton-loading text-center">
+                    <div class="spinner-container">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </td>
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        // این کد باعث می‌شود که پنجره‌های مودال قابل جابه‌جایی باشند
+        $('.modal-dialog').draggable({
+            handle: ".modal-header"
+        });
+        $(".skeleton-table").show();
+        var groupid = ('@ViewData["groupId"]');
+        // این کد PartialView را بارگذاری می‌کند
+        $("#user-group-list").load(window.__env.baseUrl  + window.routes.groupusers.groupusers_groupuserslist+"?groupId=" + groupid);
+
+    });
+</script>
