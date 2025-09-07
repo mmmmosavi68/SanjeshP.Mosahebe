@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - SanjeshpCore.Web</title>
+
+    <link href="~/Identity/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Identity/css/bootstrap/bootstrap.rtl.css" rel="stylesheet" />
+    <link href="~/Identity/css/bootstrap/bootstrap-grid.min.css" rel="stylesheet" />
+    <link href="~/Identity/css/bootstrap/bootstrap-grid.rtl.css" rel="stylesheet" />
+    <link href="~/Identity/css/bootstrap/bootstrap-utilities.min.css" rel="stylesheet" />
+    <link href="~/Identity/css/bootstrap/bootstrap-utilities.rtl.css" rel="stylesheet" />
+    <link href="~/Identity/css/login.css" rel="stylesheet" />
+    <style>
+        .h6 {
+            font-size: 0.7rem;
+        }
+    </style>
+    @await RenderSectionAsync("style", required: false)
+</head>
+<body style="font-family: IRANSansXFaNum-Regular; ">
+    @*<div class="container">
+            <div class="d-flex justify-content-center align-items-center" style="height: 100vh">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>*@
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="right-panel">
+                <div class="d-flex flex-wrap justify-content-center">
+                    <div class="mt-4">
+                        <span class="logo-src " alt="logo"></span>
+                    </div>
+                </div>
+                <div class="right-panel-content">
+                    <div class="suggestion">
+                        <div class="list">
+                            <div>
+                                <span>ابتدا لازم است تا در سامانه ثبت نام نمایید.</span>
+                            </div>
+                            <div>
+                                <span>بعد از ورود به سیستم حتما بایستی <span class="partially-span">اطلاعات شخصی</span> را تکمیل نمایید.</span>
+                            </div>
+                            <div title="از مرورگر های مطمئن و بروز مانند گوگل کروم و فایرفاکس استفاده کنید.">
+                                از
+                                <span class="partially-span">مرورگر های مطمئن و بروز</span>
+                                مانند گوگل کروم و فایرفاکس استفاده کنید.
+                            </div>
+                            <div title="رمز خود را در فواصل زمانی کوتاه تغییر دهید.">
+                                <span class="partially-span">رمز عبور</span>
+                                خود را در فواصل زمانی کوتاه تغییر دهید.
+                            </div>
+                            <div>
+                                <span>از گذرواژه های <span class="partially-span">پیچیده </span>استفاده نمایید.</span>
+                            </div>
+                            <div title="هرگز نام کاربری و گذرواژه خود را در اختیار دیگران قرار ندهید.">
+                                هرگز
+                                <span class="partially-span">نام کاربری و گذرواژه</span>
+                                خود را در اختیار دیگران قرار ندهید.
+                            </div>
+                            <div title="پس از انجام و اتمام کار، حتما از سیستم خارج شوید.">
+                                پس از انجام و اتمام کار، حتما از سیستم
+                                <span class="partially-span">خارج</span>
+                                شوید.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-panel-footer">
+                    <div class="media">
+                        <a href="#"><img class="instagram-src" alt=""></a>
+                        <a href="#"><img class="aparat-src" alt=""></a>
+                        <a href="#"><img class="soroush-src" alt=""></a>
+                    </div>
+                    <div class="copyright-text">
+                        <p>مرکز سنجش آموزش پزشکی کشور</p>
+                    </div>
+                </div>
+            </div>
+            <div class="left-panel "></div>  @*card cascading-left*@
+            <div class="center-panel card cascading-right" style=" background: hsla(0, 0%, 100%, 0.55); backdrop-filter: blur(30px);">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Identity/js/jquery-3.6.1.min.js"></script>
+    <script src="~/Identity/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Identity/js/bootstrap.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

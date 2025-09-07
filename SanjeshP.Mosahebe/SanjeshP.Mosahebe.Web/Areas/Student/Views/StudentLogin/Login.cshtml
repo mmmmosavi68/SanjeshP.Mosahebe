@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<style>
+    /* هر label در #loginOptions را بلاک می‌کند */
+    #loginOptions{
+        direction: rtl
+    }
+    #loginOptions label {
+        display: block;
+        margin-bottom: 1rem; /* فاصله دلخواه */
+margin-right:25px    }
+</style>
+
+
+<div id="loginOptions" class="login100-form validate-form">
+    <div class="form-check mb-3">
+        <input class="form-check-input"
+               type="radio"
+               name="loginMethod"
+               value="LoginOTP"
+               id="optOtp"
+               checked />
+        <label class="form-check-label" for="optOtp">
+            ورود با یکبار رمز
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input"
+               type="radio"
+               name="loginMethod"
+               value="LoginCodeRahgiri"
+               id="optTrack" />
+        <label class="form-check-label" for="optTrack">
+            ورود با کد رهگیری
+        </label>
+    </div>
+</div>
+
+<div id="partialContainer"></div>
+
+
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function () {
+            // تابع بارگذاری پارشیال بر اساس گزینه‌ی انتخاب‌شده
+            function loadPartial() {
+                var method = $('input[name="loginMethod"]:checked').val();
+                var url =  method;
+                $('#partialContainer').load(url);
+
+                console.log(url)
+            }
+
+            // بارگذاری پیش‌فرض (LoginOTP)
+            loadPartial();
+
+            // وقتی روش ورود انتخاب شد، پارشیال مربوطه را GET کنیم
+            $('#loginOptions input[name="loginMethod"]').on('change', function () {
+                var action = $(this).val();
+                var url = '/Student/StudentLogin/' + action;
+                $('#partialContainer').load(url);
+            });
+
+            // هر فرمی که داخل partialContainer رندر شد را با AJAX ارسال کن
+            $('#partialContainer').on('submit', 'form', function (e) {
+                e.preventDefault();
+                var $form = $(this);
+                $.post($form.attr('action'), $form.serialize())
+                    .done(function (html) {
+                        // پاسخ (یا PartialView بعدی) را جایگزین محتوا کن
+                        $('#partialContainer').html(html);
+                    })
+                    .fail(function () {
+                        alert('خطا در ارسال اطلاعات. دوباره تلاش کنید.');
+                    });
+            });
+        });
+    </script>
+}

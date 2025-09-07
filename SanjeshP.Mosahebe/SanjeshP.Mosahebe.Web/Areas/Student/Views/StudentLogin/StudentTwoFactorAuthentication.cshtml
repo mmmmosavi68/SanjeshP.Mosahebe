@@ -1,0 +1,17 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.StudentTwoFactorAuthenticationViewModel
+
+@{
+    ViewData["Title"] = "احراز هویت دومرحله‌ای";
+}
+<h2>لطفاً کد ۲ مرحله‌ای را وارد کنید</h2>
+<form method="post" asp-action="StudentTwoFactorAuthentication">
+    @Html.AntiForgeryToken()
+    <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz">
+        <input asp-for="TwoFactorCode" class="input100" type="text" name="NationalCode" placeholder="کد یکبار مصرف را وارد نمایید">
+        <span asp-validation-for="TwoFactorCode" class="focus-input100"></span>
+        <span class="symbol-input100">
+            <i class="fa fa-envelope" aria-hidden="true"></i>
+        </span>
+    </div>
+    <button type="submit" class="login100-form-btn">تایید</button>
+</form>

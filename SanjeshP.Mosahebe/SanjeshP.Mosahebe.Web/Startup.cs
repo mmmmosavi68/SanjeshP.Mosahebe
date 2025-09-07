@@ -133,7 +133,7 @@ namespace SanjeshP.Mosahebe.Web
                 endpoints.MapAreaControllerRoute(
                     name: "student",
                     areaName: "Student",
-                    pattern: "Student/{controller=ArchiveData}/{action=Index}/{id?}");
+                    pattern: "Student/{controller=Home}/{action=Index}/{id?}");
                 // User area
                 endpoints.MapAreaControllerRoute(
                     name: "user",

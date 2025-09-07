@@ -1,0 +1,15 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.LoginOTPViewModel
+@{
+    ViewData["Title"] = "ورود با یکبار رمز";
+}
+<form asp-controller="StudentLogin" asp-action="LoginOTP" method="post" class="login100-form validate-form">
+    @Html.AntiForgeryToken()
+    <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz">
+        <input asp-for="NationalCode" class="input100" type="text" name="NationalCode" placeholder="کد ملی را وارد نمایید">
+        <span asp-validation-for="NationalCode" class="focus-input100"></span>
+        <span class="symbol-input100">
+            <i class="fa fa-envelope" aria-hidden="true"></i>
+        </span>
+    </div>
+    <button type="submit" class="login100-form-btn">ارسال</button>
+</form>
