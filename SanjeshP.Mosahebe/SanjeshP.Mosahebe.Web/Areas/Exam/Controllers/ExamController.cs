@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.Exam;
-using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.TypeOfExam;
 using SanjeshP.Mosahebe.Common;
 using SanjeshP.Mosahebe.Data.Contracts.Exam;
 using SanjeshP.Mosahebe.Data.Contracts.Users;
@@ -23,19 +22,16 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
         private readonly IMapper _mapper;
         private readonly ILogger<ExamController> _logger;
         private readonly IExamRepository _examRepository;
-        private readonly ITypeOfExamRepository _typeOfExamRepository;
         private readonly IUserTokenRepository _userTokenRepository;
 
         public ExamController(IMapper mapper,
                               ILogger<ExamController> logger,
                               IExamRepository examRepository,
-                              ITypeOfExamRepository typeOfExamRepository,
                               IUserTokenRepository userTokenRepository)
         {
             _mapper = mapper;
             _logger = logger;
             _examRepository = examRepository;
-            _typeOfExamRepository = typeOfExamRepository;
             _userTokenRepository = userTokenRepository;
         }
 
@@ -57,7 +53,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
                     Title = e.Title,
                     Description = e.Description,
                     TypeOfExamId = e.TypeOfExamId,
-                    TypeOfExamTitle = e.TypeOfExam?.Title,
                     IsActive = e.IsActive
                 }).ToList();
 
@@ -82,7 +77,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
                 }
 
                 var model = _mapper.Map<ExamViewModel>(exam);
-                model.TypeOfExamTitle = exam.TypeOfExam?.Title;
 
                 return PartialView("DetailExam", model);
             }
@@ -97,17 +91,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateExam(CancellationToken cancellationToken)
         {
-            var typeOfExams = await _typeOfExamRepository.GetAllTypeOfExamNoTrackingAsync(cancellationToken);
-            var model = new ExamCreateViewModel
-            {
-                TypeOfExamList = typeOfExams.Select(t => new TypeOfExamViewModel
-                {
-                    Id = t.Id,
-                    Title = t.Title
-                }).ToList()
-            };
 
-            return PartialView("CreateExam", model);
+            return PartialView("CreateExam");
         }
 
         [HttpPost]
@@ -156,7 +141,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
                 return NotFound();
             }
 
-            var typeOfExams = await _typeOfExamRepository.GetAllTypeOfExamNoTrackingAsync(cancellationToken);
 
             var model = new ExamEditViewModel
             {
@@ -165,11 +149,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
                 Description = exam.Description,
                 TypeOfExamId = exam.TypeOfExamId,
                 IsActive = exam.IsActive,
-                TypeOfExamList = typeOfExams.Select(t => new TypeOfExamViewModel
-                {
-                    Id = t.Id,
-                    Title = t.Title
-                }).ToList()
             };
 
             return PartialView("EditExam", model);

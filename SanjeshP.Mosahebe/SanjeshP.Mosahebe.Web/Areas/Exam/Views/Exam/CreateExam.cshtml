@@ -18,17 +18,6 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="TypeOfExamId" class="control-label col-sm-4">نوع آزمون</label>
-                <select asp-for="TypeOfExamId" class="form-control col-sm-7 d-inline-block"
-                        asp-items="@(new SelectList(Model.TypeOfExamList, "Id", "Title"))">
-                    <option value="">انتخاب کنید...</option>
-                </select>
-                <span asp-validation-for="TypeOfExamId" class="text-danger"></span>
-            </div>
-
-
-
-            <div class="form-group">
                 <input type="button" id="save-button" value="افزودن آزمون" class="btn btn-success" />
             </div>
         </form>

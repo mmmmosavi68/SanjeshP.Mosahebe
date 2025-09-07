@@ -1,5 +1,4 @@
-﻿using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.TypeOfExam;
-using SanjeshP.Mosahebe.WebFramework.Api;
+﻿using SanjeshP.Mosahebe.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,7 +17,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.Exam
         [MaxLength(1000)]
         public string Description { get; set; }
 
-        public List<TypeOfExamViewModel> TypeOfExamList { get; set; } = new List<TypeOfExamViewModel>();
 
     }
 }

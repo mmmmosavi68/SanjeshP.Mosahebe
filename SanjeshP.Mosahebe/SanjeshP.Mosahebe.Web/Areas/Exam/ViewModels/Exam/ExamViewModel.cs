@@ -1,5 +1,4 @@
-﻿using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.TypeOfExam;
-using SanjeshP.Mosahebe.WebFramework.Api;
+﻿using SanjeshP.Mosahebe.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 

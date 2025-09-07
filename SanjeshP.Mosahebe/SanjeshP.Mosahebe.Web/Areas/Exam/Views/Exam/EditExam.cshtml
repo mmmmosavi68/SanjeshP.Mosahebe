@@ -18,19 +18,6 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="TypeOfExamId" class="control-label col-sm-4"></label>
- @*                <select asp-for="TypeOfExamId" asp-items="@(new SelectList(Model.TypeOfExamList, "TypeOfExamId", "Title"))" class="form-control col-sm-7 d-inline-block">
-                    <option value="">-- انتخاب نوع آزمون --</option>
-                </select> *@
-                <select asp-for="TypeOfExamId"
-                        asp-items="@(new SelectList(Model.TypeOfExamList, "Id", "Title", Model.TypeOfExamId))"
-                        class="form-control col-sm-7 d-inline-block">
-                    <option value="">-- انتخاب نوع آزمون --</option>
-                </select>
-
-                <span asp-validation-for="TypeOfExamId" class="text-danger"></span>
-            </div>
 
             <div class="form-group">
                 <label asp-for="IsActive" class="control-label col-sm-4"></label>

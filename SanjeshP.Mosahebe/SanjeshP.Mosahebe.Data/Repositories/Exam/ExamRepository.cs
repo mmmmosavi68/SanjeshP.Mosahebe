@@ -19,7 +19,6 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Exam
         {
             return await TableNoTracking
                 .Where(e => !e.IsDeleted)
-                .Include(e => e.TypeOfExam)
                 .OrderByDescending(e => e.CreatedDate)
                 .ToListAsync(cancellationToken);
         }
@@ -28,7 +27,6 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Exam
         {
             return await Table
                 .Where(e => !e.IsDeleted && e.Id == id)
-                .Include(e => e.TypeOfExam)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 

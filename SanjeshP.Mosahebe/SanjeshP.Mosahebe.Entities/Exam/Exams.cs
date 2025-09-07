@@ -18,16 +18,13 @@ namespace SanjeshP.Mosahebe.Entities.Exam
         [Required]
         public Guid TypeOfExamId { get; set; }
 
-        // شیء نوع آزمون مربوطه (navigation property)
-        [ForeignKey(nameof(TypeOfExamId))]
-        public TypeOfExam TypeOfExam { get; set; }
-
         // توضیحات کلی درباره این آزمون
         [MaxLength(1000)]
         public string Description { get; set; }
 
         // لیست زمان‌بندی‌های مربوط به آزمون
         public ICollection<ExamSchedule> Schedules { get; set; }
+        public ICollection<Field> Fields { get; set; }
     }
 
 }

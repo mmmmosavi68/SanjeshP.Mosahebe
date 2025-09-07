@@ -28,7 +28,6 @@
                 </th>
                 <th>عنوان</th>
                 <th>توضیحات</th>
-                <th>نوع آزمون</th>
                 <th>وضعیت</th>
                 <th>عملیات</th>
             </tr>
@@ -46,15 +45,13 @@
                     </td>
                     <td>@Html.DisplayFor(modelItem => item.Title)</td>
                     <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                    <td>@item.TypeOfExamTitle</td>
                     <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
                     <td>
                         <a class="btn btn-sm btn-outline-info" onclick="DetailExam('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
                         <a class="btn btn-sm btn-outline-warning" onclick="EditExam('@item.Id')" title="ویرایش آزمون"><i class="fa fa-edit"></i></a>
-                        <a class="btn btn-sm btn-outline-info" onclick="ExamScheduleList('@item.Id')" title="فهرست زمان‌بندی‌های آزمون"><i class="fa fa-calendar"></i></a>
+                        <a class="btn btn-sm btn-outline-primary" onclick="ExamScheduleList('@item.Id')" title="فهرست زمان‌بندی‌های آزمون"><i class="fa fa-calendar-check"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="ExamScheduleList('@item.Id')" title="فهرست رشته‌های آزمون"><i class="fa fa-graduation-cap"></i></a>
                         <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteExam" title="حذف آزمون"><i class="fa fa-trash"></i></a>
-
-
                     </td>
                 </tr>
                 i++;
