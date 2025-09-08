@@ -20,8 +20,4 @@
     <ProjectReference Include="..\SanjeshP.Mosahebe.Common\SanjeshP.Mosahebe.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Student\" />
-  </ItemGroup>
-
 </Project>
