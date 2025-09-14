@@ -23,9 +23,5 @@
   <ItemGroup>
     <ProjectReference Include="..\SanjeshP.Mosahebe.Entities\SanjeshP.Mosahebe.Entities.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Contracts\Students\" />
-    <Folder Include="Repositories\Students\" />
-  </ItemGroup>
 
 </Project>

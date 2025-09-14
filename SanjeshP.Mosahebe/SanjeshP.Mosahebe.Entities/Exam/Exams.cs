@@ -24,7 +24,7 @@ namespace SanjeshP.Mosahebe.Entities.Exam
 
         // لیست زمان‌بندی‌های مربوط به آزمون
         public ICollection<ExamSchedule> Schedules { get; set; }
-        public ICollection<Field> Fields { get; set; }
+        public ICollection<ExamField> Fields { get; set; }
     }
 
 }

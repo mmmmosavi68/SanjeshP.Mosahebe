@@ -28,10 +28,10 @@ namespace SanjeshP.Mosahebe.Entities.Student
 
         // 3. کلید خارجی به جدول Field
         [Required]
-        public Guid FieldId { get; set; }
+        public int FieldId { get; set; }
 
         // 4. navigation به آزمون مربوطه
         [ForeignKey(nameof(FieldId))]
-        public Field Field { get; set; }
+        public ExamField Field { get; set; }
     }
 }

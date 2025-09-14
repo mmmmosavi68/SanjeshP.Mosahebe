@@ -47,6 +47,10 @@ namespace SanjeshP.Mosahebe.Web
             //    options.InstanceName = "MyAppCache_";
             //});
 
+
+
+            //services.AddSingleton<IFieldModelRepository, FieldModelRepository>();
+            //services.AddScoped<IFieldService, FieldService>();
             #region Comment
             //services.AddCustomElmah(Configuration, _siteSetting);
             //services.AddCustomApiVersioning();
@@ -67,6 +71,7 @@ namespace SanjeshP.Mosahebe.Web
             //        });
             //});
             #endregion
+
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
