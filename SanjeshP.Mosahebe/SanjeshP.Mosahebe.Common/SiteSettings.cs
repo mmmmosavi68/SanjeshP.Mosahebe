@@ -7,6 +7,7 @@ namespace SanjeshP.Mosahebe.Common
         public JwtSettings JwtSettings { get; set; }
         public IdentitySettings IdentitySettings { get; set; }
         public AuthenticationSettings authenticationSettings { get; set; }
+        public AuthenticationStudentSettings authenticationStudentSettings { get; set; }
         public PayamSMS payamSMS { get; set; }
 
     }
@@ -36,6 +37,12 @@ namespace SanjeshP.Mosahebe.Common
         public string LoginPath { get; set; }
         public string LogoutPath { get; set; }
         public int ExpireTimeSpanInMinutes { get; set; }
+    }
+    public class AuthenticationStudentSettings
+    {
+        public string StudentLoginPath { get; set; }
+        public string StudentLogoutPath { get; set; }
+        public int StudentExpireTimeSpanInMinutes { get; set; }
     }
 
     public class PayamSMS

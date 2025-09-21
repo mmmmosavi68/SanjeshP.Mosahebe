@@ -28,6 +28,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using SanjeshP.Mosahebe.Data.Contracts.Students;
 
 namespace WebFramework.Configuration
 {
@@ -118,70 +119,121 @@ namespace WebFramework.Configuration
                 //options.CheckPermissionAction = httpContext => httpContext.User.Identity.IsAuthenticated;
             });
         }
-        public static void AddCustomAuthentication(this IServiceCollection services, AuthenticationSettings authenticationSettings, IConfiguration configuration)
+        public static void AddCustomAuthentication(this IServiceCollection services, AuthenticationSettings authenticationSettings, AuthenticationStudentSettings authenticationStudentSettings, IConfiguration configuration)
         {
+            // ۱. DefaultScheme را به یک PolicyScheme واحد (!) تنظیم می‌کنیم
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            }).AddCookie(options =>
+                options.DefaultScheme = "UnifiedCookie";
+                options.DefaultSignInScheme = "UnifiedCookie";
+                options.DefaultChallengeScheme = "UnifiedCookie";
+            })
+            // ۲. PolicyScheme: خودش تصمیم می‌گیرد که درخواستِ جاری دانشجوست یا کاربر
+            .AddPolicyScheme("UnifiedCookie", "Dynamic Cookie Scheme", options =>
             {
-                options.LoginPath = authenticationSettings.LoginPath;
-                options.LogoutPath = authenticationSettings.LogoutPath;
+                options.ForwardDefaultSelector = context =>
+                {
+                    // اگر مسیر با /Student شروع شد → StudentScheme
+                    if (context.Request.Path.StartsWithSegments("/Student", StringComparison.OrdinalIgnoreCase))
+                        return "StudentScheme";
+                    // در غیر این‌صورت → UserScheme
+                    return "UserScheme";
+                };
+            })
+            // ۳. Scheme کاربران عادی
+            .AddCookie("UserScheme", options =>
+            {
+                options.Cookie.Name = "UserAuthCookie";
+                options.LoginPath = authenticationSettings.LoginPath;    // "/Login"
+                options.LogoutPath = authenticationSettings.LogoutPath;   // "/Logout"
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(authenticationSettings.ExpireTimeSpanInMinutes);
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 
                 options.Events = new CookieAuthenticationEvents
                 {
-                    // رویداد در صورت شکست احراز هویت
-                    OnRedirectToLogin = context =>
+                    OnRedirectToLogin = ctx =>
                     {
-                        if (context.Request.Path.StartsWithSegments("/api"))
+                        if (ctx.Request.Path.StartsWithSegments("/api"))
                         {
-                            context.Response.Clear();
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            ctx.Response.Clear();
+                            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                             return Task.CompletedTask;
                         }
-
-                        context.Response.Redirect(context.RedirectUri);
+                        ctx.Response.Redirect(ctx.RedirectUri);
                         return Task.CompletedTask;
                     },
-
-                    // رویداد هنگام معتبرسازی کوکی
-                    OnValidatePrincipal = async context =>
+                    OnValidatePrincipal = async ctx =>
                     {
-                        var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                        var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
-
-                        if (claimsIdentity.Claims?.Any() != true)
+                        var identity = (ClaimsIdentity)ctx.Principal.Identity;
+                        var idClaim = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        if (string.IsNullOrEmpty(idClaim) || !Guid.TryParse(idClaim, out var userGuid))
                         {
-                            context.RejectPrincipal();
-                            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        }
-
-                        var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid userGuid))
-                        {
-                            context.RejectPrincipal();
-                            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            ctx.RejectPrincipal();
+                            await ctx.HttpContext.SignOutAsync("UserScheme");
                             return;
                         }
 
-                        // اگر مقدار userGuid معتبر است، ادامه دهید
-                        var user = await userRepository.GetByIdAsync(context.HttpContext.RequestAborted, userGuid);
+                        var repo = ctx.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                        var user = await repo.GetByIdAsync(ctx.HttpContext.RequestAborted, userGuid);
                         if (user == null || !user.IsActive)
                         {
-                            context.RejectPrincipal();
-                            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            ctx.RejectPrincipal();
+                            await ctx.HttpContext.SignOutAsync("UserScheme");
                         }
                     },
-
-                    // رویداد در زمان چالش
-                    OnRedirectToAccessDenied = context =>
+                    OnRedirectToAccessDenied = ctx =>
                     {
-                        context.Response.Clear();
-                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        ctx.Response.Clear();
+                        ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+                };
+            })
+            // ۳. Scheme کاربران دانشجو
+            .AddCookie("StudentScheme", options =>
+            {
+                options.Cookie.Name = "StudentAuthCookie";
+                options.LoginPath = authenticationStudentSettings.StudentLoginPath;
+                options.LogoutPath = authenticationStudentSettings.StudentLogoutPath;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(authenticationStudentSettings.StudentExpireTimeSpanInMinutes);
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnRedirectToLogin = ctx =>
+                    {
+                        if (ctx.Request.Path.StartsWithSegments("/api"))
+                        {
+                            ctx.Response.Clear();
+                            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            return Task.CompletedTask;
+                        }
+                        ctx.Response.Redirect(ctx.RedirectUri);
+                        return Task.CompletedTask;
+                    },
+                    OnValidatePrincipal = async ctx =>
+                    {
+                        var identity = (ClaimsIdentity)ctx.Principal.Identity;
+                        var idClaim = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        if (!int.TryParse(idClaim, out var studentId))
+                        {
+                            ctx.RejectPrincipal();
+                            await ctx.HttpContext.SignOutAsync("StudentScheme");
+                            return;
+                        }
+
+                        var repo = ctx.HttpContext.RequestServices.GetRequiredService<IStudentRepository>();
+                        var student = await repo.GetStudentByIdAsync(studentId, ctx.HttpContext.RequestAborted);
+                        if (student == null)
+                        {
+                            ctx.RejectPrincipal();
+                            await ctx.HttpContext.SignOutAsync("StudentScheme");
+                        }
+                    },
+                    OnRedirectToAccessDenied = ctx =>
+                    {
+                        ctx.Response.Clear();
+                        ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
                         return Task.CompletedTask;
                     }
                 };

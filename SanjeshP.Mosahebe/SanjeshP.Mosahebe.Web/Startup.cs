@@ -39,7 +39,7 @@ namespace SanjeshP.Mosahebe.Web
             //services.AddJwtAuthentication(_siteSetting.JwtSettings);
             services.AddControllers();
             services.AddRazorPages().AddRazorRuntimeCompilation();
-            services.AddCustomAuthentication(_siteSetting.authenticationSettings, Configuration);
+            services.AddCustomAuthentication(_siteSetting.authenticationSettings, _siteSetting.authenticationStudentSettings, Configuration);
 
             //services.AddStackExchangeRedisCache(options =>
             //{

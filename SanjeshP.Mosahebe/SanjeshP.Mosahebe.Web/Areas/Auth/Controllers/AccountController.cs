@@ -304,7 +304,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Auth.Controllers
                     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var principal = new ClaimsPrincipal(identity);
 
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                    await HttpContext.SignInAsync("UserScheme", principal);
+                    //await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                     _logger.LogInformation($"Login succeeded (no OTP): user {user.UserName} authenticated.");
                     return Redirect("/Home/Home");
@@ -348,7 +349,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Auth.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync("UserScheme");
+            //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             _logger.LogInformation("User logged out.");
             return RedirectToAction("Login");
         }
@@ -495,7 +497,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Auth.Controllers
                 IsPersistent = rememberMe
             };
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+            await HttpContext.SignInAsync("UserScheme", principal, authProperties);
+            //await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
 
             _logger.LogInformation($"Login succeeded: user {user.UserName} authenticated successfully.");
             return Redirect("/Home/Home");
