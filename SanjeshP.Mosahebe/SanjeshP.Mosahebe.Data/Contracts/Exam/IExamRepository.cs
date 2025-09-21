@@ -11,9 +11,9 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Exam
     public interface IExamRepository : IEntityFrameworkRepository<Exams>
     {
         Task<IEnumerable<Exams>> GetAllExamsNoTrackingAsync(CancellationToken cancellationToken);
-        Task<Exams> GetByExamsIDAsync(Guid id, CancellationToken cancellationToken);
+        Task<Exams> GetByExamsIDAsync(int id, CancellationToken cancellationToken);
         Task AddExamsAsync(Exams exams, CancellationToken cancellationToken);
         Task UpdateExamsAsync(Exams exams, CancellationToken cancellationToken);
-        Task DeleteExamsAsync(Guid id, CancellationToken cancellationToken);
+        Task DeleteExamsAsync(int id, CancellationToken cancellationToken);
     }
 }

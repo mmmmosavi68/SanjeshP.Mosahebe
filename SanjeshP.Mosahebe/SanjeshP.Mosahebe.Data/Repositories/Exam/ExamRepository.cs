@@ -23,7 +23,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Exam
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<Exams?> GetByExamsIDAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<Exams?> GetByExamsIDAsync(int id, CancellationToken cancellationToken)
         {
             return await Table
                 .Where(e => !e.IsDeleted && e.Id == id)
@@ -40,7 +40,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Exam
             await UpdateAsync(exam, cancellationToken);
         }
 
-        public async Task DeleteExamsAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DeleteExamsAsync(int id, CancellationToken cancellationToken)
         {
             var exam = await GetByExamsIDAsync(id, cancellationToken);
             if (exam is null)

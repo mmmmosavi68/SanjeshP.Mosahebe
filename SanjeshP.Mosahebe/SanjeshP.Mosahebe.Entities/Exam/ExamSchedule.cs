@@ -8,11 +8,11 @@ using System.Text;
 
 namespace SanjeshP.Mosahebe.Entities.Exam
 {
-    public class ExamSchedule : BaseEntity
+    public class ExamSchedule : BaseEntity<int>
     {
         // شناسه آزمون
         [Required]
-        public Guid ExamId { get; set; }
+        public int ExamId { get; set; }
 
         // شیء آزمون مرتبط
         [ForeignKey(nameof(ExamId))]

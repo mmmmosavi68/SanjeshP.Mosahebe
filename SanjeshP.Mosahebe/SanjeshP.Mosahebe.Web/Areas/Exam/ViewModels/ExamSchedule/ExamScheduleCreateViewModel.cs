@@ -12,7 +12,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.ExamSchedule
     {
         [Required(ErrorMessage = "انتخاب آزمون الزامی است.")]
         [Display(Name = "آزمون")]
-        public Guid ExamId { get; set; }
+        public int ExamId { get; set; }
 
         [Required(ErrorMessage = "نوع رویداد الزامی است.")]
         [Display(Name = "نوع رویداد")]

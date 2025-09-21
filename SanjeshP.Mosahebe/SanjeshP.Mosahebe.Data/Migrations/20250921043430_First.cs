@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SanjeshP.Mosahebe.Data.Migrations
 {
-    public partial class InitializeDb : Migration
+    public partial class First : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -41,6 +41,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     Title = table.Column<string>(maxLength: 100, nullable: false),
                     ParentId = table.Column<int>(nullable: true),
                     StandardCode = table.Column<int>(nullable: true),
+                    PrimaryCode = table.Column<int>(nullable: true),
+                    SubCode = table.Column<int>(nullable: true),
                     AdditionalInformation = table.Column<string>(maxLength: 200, nullable: true)
                 },
                 constraints: table =>
@@ -52,6 +54,74 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         principalTable: "Codes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Exams",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(maxLength: 200, nullable: false),
+                    TypeOfExamId = table.Column<int>(nullable: false),
+                    Description = table.Column<string>(maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Exams", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FieldDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    FormId = table.Column<int>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Label = table.Column<string>(nullable: true),
+                    Type = table.Column<int>(nullable: false),
+                    TypeText = table.Column<string>(nullable: true),
+                    IsRequired = table.Column<bool>(nullable: false),
+                    Description = table.Column<string>(nullable: true),
+                    ErrorMessage = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FieldDefinitions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FormSubmissions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    FormId = table.Column<int>(nullable: false),
+                    SubmittedAt = table.Column<DateTime>(nullable: false),
+                    JsonData = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormSubmissions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -70,6 +140,30 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_IntBaseEntities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LoginSettings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    IsCaptchaEnabled = table.Column<bool>(nullable: false),
+                    IsOtpLoginEnabled = table.Column<bool>(nullable: false),
+                    IsUsernamePasswordLoginEnabled = table.Column<bool>(nullable: false),
+                    IsTwoFactorEnabled = table.Column<bool>(nullable: false),
+                    OtpExpirySeconds = table.Column<int>(nullable: false),
+                    MaxFailedLoginAttempts = table.Column<int>(nullable: false),
+                    SessionExpiryTimeMinutes = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LoginSettings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -108,6 +202,26 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PreviousFields",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(maxLength: 200, nullable: false),
+                    Description = table.Column<string>(maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PreviousFields", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -126,6 +240,28 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentOtps",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    StudentId = table.Column<int>(nullable: false),
+                    Code = table.Column<string>(nullable: false),
+                    ExpiresAt = table.Column<DateTime>(nullable: false),
+                    IsUsed = table.Column<bool>(nullable: false),
+                    SentTo = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentOtps", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -227,41 +363,95 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventsCalendars",
+                name: "ExamFields",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTime>(nullable: false),
                     UpdatedDate = table.Column<DateTime>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
                     IsDeleted = table.Column<bool>(nullable: false),
                     CreatedBy = table.Column<Guid>(nullable: false),
                     HostIp = table.Column<string>(nullable: true),
-                    Title = table.Column<string>(maxLength: 100, nullable: false),
+                    Title = table.Column<string>(maxLength: 200, nullable: false),
                     Description = table.Column<string>(maxLength: 500, nullable: true),
-                    StartDate = table.Column<DateTime>(nullable: false),
-                    EndDate = table.Column<DateTime>(nullable: false),
-                    Location = table.Column<string>(maxLength: 200, nullable: true),
-                    CategoryId = table.Column<int>(nullable: false),
-                    Url = table.Column<string>(nullable: true),
-                    IsAllDay = table.Column<bool>(nullable: false),
-                    Color = table.Column<string>(nullable: true),
-                    UserId = table.Column<Guid>(nullable: false),
-                    IsPublic = table.Column<bool>(nullable: false)
+                    IsPajoheshi = table.Column<int>(nullable: false),
+                    ExamId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventsCalendars", x => x.Id);
+                    table.PrimaryKey("PK_ExamFields", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EventsCalendars_Users_CreatedBy",
-                        column: x => x.CreatedBy,
-                        principalTable: "Users",
+                        name: "FK_ExamFields_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExamSchedules",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    ExamId = table.Column<int>(nullable: false),
+                    EventType = table.Column<int>(nullable: false),
+                    EventTypeName = table.Column<string>(nullable: true),
+                    EventTypeDisplayName = table.Column<string>(nullable: true),
+                    StartTime = table.Column<DateTime>(nullable: false),
+                    EndTime = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExamSchedules", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EventsCalendars_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
+                        name: "FK_ExamSchedules_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Students",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    RegId = table.Column<int>(nullable: false),
+                    FirstName = table.Column<string>(nullable: true),
+                    LastName = table.Column<string>(nullable: true),
+                    FatherName = table.Column<string>(nullable: true),
+                    NationalCode = table.Column<string>(nullable: true),
+                    CodeRahgiri = table.Column<string>(nullable: true),
+                    PhoneNumber = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(nullable: true),
+                    Gender = table.Column<int>(nullable: false),
+                    IsPajoheshi = table.Column<int>(nullable: false),
+                    ExamId = table.Column<int>(nullable: false),
+                    ExamCourseType = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Students", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Students_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -415,33 +605,34 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventParticipants",
+                name: "StudentFields",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTime>(nullable: false),
                     UpdatedDate = table.Column<DateTime>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
                     IsDeleted = table.Column<bool>(nullable: false),
                     CreatedBy = table.Column<Guid>(nullable: false),
                     HostIp = table.Column<string>(nullable: true),
-                    EventId = table.Column<Guid>(nullable: false),
-                    UserId = table.Column<Guid>(nullable: false),
-                    IsNotified = table.Column<bool>(nullable: false)
+                    RegId = table.Column<int>(nullable: false),
+                    StudentId = table.Column<int>(nullable: false),
+                    ExamFieldId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventParticipants", x => x.Id);
+                    table.PrimaryKey("PK_StudentFields", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EventParticipants_EventsCalendars_EventId",
-                        column: x => x.EventId,
-                        principalTable: "EventsCalendars",
+                        name: "FK_StudentFields_ExamFields_ExamFieldId",
+                        column: x => x.ExamFieldId,
+                        principalTable: "ExamFields",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_EventParticipants_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
+                        name: "FK_StudentFields_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -557,24 +748,14 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventParticipants_EventId",
-                table: "EventParticipants",
-                column: "EventId");
+                name: "IX_ExamFields_ExamId",
+                table: "ExamFields",
+                column: "ExamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventParticipants_UserId",
-                table: "EventParticipants",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EventsCalendars_CreatedBy",
-                table: "EventsCalendars",
-                column: "CreatedBy");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EventsCalendars_UserId",
-                table: "EventsCalendars",
-                column: "UserId");
+                name: "IX_ExamSchedules_ExamId",
+                table: "ExamSchedules",
+                column: "ExamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GroupAccessMenus_GroupId",
@@ -615,6 +796,21 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "IX_Menus_MenuId",
                 table: "Menus",
                 column: "MenuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentFields_ExamFieldId",
+                table: "StudentFields",
+                column: "ExamFieldId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentFields_StudentId",
+                table: "StudentFields",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Students_ExamId",
+                table: "Students",
+                column: "ExamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserAccessMenus_MenuId",
@@ -671,13 +867,31 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "Codes");
 
             migrationBuilder.DropTable(
-                name: "EventParticipants");
+                name: "ExamSchedules");
+
+            migrationBuilder.DropTable(
+                name: "FieldDefinitions");
+
+            migrationBuilder.DropTable(
+                name: "FormSubmissions");
 
             migrationBuilder.DropTable(
                 name: "GroupAccessMenus");
 
             migrationBuilder.DropTable(
                 name: "IntBaseEntities");
+
+            migrationBuilder.DropTable(
+                name: "LoginSettings");
+
+            migrationBuilder.DropTable(
+                name: "PreviousFields");
+
+            migrationBuilder.DropTable(
+                name: "StudentFields");
+
+            migrationBuilder.DropTable(
+                name: "StudentOtps");
 
             migrationBuilder.DropTable(
                 name: "UserAccessMenus");
@@ -698,10 +912,13 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "View_UserMenubars");
 
             migrationBuilder.DropTable(
-                name: "EventsCalendars");
+                name: "GroupUsers");
 
             migrationBuilder.DropTable(
-                name: "GroupUsers");
+                name: "ExamFields");
+
+            migrationBuilder.DropTable(
+                name: "Students");
 
             migrationBuilder.DropTable(
                 name: "Menus");
@@ -714,6 +931,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Groups");
+
+            migrationBuilder.DropTable(
+                name: "Exams");
 
             migrationBuilder.DropTable(
                 name: "Users");

@@ -4,9 +4,9 @@ using SanjeshP.Mosahebe.WebFramework.Api;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-public class ExamScheduleViewModel : BaseDto<ExamScheduleViewModel, ExamSchedule, Guid>
+public class ExamScheduleViewModel : BaseDto<ExamScheduleViewModel, ExamSchedule, int>
 {
-    public Guid ExamScheduleId { get; set; }
+    public int ExamScheduleId { get; set; }
 
     [Display(Name = "عنوان آزمون")]
     public string ExamTitle { get; set; }

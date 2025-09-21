@@ -62,9 +62,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
 
         // نمایش لیست زمان‌بندی‌ها برای آزمون انتخاب شده
         [HttpGet]
-        public async Task<IActionResult> ExamScheduleList(Guid examId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ExamScheduleList(int examId, CancellationToken cancellationToken)
         {
-            if (examId == Guid.Empty)
+            if (examId == 0)
                 return BadRequest("آزمون معتبر نیست");
 
             try
@@ -85,7 +85,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
         #region Create Schedule
 
         [HttpGet]
-        public async Task<IActionResult> CreateExamSchedule(Guid examId, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateExamSchedule(int examId, CancellationToken cancellationToken)
         {
             var usedEventTypes = await _examScheduleRepository.GetUsedEventTypesByExamIdAsync(examId, cancellationToken);
 
@@ -124,7 +124,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
 
                 var entity = new ExamSchedule
                 {
-                    Id = Guid.NewGuid(),
+                 
                     ExamId = model.ExamId,
                     EventType = model.EventType,
                     EventTypeName = model.EventType.ToString(),
@@ -152,7 +152,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
         #region Edit Schedule
 
         [HttpGet]
-        public async Task<IActionResult> EditExamSchedule(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> EditExamSchedule(int id, CancellationToken cancellationToken)
         {
             var schedule = await _examScheduleRepository.GetAllSchedulesByExamIdAsync(id, cancellationToken);
             if (schedule == null)

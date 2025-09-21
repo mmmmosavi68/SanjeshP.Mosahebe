@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_LoginStudentLayout.cshtml";
 }
 
 <style>
@@ -69,14 +70,20 @@ margin-right:25px    }
                 e.preventDefault();
                 var $form = $(this);
                 $.post($form.attr('action'), $form.serialize())
-                    .done(function (html) {
-                        // پاسخ (یا PartialView بعدی) را جایگزین محتوا کن
-                        $('#partialContainer').html(html);
+                    .done(function (response) {
+                        if (response.redirectToUrl) {
+                            // اگر کنترلر URL ریدایرکت داده، مرورگر را به آن هدایت کن
+                            window.location.href = response.redirectToUrl;
+                        } else {
+                            // در غیر این صورت محتوای پارشیال را جایگزین کن
+                            $('#partialContainer').html(response);
+                        }
                     })
                     .fail(function () {
                         alert('خطا در ارسال اطلاعات. دوباره تلاش کنید.');
                     });
             });
+
         });
     </script>
 }

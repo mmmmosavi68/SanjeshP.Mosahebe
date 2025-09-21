@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System;
+using System.Linq;
 
 namespace SanjeshP.Mosahebe.Data.Migrations
 {

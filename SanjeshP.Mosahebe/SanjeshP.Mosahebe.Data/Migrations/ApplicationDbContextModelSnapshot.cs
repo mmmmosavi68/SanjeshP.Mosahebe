@@ -105,8 +105,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500);
 
-                    b.Property<Guid>("ExamId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
 
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
@@ -117,8 +117,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPajoheshi")
-                        .HasColumnType("bit");
+                    b.Property<int>("IsPajoheshi")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -137,10 +137,10 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Exam.ExamSchedule", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -160,8 +160,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("EventTypeName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ExamId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
 
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
@@ -187,10 +187,10 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Exam.Exams", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -216,8 +216,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasMaxLength(200);
 
-                    b.Property<Guid>("TypeOfExamId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("TypeOfExamId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -775,10 +775,10 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.Student", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("CodeRahgiri")
                         .HasColumnType("nvarchar(max)");
@@ -792,17 +792,20 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ExamId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("FieldId")
+                    b.Property<int>("ExamCourseType")
                         .HasColumnType("int");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FatherName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Gender")
-                        .HasColumnType("bit");
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
 
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
@@ -813,14 +816,20 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("IsPajoheshi")
+                        .HasColumnType("int");
+
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NationalCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhonNumber")
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RegId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -829,9 +838,96 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
                     b.HasIndex("ExamId");
 
-                    b.HasIndex("FieldId");
-
                     b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.StudentField", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExamFieldId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HostIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RegId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamFieldId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentFields");
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.StudentOtp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HostIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SentTo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StudentOtps");
                 });
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.User.Role", b =>
@@ -1331,10 +1427,19 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
 
-                    b.HasOne("SanjeshP.Mosahebe.Entities.Exam.ExamField", "Field")
-                        .WithMany()
-                        .HasForeignKey("FieldId")
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.StudentField", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Exam.ExamField", "ExamField")
+                        .WithMany("StudentFields")
+                        .HasForeignKey("ExamFieldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", "Student")
+                        .WithMany("StudentFields")
+                        .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

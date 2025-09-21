@@ -10,7 +10,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
         public string NationalCode { get; set; }
 
         [Required(ErrorMessage = "کد رهگیری الزامی است")]
-        [StringLength(6, MinimumLength = 6, ErrorMessage = "کد رهگیری باید ۶ کاراکتر باشد")]
+        [StringLength(16, MinimumLength = 16, ErrorMessage = "کد رهگیری باید ۶ کاراکتر باشد")]
         [Display(Name = "کد رهگیری")]
         public string CodeRahgiri { get; set; }
     }

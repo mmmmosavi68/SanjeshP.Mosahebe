@@ -1,0 +1,22 @@
+﻿using SanjeshP.Mosahebe.Common;
+using SanjeshP.Mosahebe.Data.Contracts.Common;
+using SanjeshP.Mosahebe.Entities.Student;
+using SanjeshP.Mosahebe.Entities.User;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace SanjeshP.Mosahebe.Data.Contracts.Students
+{
+    public interface IStudentRepository : IEntityFrameworkRepository<Student>
+    {
+        Task<IEnumerable<Student>> GetAllStudentsNoTrackingAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<Student>> GetAllStudentsAsync(CancellationToken cancellationToken);
+        Task<Student> GetStudentByNationalCodeAsync(string NationalCode, CancellationToken cancellationToken);
+        Task<Student> GetStudentByNationalCodeCodeRahgiriAsync(string NationalCode, string CodeRahgiri, CancellationToken cancellationToken);
+        Task<Student> GetStudentByIdAsync(int id, CancellationToken cancellationToken);
+        Task<Student> GetStudentByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken);
+    }
+}

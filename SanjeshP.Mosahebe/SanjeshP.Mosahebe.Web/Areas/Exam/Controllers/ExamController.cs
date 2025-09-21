@@ -66,7 +66,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> DetailExam(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DetailExam(int id, CancellationToken cancellationToken)
         {
             try
             {
@@ -110,7 +110,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
 
                 var exam = new Exams
                 {
-                    Id = Guid.NewGuid(),
                     Title = model.Title,
                     Description = model.Description,
                     TypeOfExamId = model.TypeOfExamId,
@@ -133,7 +132,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
 
         #region Edit Exam
         [HttpGet]
-        public async Task<IActionResult> EditExam(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> EditExam(int id, CancellationToken cancellationToken)
         {
             var exam = await _examRepository.GetByExamsIDAsync(id, cancellationToken);
             if (exam == null)
@@ -189,11 +188,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
 
         #region Delete Exam
         [HttpPost]
-        public async Task<IActionResult> DeleteExam(Guid examId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteExam(int examId, CancellationToken cancellationToken)
         {
             try
             {
-                if (examId == Guid.Empty)
+                if (examId == 0)
                 {
                     return Json(new { isSuccess = false, message = "آزمون جهت حذف ارسال نشده است یا خطایی رخ داده." });
                 }

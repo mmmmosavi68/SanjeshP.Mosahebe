@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SanjeshP.Mosahebe.Entities.Exam
 {
-    public class Exams : BaseEntity
+    public class Exams : BaseEntity<int>
     {
         // عنوان آزمون (مثلاً آزمون دکتری 1404)
         [Required]
@@ -16,7 +16,7 @@ namespace SanjeshP.Mosahebe.Entities.Exam
 
         // شناسه نوع آزمون (ارجاع به TypeOfExam)
         [Required]
-        public Guid TypeOfExamId { get; set; }
+        public int TypeOfExamId { get; set; }
 
         // توضیحات کلی درباره این آزمون
         [MaxLength(1000)]

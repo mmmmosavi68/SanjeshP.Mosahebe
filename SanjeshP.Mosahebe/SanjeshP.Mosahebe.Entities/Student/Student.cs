@@ -8,30 +8,32 @@ using System.Text;
 
 namespace SanjeshP.Mosahebe.Entities.Student
 {
-    public class Student : BaseEntity
+    public class Student : BaseEntity<int>
     {
+        public int RegId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string FatherName { get; set; }
         public string NationalCode { get; set; }
         public string CodeRahgiri { get; set; }
-        public string PhonNumber { get; set; }
+        public string PhoneNumber { get; set; }
         public string Email { get; set; }
-        public bool Gender { get; set; }
+        public int Gender { get; set; }
+        public int IsPajoheshi { get; set; }
 
         // 1. کلید خارجی به جدول Exams
         [Required]
-        public Guid ExamId { get; set; }
+        public int ExamId { get; set; }
 
         // 2. navigation به آزمون مربوطه
         [ForeignKey(nameof(ExamId))]
         public Exams Exam { get; set; }
 
-        // 3. کلید خارجی به جدول Field
-        [Required]
-        public int FieldId { get; set; }
+        // ارتباط چند به چند با رشته‌ها
+        public ICollection<StudentField> StudentFields { get; set; } = new List<StudentField>();
 
-        // 4. navigation به آزمون مربوطه
-        [ForeignKey(nameof(FieldId))]
-        public ExamField Field { get; set; }
+        //نوع دوره آزمون (آموزشی یا پژوهشی
+        public int ExamCourseType { get; set; } 
+
     }
 }
