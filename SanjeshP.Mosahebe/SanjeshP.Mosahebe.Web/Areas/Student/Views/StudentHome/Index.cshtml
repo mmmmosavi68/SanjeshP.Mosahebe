@@ -1,7 +1,98 @@
-﻿@{
-    ViewData["Title"] = "Index";
+﻿@using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
+@model IEnumerable<int>
+
+@{
+    ViewData["Title"] = "فهرست فرم‌ها";
 }
 
-<h1>Index</h1>
+<div class="d-flex align-items-center mb-3 gap-3">
+    <div>
+        <select class="custom-select form-control" id="formSelect">
+            <option selected disabled>انتخاب کنید...</option>
+            @foreach (var id in Model)
+            {
+                <option value="@id">فرم @id</option>
+            }
+        </select>
+    </div>
+    <button class="btn btn-success mr-3" id="btnAdd">+ افزودن</button>
+</div>
 
-adasdasd asd asdaSD ASFDS FD
+<!-- جدول نمایش رکوردها -->
+<div id="submissionsContainer" class="table-wrapper">
+    <!-- جدول با Ajax لود می‌شود -->
+</div>
+
+<!-- کانتینر فرم (ابتدا مخفی) -->
+<div id="formContainer" class="mb-3" style="display:none;"></div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // انتخاب اولین فرم (اگر انتخاب نشده باشد)
+            var initialFormId = $("#formSelect").val();
+            if (!initialFormId) {
+                initialFormId = $("#formSelect option:eq(1)").val();
+                $("#formSelect").val(initialFormId);
+            }
+            loadSubmissions(initialFormId);
+        });
+
+        // تغییر فرم انتخاب شده، بارگذاری جدول رکوردها
+        $("#formSelect").change(function () {
+            var formId = $(this).val();
+            loadSubmissions(formId);
+        });
+
+        // تابع بارگذاری جدول
+        function loadSubmissions(formId) {
+            if (!formId) return;
+            $("#formContainer").hide();
+            $("#submissionsContainer").show().load("/Student/StudentHome/GetFormSubmissions?formId=" + formId);
+        }
+
+        // کلیک دکمه افزودن، نمایش فرم و مخفی کردن جدول
+        $("#btnAdd").click(function () {
+            var formId = $("#formSelect").val();
+
+            if (!formId) {
+                alert("لطفاً یک فرم انتخاب کنید.");
+                return;
+            }
+
+            $("#submissionsContainer").hide();
+            $("#formContainer").show().load("/Student/StudentHome/LoadForm?formId=" + formId);
+        });
+
+        // ارسال فرم با Ajax
+        $(document).on("submit", "#formContainer form", function (e) {
+            e.preventDefault();
+            var $form = $(this);
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $form.attr("action"),
+                type: $form.attr("method"),
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    iziToast.success({ title: 'موفق', message: 'فرم با موفقیت ارسال شد' });
+                    $("#formContainer").hide().html('');
+                    $("#submissionsContainer").show();
+                    var formId = $("#formSelect").val();
+                    loadSubmissions(formId);
+                },
+                error: function () {
+                    iziToast.error({ title: 'خطا', message: 'ارسال فرم موفقیت‌آمیز نبود' });
+                }
+            });
+        });
+
+        // دکمه لغو داخل فرم
+        $(document).on("click", "#btnCancel", function () {
+            $("#formContainer").hide().html('');
+            $("#submissionsContainer").show();
+        });
+    </script>
+}

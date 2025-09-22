@@ -13,7 +13,7 @@ namespace WebFramework.Configuration
         public static void AddServices(this ContainerBuilder containerBuilder)
         {
             //RegisterType > As > Liftetime
-            containerBuilder.RegisterGeneric(typeof(EFRepository<>)).As(typeof(IEntityFrameworkRepository<>)).InstancePerLifetimeScope();
+            containerBuilder.RegisterGeneric(typeof(EntityFrameworkRepository<>)).As(typeof(IEntityFrameworkRepository<>)).InstancePerLifetimeScope();
 
             var commonAssembly = typeof(SiteSettings).Assembly;
             var entitiesAssembly = typeof(IEntity).Assembly;

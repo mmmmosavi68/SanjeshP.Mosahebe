@@ -101,10 +101,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(500)")
-                        .HasMaxLength(500);
-
                     b.Property<int>("ExamId")
                         .HasColumnType("int");
 
@@ -117,7 +113,7 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("IsPajoheshi")
+                    b.Property<int>("StandardCode")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -747,6 +743,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("FieldDefinitionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("FormId")
                         .HasColumnType("int");
 
@@ -759,14 +758,14 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("JsonData")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Groups
 {
-    public class UserGroupRepository : EFRepository<GroupUsers>, IUserGroupRepository, IScopedDependency
+    public class UserGroupRepository : EntityFrameworkRepository<GroupUsers>, IUserGroupRepository, IScopedDependency
     {
         public UserGroupRepository(ApplicationDbContext dbContext) : base(dbContext) { }
     }

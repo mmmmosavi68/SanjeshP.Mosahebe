@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Menu
 {
-    public class CodeRepository : EFRepository<Code>, ICodeRepository, IScopedDependency
+    public class CodeRepository : EntityFrameworkRepository<Code>, ICodeRepository, IScopedDependency
     {
         public CodeRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Common
 {
-    public class EFRepository<TEntity> : IEntityFrameworkRepository<TEntity>
+    public class EntityFrameworkRepository<TEntity> : IEntityFrameworkRepository<TEntity>
         where TEntity : class, IEntity
     {
         protected readonly ApplicationDbContext DbContext;
@@ -20,7 +20,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Common
         public virtual IQueryable<TEntity> Table => Entities;
         public virtual IQueryable<TEntity> TableNoTracking => Entities.AsNoTracking();
 
-        public EFRepository(ApplicationDbContext dbContext)
+        public EntityFrameworkRepository(ApplicationDbContext dbContext)
         {
             DbContext = dbContext;
             Entities = DbContext.Set<TEntity>(); // City => Cities

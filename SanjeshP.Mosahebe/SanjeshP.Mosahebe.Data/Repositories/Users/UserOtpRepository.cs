@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Users
 {
-    public class UserOtpRepository : EFRepository<UserOtp>, IUserOtpRepository, IScopedDependency
+    public class UserOtpRepository : EntityFrameworkRepository<UserOtp>, IUserOtpRepository, IScopedDependency
     {
         public UserOtpRepository(ApplicationDbContext dbContext)
             : base(dbContext)

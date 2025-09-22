@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Users
 {
-    public class UserTokenRepository : EFRepository<UserToken>, IUserTokenRepository, IScopedDependency
+    public class UserTokenRepository : EntityFrameworkRepository<UserToken>, IUserTokenRepository, IScopedDependency
     {
         public UserTokenRepository(ApplicationDbContext dbContext) : base(dbContext)
         {

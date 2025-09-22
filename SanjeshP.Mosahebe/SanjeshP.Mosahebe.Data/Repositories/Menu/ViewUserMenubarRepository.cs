@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Menus
 {
-    public class ViewUserMenubarRepository : EFRepository<View_UserMenubar>, IViewUserMenubarRepository, IScopedDependency
+    public class ViewUserMenubarRepository : EntityFrameworkRepository<View_UserMenubar>, IViewUserMenubarRepository, IScopedDependency
     {
         public ViewUserMenubarRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

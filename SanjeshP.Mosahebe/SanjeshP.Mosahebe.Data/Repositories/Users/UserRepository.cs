@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Users
 {
-    public class UserRepository : EFRepository<User>, IUserRepository, IScopedDependency
+    public class UserRepository : EntityFrameworkRepository<User>, IUserRepository, IScopedDependency
     {
         public UserRepository(ApplicationDbContext dbContext)
              : base(dbContext)

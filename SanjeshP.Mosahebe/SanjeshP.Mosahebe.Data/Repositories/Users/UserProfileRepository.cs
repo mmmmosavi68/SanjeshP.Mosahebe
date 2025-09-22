@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Users
 {
-    public class UserProfileRepository : EFRepository<UserProfile>, IUserProfileRepository, IScopedDependency
+    public class UserProfileRepository : EntityFrameworkRepository<UserProfile>, IUserProfileRepository, IScopedDependency
     {
         public UserProfileRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

@@ -15,9 +15,9 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Students
 {
-    public class FieldModelRepository : EFRepository<FieldDefinition>, IFieldModelRepository, IScopedDependency
+    public class FieldDefinitionRepository : EntityFrameworkRepository<FieldDefinition>, IFieldDefinitionRepository, IScopedDependency
     {
-        public FieldModelRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+        public FieldDefinitionRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
         private static int _nextId = 1;
 
@@ -71,16 +71,37 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
             return result;
         }
 
-        public void Add(FormSubmission submission)
-        {
-            submission.Id = _nextId++;
-            submission.SubmittedAt = DateTime.UtcNow;
-            Add(submission);
-        }
+        //public void Add(FormSubmission submission)
+        //{
+        //    submission.Id = _nextId++;
+        //    submission.SubmittedAt = DateTime.UtcNow;
+        //    Add(submission);
+        //}
 
         public async Task AddFieldDefinitionAsync(FieldDefinition field,CancellationToken cancellationToken)
         {                                     
             await AddAsync(field, cancellationToken);
         }
+        private static readonly List<FormSubmission> _submissions = new();
+
+        //این _submissions فقط در حافظه‌ی برنامه زنده است و وقتی برنامه ری‌استارت بشه، پاک میشه و هیچ ربطی به دیتابیس نداره.
+        public void Add(FormSubmission submission)
+        {
+            submission.Id = _nextId++;
+            submission.SubmittedAt = DateTime.UtcNow;
+            _submissions.Add(submission);
+        }
+        public async Task AddFormSubmissionAsync(FormSubmission submission, CancellationToken cancellationToken)
+        {
+            // به دیتابیس واقعی اضافه می‌کنه
+            //submission.SubmittedAt = DateTime.UtcNow;
+            //await AddAsync(submission, cancellationToken);
+            //await dbContext.SaveChangesAsync(cancellationToken);
+
+            // برای نمایش فوری در جدول صفحه
+            _submissions.Add(submission);
+        }
+        public List<FormSubmission> GetAllSubmissions() => _submissions;
+
     }
 }

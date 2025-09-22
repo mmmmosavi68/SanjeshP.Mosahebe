@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
 {
-    [AllowAnonymous]
     [Area("User")]
     public class UsersController : Controller
     {

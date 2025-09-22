@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Exam
 {
-    public class ExamScheduleRepository : EFRepository<ExamSchedule>, IExamScheduleRepository, IScopedDependency
+    public class ExamScheduleRepository : EntityFrameworkRepository<ExamSchedule>, IExamScheduleRepository, IScopedDependency
     {
         public ExamScheduleRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
