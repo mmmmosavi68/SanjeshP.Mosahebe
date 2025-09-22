@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Exam
 {
-    public class ExamsRepository : EFRepository<Exams>, IExamRepository, IScopedDependency
+    public class ExamsRepository : EntityFrameworkRepository<Exams>, IExamRepository, IScopedDependency
     {
         public ExamsRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

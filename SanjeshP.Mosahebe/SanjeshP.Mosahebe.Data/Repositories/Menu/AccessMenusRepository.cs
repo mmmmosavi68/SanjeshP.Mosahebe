@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Menus
 {
-    public class AccessMenusRepository : EFRepository<UserAccessMenus>, IAccessMenusRepository, IScopedDependency
+    public class AccessMenusRepository : EntityFrameworkRepository<UserAccessMenus>, IAccessMenusRepository, IScopedDependency
     {
         protected readonly ApplicationDbContext _dbContext;
         public AccessMenusRepository(ApplicationDbContext dbContext) : base(dbContext)

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.SiteSetting
 {
-    public class LoginSettingsRepository : EFRepository<LoginSettings>, ILoginSettingsRepository, IScopedDependency
+    public class LoginSettingsRepository : EntityFrameworkRepository<LoginSettings>, ILoginSettingsRepository, IScopedDependency
     {
         public LoginSettingsRepository(ApplicationDbContext dbContext)
             : base(dbContext)

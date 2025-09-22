@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Groups
 {
-    public class GroupRepository : EFRepository<Group>, IGroupRepository, IScopedDependency
+    public class GroupRepository : EntityFrameworkRepository<Group>, IGroupRepository, IScopedDependency
     {
         public GroupRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

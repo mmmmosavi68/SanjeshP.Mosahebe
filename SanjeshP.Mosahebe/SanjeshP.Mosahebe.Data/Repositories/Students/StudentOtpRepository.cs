@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Students
 {
-    internal class StudentOtpRepository : EFRepository<StudentOtp>, IStudentOtpRepository, IScopedDependency
+    internal class StudentOtpRepository : EntityFrameworkRepository<StudentOtp>, IStudentOtpRepository, IScopedDependency
     {
         public StudentOtpRepository(ApplicationDbContext dbContext) : base(dbContext)
         {

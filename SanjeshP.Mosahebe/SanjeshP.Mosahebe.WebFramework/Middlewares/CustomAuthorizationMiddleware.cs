@@ -48,7 +48,9 @@ namespace SanjeshP.Mosahebe.WebFramework.Middlewares
                 if (!studentAuth.Succeeded)
                 {
                     // اگر لاگین نبود، چالش دانشجو (ریدایرکت به /Student/Login)
-                    await context.ChallengeAsync("StudentScheme");
+                    await context.SignOutAsync("StudentScheme");
+                    context.Response.Redirect("/Student/StudentLogin/Login");
+                    //await context.ChallengeAsync("StudentScheme");
                     return;
                 }
 
@@ -56,7 +58,7 @@ namespace SanjeshP.Mosahebe.WebFramework.Middlewares
                 if (!context.User.IsInRole("Student"))
                 {
                     await context.SignOutAsync("StudentScheme");
-                    context.Response.Redirect("/StudentLogin/Login");
+                    context.Response.Redirect("/Student/StudentLogin/Login");
                     return;
                 }
 

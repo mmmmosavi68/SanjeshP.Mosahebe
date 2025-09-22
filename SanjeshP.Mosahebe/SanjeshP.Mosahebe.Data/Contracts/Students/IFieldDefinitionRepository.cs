@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Contracts.Students
 {
-    public interface IFieldModelRepository : IEntityFrameworkRepository<FieldDefinition>
+    public interface IFieldDefinitionRepository : IEntityFrameworkRepository<FieldDefinition>
     {
         Task<List<FieldDefinition>> GetAll(CancellationToken cancellationToken);
         Task<List<FieldDefinition>> GetByFormId(int formId, CancellationToken cancellationToken);
@@ -17,5 +17,10 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Students
         Task<List<FieldDefinition>> GetFields(int formId, CancellationToken cancellationToken);
         Task AddFieldDefinitionAsync(FieldDefinition field, CancellationToken cancellationToken);
         void Add(FormSubmission submission);
+        // اضافه شده برای دریافت همه رکوردها
+        List<FormSubmission> GetAllSubmissions();
+        // متد جدید برای ذخیره فرم‌های ارسال شده
+        Task AddFormSubmissionAsync(FormSubmission submission, CancellationToken cancellationToken);
+
     }
 }

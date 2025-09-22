@@ -12,9 +12,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
     [Area("Student")]
     public class HomeController : Controller
     {
-        private readonly IFieldModelRepository _fieldModelRepository;
+        private readonly IFieldDefinitionRepository _fieldModelRepository;
 
-        public HomeController(IFieldModelRepository fieldModelRepository)
+        public HomeController(IFieldDefinitionRepository fieldModelRepository)
         {
             _fieldModelRepository = fieldModelRepository;
         }
@@ -25,7 +25,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var formIds = await _fieldModelRepository.GetFormIds(cancellationToken);
             return View(formIds);
         }
-
+         
         // GET: نمایش فرم
         [HttpGet]
         public async Task<IActionResult> Form(int formId, CancellationToken cancellationToken)

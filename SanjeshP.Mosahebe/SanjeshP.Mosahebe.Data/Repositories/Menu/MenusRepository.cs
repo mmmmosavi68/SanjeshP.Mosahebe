@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.Menus
 {
-    public class MenusRepository : EFRepository<Entities.Menu.Menu>, IMenusRepository, IScopedDependency
+    public class MenusRepository : EntityFrameworkRepository<Entities.Menu.Menu>, IMenusRepository, IScopedDependency
     {
         public MenusRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

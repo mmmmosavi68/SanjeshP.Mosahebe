@@ -1,0 +1,21 @@
+﻿@model IEnumerable<SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.FormSubmissionViewModel>
+
+<table class="table-hover table-striped table text-center">
+    <thead>
+        <tr>
+            <th>فیلد</th>
+            <th>مقدار</th>
+            <th>تاریخ ارسال</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FieldLabel</td>
+                <td>@item.Value</td>
+                <td>@item.SubmittedAt.ToString("yyyy/MM/dd HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
