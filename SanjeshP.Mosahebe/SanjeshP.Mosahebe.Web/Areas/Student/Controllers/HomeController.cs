@@ -9,7 +9,6 @@ using SanjeshP.Mosahebe.Data.Contracts.Students;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 {
-    [AllowAnonymous]
     [Area("Student")]
     public class HomeController : Controller
     {

@@ -101,10 +101,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(500)")
-                        .HasMaxLength(500);
-
                     b.Property<int>("ExamId")
                         .HasColumnType("int");
 
@@ -117,7 +113,7 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("IsPajoheshi")
+                    b.Property<int>("StandardCode")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
