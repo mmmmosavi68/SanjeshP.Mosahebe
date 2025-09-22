@@ -1,9 +1,4 @@
-﻿@{
-    ViewData["Title"] = "SubmitForm";
-    //Layout = "~/Views/Shared/_StudentLayout.cshtml";
-}
-
-@using SanjeshP.Mosahebe.Entities.Student
+﻿@using SanjeshP.Mosahebe.Entities.Student
 @{
     var fields = ViewBag.Fields as IEnumerable<FieldDefinition> ?? Enumerable.Empty<FieldDefinition>();
     var selected = ViewBag.Selected as int?;
@@ -30,7 +25,7 @@
                             f.Type == FieldType.Url ? "url" :
                             "file"
                         )"
-                   name="@f.Name" class="form-control" @(f.IsRequired ? "required" : "") />
+                               name="@f.Name" class="form-control" @(f.IsRequired ? "required" : "") />
                         break;
                     case FieldType.Checkbox:
                         <div class="form-check">
@@ -50,7 +45,6 @@
 
     <div class="text-right">
         <button type="submit" class="btn btn-primary">ارسال</button>
+        <button type="button" id="btnCancel" class="btn btn-secondary">لغو</button>
     </div>
 </form>
-
-
