@@ -1,5 +1,5 @@
-﻿@using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
-@model IEnumerable<int>
+﻿@using SanjeshP.Mosahebe.Entities.StudentForm
+@model IEnumerable<StudentForms>   // یا Form، بسته به اسم دقیق کلاس
 
 @{
     ViewData["Title"] = "فهرست فرم‌ها";
@@ -9,9 +9,9 @@
     <div>
         <select class="custom-select form-control" id="formSelect">
             <option selected disabled>انتخاب کنید...</option>
-            @foreach (var id in Model)
+            @foreach (var form in Model)
             {
-                <option value="@id">فرم @id</option>
+                <option value="@form.Id">@form.Title</option>
             }
         </select>
     </div>

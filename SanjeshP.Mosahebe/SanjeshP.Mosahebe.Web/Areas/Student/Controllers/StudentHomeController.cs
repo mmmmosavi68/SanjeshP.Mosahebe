@@ -1,60 +1,77 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SanjeshP.Mosahebe.Data.Contracts.Students;
-using SanjeshP.Mosahebe.Entities.Student;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
+using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 {
     [Area("Student")]
     public class StudentHomeController : Controller
     {
-        private readonly IFieldDefinitionRepository _fieldModelRepository;
+        
+        private readonly IStudentFormRepository _studentFormRepository;
+        private readonly IStudentFieldDefinitionRepository _studentFieldDefinitionRepository;
+        private readonly IStudentFormSubmissionRepository _studentFormSubmissionRepository;
+        private readonly IStudentFormSubmissionValueRepository _studentFormSubmissionValueRepository;
 
-        public StudentHomeController(IFieldDefinitionRepository fieldModelRepository)
+        public StudentHomeController(
+            IStudentFormRepository studentFormRepository,
+            IStudentFieldDefinitionRepository studentFieldDefinitionRepository,
+            IStudentFormSubmissionRepository studentFormSubmissionRepository,
+            IStudentFormSubmissionValueRepository studentFormSubmissionValueRepository)
         {
-            _fieldModelRepository = fieldModelRepository;
+            _studentFormRepository = studentFormRepository;
+            _studentFieldDefinitionRepository = studentFieldDefinitionRepository;
+            _studentFormSubmissionRepository = studentFormSubmissionRepository;
+            _studentFormSubmissionValueRepository = studentFormSubmissionValueRepository;
         }
 
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
-
-
-        // صفحه لیست فرم‌ها (انتخاب فرم)
+        // صفحه لیست فرم‌ها
+        [HttpGet]
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            var formIds = await _fieldModelRepository.GetFormIds(cancellationToken);
-            return View(formIds);
+            var forms = await _studentFormRepository.GetAllStudentFormsNoTrackingAsync(cancellationToken);
+            return View(forms);
         }
-        //وقتی کاربر فرم جدید رو انتخاب می‌کنه و روی افزودن کلیک می‌کنه، این اکشن با Ajax فراخوانی می‌شه
+
+        // وقتی کاربر یک فرم رو انتخاب می‌کنه
+        // فرم به صورت Ajax نمایش داده میشه و View ندارد
         [HttpGet]
         public async Task<IActionResult> LoadForm(int formId, CancellationToken cancellationToken)
         {
-            var fields = await _fieldModelRepository.GetFields(formId, cancellationToken);
+            var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
             ViewBag.Fields = fields;
             ViewBag.Selected = formId;
             return PartialView("SubmitForm");
         }
 
-        //وقتی کاربر فرم رو submit می‌کنه، اطلاعات فرم به این اکشن می‌ره
+        // وقتی کاربر فرم رو ارسال می‌کنه
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitForm(int formId, CancellationToken cancellationToken)
         {
-            var fields = await _fieldModelRepository.GetFields(formId, cancellationToken);
+            var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
 
+            // ثبت رکورد اصلی FormSubmission
+            var submission = new StudentFormSubmission
+            {
+                FormId = formId,
+                // می‌تونی StudentId یا CandidateId رو اینجا ست کنی
+            };
+
+            await _studentFormSubmissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
+
+            // ذخیره مقادیر هر فیلد
             foreach (var field in fields)
             {
                 string value = "";
 
-                if (field.Type == FieldType.File)
+                if (field.Type == Entities.StudentForm.FieldType.File)
                 {
                     var file = Request.Form.Files[field.Name];
                     if (file != null && file.Length > 0)
@@ -75,34 +92,46 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                     value = Request.Form[field.Name];
                 }
 
-                await _fieldModelRepository.AddFormSubmissionAsync(new FormSubmission
+                var submissionValue = new StudentFormSubmissionValue
                 {
-                    FormId = formId,
+                    FormSubmissionId = submission.Id,
                     FieldDefinitionId = field.Id,
+                    Type = field.Type,
                     Value = value
-                }, cancellationToken);
+                };
+
+                await _studentFormSubmissionValueRepository.AddStudentFormSubmissionValueAsync(submissionValue, cancellationToken);
             }
 
             return RedirectToAction("Index");
         }
 
-
+        // گرفتن ارسال‌های قبلی یک فرم
+        // فرم به صورت Ajax نمایش داده میشه و View ندارد
         [HttpGet]
         public async Task<IActionResult> GetFormSubmissions(int formId, CancellationToken cancellationToken)
         {
-            var fields = await _fieldModelRepository.GetFields(formId, cancellationToken);
-            var submissions = _fieldModelRepository.GetAllSubmissions() // این متد جدید باید در ریپازیتوری اضافه شود
-                .Where(s => s.FormId == formId)
-                .OrderByDescending(s => s.SubmittedAt)
-                .Select(s => new FormSubmissionViewModel
-                {
-                    FieldLabel = fields.FirstOrDefault(f => f.Id == s.FieldDefinitionId)?.Label,
-                    Value = s.Value,
-                    SubmittedAt = s.SubmittedAt
-                })
-                .ToList();
+            var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
+            var submissions = await _studentFormSubmissionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
 
-            return PartialView("_FormSubmissionsTable", submissions);
+            var result = new List<FormSubmissionViewModel>();
+
+            foreach (var submission in submissions.OrderByDescending(s => s.Id))
+            {
+                var values = await _studentFormSubmissionValueRepository.GetByStudentFormSubmissionValueIdAsync(submission.Id, cancellationToken);
+
+                foreach (var value in values)
+                {
+                    result.Add(new FormSubmissionViewModel
+                    {
+                        FieldLabel = fields.FirstOrDefault(f => f.Id == value.FieldDefinitionId)?.Label,
+                        Value = value.Value,
+                        SubmittedAt = submission.CreatedDate // فرض کردم CreatedDate تو مدل‌هات هست
+                    });
+                }
+            }
+
+            return PartialView("_FormSubmissionsTable", result);
         }
-}
+    }
 }

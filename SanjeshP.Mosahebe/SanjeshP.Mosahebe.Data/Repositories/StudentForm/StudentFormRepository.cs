@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {
-    public class StudentFormRepository : EFRepository<StudentForms>, IStudentFormRepository, IScopedDependency
+    public class StudentFormRepository : EntityFrameworkRepository<StudentForms>, IStudentFormRepository, IScopedDependency
     {
         public StudentFormRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
