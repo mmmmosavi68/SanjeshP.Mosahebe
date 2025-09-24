@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SanjeshP.Mosahebe.Common.Utilities;
 using SanjeshP.Mosahebe.Entities.Common;
+using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Entities.User;
 using System.Linq;
 using System.Reflection;
@@ -47,13 +48,17 @@ namespace SanjeshP.Mosahebe.Data
                 .HasForeignKey(u => u.CreatorUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //modelBuilder.Entity<FormItemCategory>()
+            //    .HasOne(f => f.FormCourseCategory)
+            //    .WithMany(c => c.FormItemCategories) // 👈 اینجا باید جمع باشه
+            //    .HasForeignKey(f => f.FormCourseCategoryId);
 
             modelBuilder.Entity<User>()
-    .HasOne(u => u.EditorUser)
-    .WithMany()
-    .HasForeignKey(u => u.EditorUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-        }
+                .HasOne(u => u.EditorUser)
+                .WithMany()
+                .HasForeignKey(u => u.EditorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+             }
 
 
         public override int SaveChanges()

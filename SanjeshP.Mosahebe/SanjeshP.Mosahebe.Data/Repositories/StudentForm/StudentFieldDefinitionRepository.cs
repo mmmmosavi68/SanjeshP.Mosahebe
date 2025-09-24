@@ -12,28 +12,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {
-    public class StudentFieldDefinitionRepository : EntityFrameworkRepository<StudentFieldDefinition>, IStudentFieldDefinitionRepository, IScopedDependency
+    public class StudentFieldDefinitionRepository : EntityFrameworkRepository<FormItemDefinition>, IStudentFieldDefinitionRepository, IScopedDependency
     {
         public StudentFieldDefinitionRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
-        public async Task<IEnumerable<StudentFieldDefinition>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<FormItemDefinition>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                .Where(f => f.FormId == formId && !f.IsDeleted)
+                .Where(f => f.FormItemId == formId && !f.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<StudentFieldDefinition?> GetByStudentFieldDefinitionIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<FormItemDefinition?> GetByStudentFieldDefinitionIdAsync(int id, CancellationToken cancellationToken)
         {
             return await Table
                 .Where(f => f.Id == id && !f.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task AddStudentFieldDefinitionAsync(StudentFieldDefinition studentFieldDefinition, CancellationToken cancellationToken) =>
+        public async Task AddStudentFieldDefinitionAsync(FormItemDefinition studentFieldDefinition, CancellationToken cancellationToken) =>
             await AddAsync(studentFieldDefinition, cancellationToken);
 
-        public async Task UpdateStudentFieldDefinitionAsync(StudentFieldDefinition studentFieldDefinition, CancellationToken cancellationToken) =>
+        public async Task UpdateStudentFieldDefinitionAsync(FormItemDefinition studentFieldDefinition, CancellationToken cancellationToken) =>
             await UpdateAsync(studentFieldDefinition, cancellationToken);
 
         public async Task DeleteStudentFieldDefinitionAsync(int id, CancellationToken cancellationToken)

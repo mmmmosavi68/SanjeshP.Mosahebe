@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SanjeshP.Mosahebe.Data.Migrations
 {
-    public partial class First : Migration
+    public partial class initDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -57,6 +57,98 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CoefficientsBookPublications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(nullable: true),
+                    PublisherType = table.Column<string>(nullable: true),
+                    Year = table.Column<int>(nullable: false),
+                    Weight = table.Column<double>(nullable: false),
+                    Notes = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CoefficientsBookPublications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CoefficientsEducationGrades",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Degree = table.Column<string>(nullable: true),
+                    MinGPA = table.Column<double>(nullable: false),
+                    MaxGPA = table.Column<double>(nullable: false),
+                    Weight = table.Column<double>(nullable: false),
+                    Notes = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CoefficientsEducationGrades", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CoefficientsLanguageCertificates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    CertificateName = table.Column<string>(nullable: true),
+                    Level = table.Column<string>(nullable: true),
+                    MinScore = table.Column<double>(nullable: false),
+                    MaxScore = table.Column<double>(nullable: false),
+                    Weight = table.Column<double>(nullable: false),
+                    Notes = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CoefficientsLanguageCertificates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CoefficientsResearchContributions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    AuthorCount = table.Column<int>(nullable: false),
+                    AuthorOrder = table.Column<int>(nullable: false),
+                    Weight = table.Column<double>(nullable: false),
+                    Notes = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CoefficientsResearchContributions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Exams",
                 columns: table => new
                 {
@@ -104,6 +196,45 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FormCourseCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(nullable: true),
+                    MaxScore = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormCourseCategories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FormItemTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormItemTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "FormSubmissions",
                 columns: table => new
                 {
@@ -116,8 +247,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     CreatedBy = table.Column<Guid>(nullable: false),
                     HostIp = table.Column<string>(nullable: true),
                     FormId = table.Column<int>(nullable: false),
+                    FieldDefinitionId = table.Column<int>(nullable: false),
                     SubmittedAt = table.Column<DateTime>(nullable: false),
-                    JsonData = table.Column<string>(nullable: true)
+                    Value = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -374,9 +506,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     IsDeleted = table.Column<bool>(nullable: false),
                     CreatedBy = table.Column<Guid>(nullable: false),
                     HostIp = table.Column<string>(nullable: true),
+                    StandardCode = table.Column<int>(nullable: false),
                     Title = table.Column<string>(maxLength: 200, nullable: false),
-                    Description = table.Column<string>(maxLength: 500, nullable: true),
-                    IsPajoheshi = table.Column<int>(nullable: false),
                     ExamId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -452,6 +583,34 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         name: "FK_Students_Exams_ExamId",
                         column: x => x.ExamId,
                         principalTable: "Exams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FormItemCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(nullable: true),
+                    MaxScore = table.Column<int>(nullable: false),
+                    MaxCount = table.Column<int>(nullable: false),
+                    FormCourseCategoryId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormItemCategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FormItemCategories_FormCourseCategories_FormCourseCategoryId",
+                        column: x => x.FormCourseCategoryId,
+                        principalTable: "FormCourseCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -638,6 +797,43 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FormItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    OneMaxScore = table.Column<int>(nullable: false),
+                    AllMaxScore = table.Column<int>(nullable: false),
+                    SourceType = table.Column<int>(nullable: false),
+                    FormItemCategoryId = table.Column<int>(nullable: false),
+                    FormItemTypeId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FormItems_FormItemCategories_FormItemCategoryId",
+                        column: x => x.FormItemCategoryId,
+                        principalTable: "FormItemCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FormItems_FormItemTypes_FormItemTypeId",
+                        column: x => x.FormItemTypeId,
+                        principalTable: "FormItemTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GroupUsers",
                 columns: table => new
                 {
@@ -697,6 +893,74 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FormItemDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Label = table.Column<string>(nullable: true),
+                    inputType = table.Column<int>(nullable: false),
+                    InputTypeText = table.Column<string>(nullable: true),
+                    IsRequired = table.Column<bool>(nullable: false),
+                    Description = table.Column<string>(nullable: true),
+                    ValidationPattern = table.Column<string>(nullable: true),
+                    FormItemId = table.Column<int>(nullable: false),
+                    FormItemTypeDefaultId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FormItemDefinitions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FormItemDefinitions_FormItems_FormItemId",
+                        column: x => x.FormItemId,
+                        principalTable: "FormItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FormItemDefinitions_FormItemTypes_FormItemTypeDefaultId",
+                        column: x => x.FormItemTypeDefaultId,
+                        principalTable: "FormItemTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentFormSubmissionScores",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    FormItemId = table.Column<int>(nullable: false),
+                    StudentId = table.Column<int>(nullable: true),
+                    Score = table.Column<int>(nullable: true),
+                    IsApproved = table.Column<bool>(nullable: true),
+                    RejectReason = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentFormSubmissionScores", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentFormSubmissionScores_FormItems_FormItemId",
+                        column: x => x.FormItemId,
+                        principalTable: "FormItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GroupAccessMenus",
                 columns: table => new
                 {
@@ -742,6 +1006,40 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "StudentFormSubmissionData",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: true),
+                    IsActive = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: false),
+                    HostIp = table.Column<string>(nullable: true),
+                    InputType = table.Column<int>(nullable: false),
+                    Value = table.Column<string>(nullable: true),
+                    FormSubmissionId = table.Column<int>(nullable: false),
+                    FormItemDefinitionId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentFormSubmissionData", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentFormSubmissionData_FormItemDefinitions_FormItemDefinitionId",
+                        column: x => x.FormItemDefinitionId,
+                        principalTable: "FormItemDefinitions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StudentFormSubmissionData_StudentFormSubmissionScores_FormSubmissionId",
+                        column: x => x.FormSubmissionId,
+                        principalTable: "StudentFormSubmissionScores",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Codes_ParentId",
                 table: "Codes",
@@ -756,6 +1054,31 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "IX_ExamSchedules_ExamId",
                 table: "ExamSchedules",
                 column: "ExamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormItemCategories_FormCourseCategoryId",
+                table: "FormItemCategories",
+                column: "FormCourseCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormItemDefinitions_FormItemId",
+                table: "FormItemDefinitions",
+                column: "FormItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormItemDefinitions_FormItemTypeDefaultId",
+                table: "FormItemDefinitions",
+                column: "FormItemTypeDefaultId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormItems_FormItemCategoryId",
+                table: "FormItems",
+                column: "FormItemCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FormItems_FormItemTypeId",
+                table: "FormItems",
+                column: "FormItemTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GroupAccessMenus_GroupId",
@@ -806,6 +1129,21 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "IX_StudentFields_StudentId",
                 table: "StudentFields",
                 column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentFormSubmissionData_FormItemDefinitionId",
+                table: "StudentFormSubmissionData",
+                column: "FormItemDefinitionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentFormSubmissionData_FormSubmissionId",
+                table: "StudentFormSubmissionData",
+                column: "FormSubmissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentFormSubmissionScores_FormItemId",
+                table: "StudentFormSubmissionScores",
+                column: "FormItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_ExamId",
@@ -867,6 +1205,18 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "Codes");
 
             migrationBuilder.DropTable(
+                name: "CoefficientsBookPublications");
+
+            migrationBuilder.DropTable(
+                name: "CoefficientsEducationGrades");
+
+            migrationBuilder.DropTable(
+                name: "CoefficientsLanguageCertificates");
+
+            migrationBuilder.DropTable(
+                name: "CoefficientsResearchContributions");
+
+            migrationBuilder.DropTable(
                 name: "ExamSchedules");
 
             migrationBuilder.DropTable(
@@ -889,6 +1239,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "StudentFields");
+
+            migrationBuilder.DropTable(
+                name: "StudentFormSubmissionData");
 
             migrationBuilder.DropTable(
                 name: "StudentOtps");
@@ -921,6 +1274,12 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "Students");
 
             migrationBuilder.DropTable(
+                name: "FormItemDefinitions");
+
+            migrationBuilder.DropTable(
+                name: "StudentFormSubmissionScores");
+
+            migrationBuilder.DropTable(
                 name: "Menus");
 
             migrationBuilder.DropTable(
@@ -936,7 +1295,19 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 name: "Exams");
 
             migrationBuilder.DropTable(
+                name: "FormItems");
+
+            migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "FormItemCategories");
+
+            migrationBuilder.DropTable(
+                name: "FormItemTypes");
+
+            migrationBuilder.DropTable(
+                name: "FormCourseCategories");
         }
     }
 }

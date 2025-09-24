@@ -1,6 +1,6 @@
 ﻿@using SanjeshP.Mosahebe.Entities.StudentForm
 @{
-    var fields = ViewBag.Fields as IEnumerable<StudentFieldDefinition> ?? Enumerable.Empty<StudentFieldDefinition>();
+    var fields = ViewBag.Fields as IEnumerable<FormItemDefinition> ?? Enumerable.Empty<FormItemDefinition>();
     var selected = ViewBag.Selected as int?;
 }
 
@@ -13,21 +13,21 @@
         {
             <div class="form-group mb-3">
                 <label>@f.Label</label>
-                @switch (f.Type)
+                @switch (f.inputType)
                 {
-                    case FieldType.Text:
-                    case FieldType.Number:
-                    case FieldType.Url:
-                    case FieldType.File:
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url:
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
                         <input type="@(
-                            f.Type == FieldType.Text ? "text" :
-                            f.Type == FieldType.Number ? "number" :
-                            f.Type == FieldType.Url ? "url" :
+                            f.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text ? "text" :
+                            f.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number ? "number" :
+                            f.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url ? "url" :
                             "file"
                         )"
                                name="@f.Name" class="form-control" @(f.IsRequired ? "required" : "") />
                         break;
-                    case FieldType.Checkbox:
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
                         <div class="form-check">
                             <input type="checkbox" name="@f.Name" class="form-check-input" @(f.IsRequired ? "required" : "") />
                             <label class="form-check-label">@f.Label</label>

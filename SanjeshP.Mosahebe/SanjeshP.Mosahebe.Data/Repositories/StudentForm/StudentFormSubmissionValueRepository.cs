@@ -12,28 +12,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {
-    public class StudentFormSubmissionValueRepository : EntityFrameworkRepository<StudentFormSubmissionValue>, IStudentFormSubmissionValueRepository, IScopedDependency
+    public class StudentFormSubmissionValueRepository : EntityFrameworkRepository<StudentFormSubmissionData>, IStudentFormSubmissionValueRepository, IScopedDependency
     {
         public StudentFormSubmissionValueRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
-        public async Task<IEnumerable<StudentFormSubmissionValue>> GetByStudentFormSubmissionValueIdAsync(int submissionId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<StudentFormSubmissionData>> GetByStudentFormSubmissionValueIdAsync(int submissionId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
                 .Where(v => v.FormSubmissionId == submissionId && !v.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<StudentFormSubmissionValue?> GetByStudentValueIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<StudentFormSubmissionData?> GetByStudentValueIdAsync(int id, CancellationToken cancellationToken)
         {
             return await Table
                 .Where(v => v.Id == id && !v.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task AddStudentFormSubmissionValueAsync(StudentFormSubmissionValue value, CancellationToken cancellationToken) =>
+        public async Task AddStudentFormSubmissionValueAsync(StudentFormSubmissionData value, CancellationToken cancellationToken) =>
             await AddAsync(value, cancellationToken);
 
-        public async Task UpdateStudentFormSubmissionValueAsync(StudentFormSubmissionValue value, CancellationToken cancellationToken) =>
+        public async Task UpdateStudentFormSubmissionValueAsync(StudentFormSubmissionData value, CancellationToken cancellationToken) =>
             await UpdateAsync(value, cancellationToken);
 
         public async Task DeleteStudentFormSubmissionValueAsync(int id, CancellationToken cancellationToken)

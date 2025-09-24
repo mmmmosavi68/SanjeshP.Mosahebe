@@ -58,9 +58,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
 
             // ثبت رکورد اصلی FormSubmission
-            var submission = new StudentFormSubmission
+            var submission = new StudentFormSubmissionScore
             {
-                FormId = formId,
+                FormItemId = formId,
                 // می‌تونی StudentId یا CandidateId رو اینجا ست کنی
             };
 
@@ -71,7 +71,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 string value = "";
 
-                if (field.Type == Entities.StudentForm.FieldType.File)
+                if (field.inputType == Entities.StudentForm.InputType.File)
                 {
                     var file = Request.Form.Files[field.Name];
                     if (file != null && file.Length > 0)
@@ -83,7 +83,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                         value = file.FileName;
                     }
                 }
-                else if (field.Type == FieldType.Checkbox)
+                else if (field.inputType == InputType.Checkbox)
                 {
                     value = Request.Form.ContainsKey(field.Name) ? "true" : "false";
                 }
@@ -92,11 +92,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                     value = Request.Form[field.Name];
                 }
 
-                var submissionValue = new StudentFormSubmissionValue
+                var submissionValue = new StudentFormSubmissionData
                 {
                     FormSubmissionId = submission.Id,
-                    FieldDefinitionId = field.Id,
-                    Type = field.Type,
+                    //FieldDefinitionId = field.Id,
+                    InputType = field.inputType,
                     Value = value
                 };
 
@@ -124,7 +124,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 {
                     result.Add(new FormSubmissionViewModel
                     {
-                        FieldLabel = fields.FirstOrDefault(f => f.Id == value.FieldDefinitionId)?.Label,
+                        //FieldLabel = fields.FirstOrDefault(f => f.Id == value.FieldDefinitionId)?.Label,
                         Value = value.Value,
                         SubmittedAt = submission.CreatedDate // فرض کردم CreatedDate تو مدل‌هات هست
                     });

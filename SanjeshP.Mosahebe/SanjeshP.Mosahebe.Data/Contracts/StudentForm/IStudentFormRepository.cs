@@ -8,12 +8,12 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
 {
-    public interface IStudentFormRepository : IEntityFrameworkRepository<StudentForms>
+    public interface IStudentFormRepository : IEntityFrameworkRepository<FormItem>
     {
-        Task<IEnumerable<StudentForms>> GetAllStudentFormsNoTrackingAsync(CancellationToken cancellationToken);
-        Task<StudentForms?> GetByStudentFormsIdAsync(int id, CancellationToken cancellationToken);
-        Task AddStudentFormsAsync(StudentForms studentForm, CancellationToken cancellationToken);
-        Task UpdateStudentFormsAsync(StudentForms studentForm, CancellationToken cancellationToken);
+        Task<IEnumerable<FormItem>> GetAllStudentFormsNoTrackingAsync(CancellationToken cancellationToken);
+        Task<FormItem?> GetByStudentFormsIdAsync(int id, CancellationToken cancellationToken);
+        Task AddStudentFormsAsync(FormItem studentForm, CancellationToken cancellationToken);
+        Task UpdateStudentFormsAsync(FormItem studentForm, CancellationToken cancellationToken);
         Task DeleteStudentFormsAsync(int id, CancellationToken cancellationToken);
     }
 }

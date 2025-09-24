@@ -9,12 +9,12 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
 {
-    public interface IStudentFormSubmissionRepository : IEntityFrameworkRepository<StudentFormSubmission>
+    public interface IStudentFormSubmissionRepository : IEntityFrameworkRepository<StudentFormSubmissionScore>
     {
-        Task<IEnumerable<StudentFormSubmission>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken);
-        Task<StudentFormSubmission?> GetByStudentFormSubmissionIdAsync(int id, CancellationToken cancellationToken);
-        Task AddStudentFormSubmissionAsync(StudentFormSubmission studentFormSubmission, CancellationToken cancellationToken);
-        Task UpdateStudentFormSubmissionAsync(StudentFormSubmission studentFormSubmission, CancellationToken cancellationToken);
+        Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken);
+        Task<StudentFormSubmissionScore?> GetByStudentFormSubmissionIdAsync(int id, CancellationToken cancellationToken);
+        Task AddStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken);
+        Task UpdateStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken);
         Task DeleteStudentFormSubmissionAsync(int id, CancellationToken cancellationToken);
     }
 }
