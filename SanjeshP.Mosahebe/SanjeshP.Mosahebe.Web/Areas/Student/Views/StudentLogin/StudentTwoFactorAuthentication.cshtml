@@ -1,32 +1,21 @@
 ﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.StudentTwoFactorAuthenticationViewModel
 
-@{
-    ViewData["Title"] = "احراز هویت دومرحله‌ای";
-}
-<h2>لطفاً کد ۲ مرحله‌ای را وارد کنید</h2>
-@*<form method="post" asp-action="StudentTwoFactorAuthentication">
-    @Html.AntiForgeryToken()
-    <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz">
-        <input asp-for="TwoFactorCode" class="input100" type="text" name="NationalCode" placeholder="کد یکبار مصرف را وارد نمایید">
-        <span asp-validation-for="TwoFactorCode" class="focus-input100"></span>
-        <span class="symbol-input100">
-            <i class="fa fa-envelope" aria-hidden="true"></i>
-        </span>
-    </div>
-    <button type="submit" class="login100-form-btn">تایید</button>
-</form>
-*@
+<h2 style="text-align:center; margin-bottom: 20px;">لطفاً کد ۲ مرحله‌ای را وارد کنید</h2>
 
-<form method="post" asp-action="StudentTwoFactorAuthentication">
+<form method="post" asp-action="StudentTwoFactorAuthentication" class="login-form" novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" name="nationalCode" value="@ViewBag.NationalCode" />
 
-    <div class="wrap-input100 validate-input">
-        <input asp-for="TwoFactorCode" class="input100" placeholder="کد یکبار مصرف را وارد نمایید">
-        <span asp-validation-for="TwoFactorCode" class="focus-input100"></span>
-        <span class="symbol-input100">
-            <i class="fa fa-envelope" aria-hidden="true"></i>
-        </span>
+    <div class="form-group">
+        <div class="input-group neu-input">
+            <input asp-for="TwoFactorCode" placeholder=" " />
+            <label for="TwoFactorCode">کد یکبار مصرف را وارد نمایید</label>
+            <div class="input-icon">
+                <i class="fa fa-envelope"></i>
+            </div>
+        </div>
+        <span asp-validation-for="TwoFactorCode" class="error-message"></span>
     </div>
-    <button type="submit" class="login100-form-btn">تایید</button>
+
+    <button type="submit" class="neu-button login-btn">تایید</button>
 </form>

@@ -1,81 +1,59 @@
 ﻿@{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "ورود به سیستم";
     Layout = "~/Views/Shared/_LoginStudentLayout.cshtml";
 }
 
-<style>
-    /* هر label در #loginOptions را بلاک می‌کند */
-    #loginOptions{
-        direction: rtl
-    }
-    #loginOptions label {
-        display: block;
-        margin-bottom: 1rem; /* فاصله دلخواه */
-margin-right:25px    }
-</style>
-
-
-<div id="loginOptions" class="login100-form validate-form">
-    <div class="form-check mb-3">
-        <input class="form-check-input"
-               type="radio"
-               name="loginMethod"
-               value="LoginOTP"
-               id="optOtp"
-               checked />
-        <label class="form-check-label" for="optOtp">
-            ورود با یکبار رمز
-        </label>
+<div class="login-header">
+    <div class="neu-icon">
+        <div class="icon-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+            </svg>
+        </div>
     </div>
-    <div class="form-check">
-        <input class="form-check-input"
-               type="radio"
-               name="loginMethod"
-               value="LoginCodeRahgiri"
-               id="optTrack" />
-        <label class="form-check-label" for="optTrack">
-            ورود با کد رهگیری
-        </label>
+    <h2>ورود به سیستم</h2>
+    <p>لطفا برای ادامه وارد شوید</p>
+</div>
+
+<div id="loginOptions" class="form-options">
+    <div class="remember-wrapper">
+        <input type="radio" name="loginMethod" value="LoginOTP" id="optOtp" checked />
+        <label class="checkbox-label" for="optOtp">ورود با یکبار رمز</label>
+    </div>
+    <div class="remember-wrapper">
+        <input type="radio" name="loginMethod" value="LoginCodeRahgiri" id="optTrack" />
+        <label class="checkbox-label" for="optTrack">ورود با کد رهگیری</label>
     </div>
 </div>
 
 <div id="partialContainer"></div>
 
-
-
 @section Scripts {
     <script>
         $(function () {
-            // تابع بارگذاری پارشیال بر اساس گزینه‌ی انتخاب‌شده
             function loadPartial() {
                 var method = $('input[name="loginMethod"]:checked').val();
-                var url =  method;
+                var url = '/Student/StudentLogin/' + method;
                 $('#partialContainer').load(url);
-
-                console.log(url)
             }
 
-            // بارگذاری پیش‌فرض (LoginOTP)
             loadPartial();
 
-            // وقتی روش ورود انتخاب شد، پارشیال مربوطه را GET کنیم
             $('#loginOptions input[name="loginMethod"]').on('change', function () {
                 var action = $(this).val();
                 var url = '/Student/StudentLogin/' + action;
                 $('#partialContainer').load(url);
             });
 
-            // هر فرمی که داخل partialContainer رندر شد را با AJAX ارسال کن
             $('#partialContainer').on('submit', 'form', function (e) {
                 e.preventDefault();
                 var $form = $(this);
                 $.post($form.attr('action'), $form.serialize())
                     .done(function (response) {
                         if (response.redirectToUrl) {
-                            // اگر کنترلر URL ریدایرکت داده، مرورگر را به آن هدایت کن
                             window.location.href = response.redirectToUrl;
                         } else {
-                            // در غیر این صورت محتوای پارشیال را جایگزین کن
                             $('#partialContainer').html(response);
                         }
                     })
@@ -83,7 +61,6 @@ margin-right:25px    }
                         alert('خطا در ارسال اطلاعات. دوباره تلاش کنید.');
                     });
             });
-
         });
     </script>
 }
