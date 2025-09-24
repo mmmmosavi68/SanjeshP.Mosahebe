@@ -25,16 +25,12 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public bool IsRequired { get; set; }
         public string Description { get; set; }
         public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
+        public string ErrorMessage { get; set; }
 
         // Foreign Key
         public int FormItemId { get; set; }
         // Navigation Property
         public FormItem FormItem { get; set; }
 
-
-        // Foreign Key
-        public int FormItemTypeDefaultId { get; set; }
-        // Navigation Property
-        public FormItemType FormItemTypeDefault { get; set; }
     }
 }

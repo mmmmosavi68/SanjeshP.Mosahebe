@@ -28,6 +28,6 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public ICollection<FormItemDefinition> FormItemDefinitions { get; set; }
 
         public int FormItemTypeId { get; set; }
-        public FormItemType FormItemType { get; set; }
+        public FormItemCoefficient FormItemType { get; set; }
     }
 }
