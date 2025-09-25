@@ -28,39 +28,84 @@
 </div>
 
 <div id="partialContainer"></div>
-
 @section Scripts {
+
     <script>
-        $(function () {
-            function loadPartial() {
-                var method = $('input[name="loginMethod"]:checked').val();
-                var url = '/Student/StudentLogin/' + method;
-                $('#partialContainer').load(url);
+        (function () {
+            // global instance container
+            window._neumorphismInstance = window._neumorphismInstance || null;
+
+            function initNeumoInstance() {
+                // اگر نمونه قبلی وجود دارد، سعی کن آن را پاک کنی
+                try {
+                    if (window._neumorphismInstance && typeof window._neumorphismInstance.destroy === 'function') {
+                        window._neumorphismInstance.destroy();
+                    }
+                } catch (err) { /* ignore */ }
+
+                // ایجاد نمونه جدید
+                window._neumorphismInstance = new NeumorphismLoginForm();
             }
 
-            loadPartial();
+            function loadPartial(url) {
+                $('#partialContainer').load(url, function () {
+                    initNeumoInstance();
+                });
+            }
 
-            $('#loginOptions input[name="loginMethod"]').on('change', function () {
-                var action = $(this).val();
-                var url = '/Student/StudentLogin/' + action;
-                $('#partialContainer').load(url);
-            });
+            $(function () {
+                function getUrlFor(method) {
+                    return '/Student/StudentLogin/' + method;
+                }
 
-            $('#partialContainer').on('submit', 'form', function (e) {
-                e.preventDefault();
-                var $form = $(this);
-                $.post($form.attr('action'), $form.serialize())
-                    .done(function (response) {
-                        if (response.redirectToUrl) {
-                            window.location.href = response.redirectToUrl;
-                        } else {
-                            $('#partialContainer').html(response);
+                // initial load
+                var initialMethod = $('input[name="loginMethod"]:checked').val();
+                loadPartial(getUrlFor(initialMethod));
+
+                // on change
+                $('#loginOptions input[name="loginMethod"]').on('change', function () {
+                    var action = $(this).val();
+                    loadPartial(getUrlFor(action));
+                });
+
+                // delegate submit from partials (AJAX post)
+                $('#partialContainer').on('submit', 'form', function (e) {
+                    e.preventDefault();
+                    var $form = $(this);
+                    $.post($form.attr('action'), $form.serialize())
+                        .done(function (response) {
+                            if (response && response.redirectToUrl) {
+                                window.location.href = response.redirectToUrl;
+                            } else {
+                                $('#partialContainer').html(response);
+                                // بعد از جایگزینی HTML مجدد نمونه را مقداردهی کن
+                                initNeumoInstance();
+                            }
+                        })
+                        .fail(function () {
+                            alert('خطا در ارسال اطلاعات. دوباره تلاش کنید.');
+                        });
+                });
+
+                // Optional fallback: اگر partial به صورت داینامیک از سمت سرور اسکریپت‌ها را ننشاند،
+                // از MutationObserver برای شناسایی اضافه شدن فرم استفاده کن
+                var observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (m) {
+                        if (m.addedNodes && m.addedNodes.length) {
+                            m.addedNodes.forEach(function (node) {
+                                if (node.nodeType === 1) {
+                                    if (node.querySelector && node.querySelector('.login-form')) {
+                                        initNeumoInstance();
+                                    }
+                                }
+                            });
                         }
-                    })
-                    .fail(function () {
-                        alert('خطا در ارسال اطلاعات. دوباره تلاش کنید.');
                     });
+                });
+
+                observer.observe(document.getElementById('partialContainer'), { childList: true, subtree: true });
             });
-        });
+        })();
     </script>
 }
+

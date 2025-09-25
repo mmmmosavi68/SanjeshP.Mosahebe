@@ -1,6 +1,6 @@
 ﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.StudentTwoFactorAuthenticationViewModel
 
-<h2 style="text-align:center; margin-bottom: 20px;">لطفاً کد ۲ مرحله‌ای را وارد کنید</h2>
+<p style="text-align:center; margin-bottom: 20px;color:#FFF;font-weight:900;">لطفاً کد ۲ مرحله‌ای را وارد کنید</p>
 
 <form method="post" asp-action="StudentTwoFactorAuthentication" class="login-form" novalidate>
     @Html.AntiForgeryToken()
@@ -17,5 +17,5 @@
         <span asp-validation-for="TwoFactorCode" class="error-message"></span>
     </div>
 
-    <button type="submit" class="neu-button login-btn">تایید</button>
+    <button type="submit" class="neu-button login-btn">تایید کد / ورود به سیستم</button>
 </form>
