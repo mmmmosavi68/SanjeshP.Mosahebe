@@ -169,8 +169,8 @@ body::after {
   padding: 14px 18px;
   padding-left: 55px;
   color: #3d4468;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 700;
   outline: none;
   transition: all 0.3s ease;
   direction:ltr;
@@ -517,14 +517,14 @@ body::after {
 
 /* Error States */
 .error-message {
-  color: #454c6c;
-  font-size: 12px;
-  font-weight: 500;
-  margin-top: 8px;
-  margin-left: 20px;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
+    color: #9d0000;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    margin-left: 20px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
 }
 
 .error-message.show {

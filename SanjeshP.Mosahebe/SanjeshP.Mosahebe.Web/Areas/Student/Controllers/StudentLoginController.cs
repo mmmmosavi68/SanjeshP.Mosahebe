@@ -12,6 +12,13 @@ using System.Threading;
 using System;
 using SanjeshP.Mosahebe.Entities.Student;
 using SanjeshP.Mosahebe.Entities.User;
+using Microsoft.AspNetCore.Http;
+using SkiaSharp;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using SanjeshP.Mosahebe.Entities.SiteSetting;
+using SanjeshP.Mosahebe.Web.Areas.Auth.ViewModels;
+using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 {
@@ -22,15 +29,19 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         private readonly IStudentRepository _studentRepository;
         private readonly IStudentOtpRepository _studentOtpRepository;
         private readonly IPayamSMS _payamSMS;
+        private readonly IMemoryCache _memoryCache;
 
         public StudentLoginController(
             IStudentRepository studentRepository,
             IStudentOtpRepository studentOtpRepository,
-            IPayamSMS payamSMS)
+            IPayamSMS payamSMS,
+            IMemoryCache memoryCache
+            )
         {
             _studentRepository = studentRepository;
             _studentOtpRepository = studentOtpRepository;
             _payamSMS = payamSMS;
+            _memoryCache = memoryCache;
         }
 
         // ================= صفحه اصلی لاگین =================
@@ -49,10 +60,19 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LoginCodeRahgiri(LoginCodeRahgiriViewModel model,CancellationToken cancellationToken)
+        public async Task<IActionResult> LoginCodeRahgiri(LoginCodeRahgiriViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return PartialView(model);
+
+
+            var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
+            if (string.IsNullOrEmpty(sessionCaptcha) || model.CaptchaCode != sessionCaptcha)
+            {
+                ModelState.AddModelError("CaptchaCode", "کد امنیتی اشتباه است");
+                return PartialView(model);
+            }
+
 
             var student = await _studentRepository.GetStudentByNationalCodeCodeRahgiriAsync(model.NationalCode, model.CodeRahgiri, cancellationToken);
             //اگر ورودی معتبر نبود یا کاربر پیدا نشد → دوباره همون PartialView با خطا نمایش داده می‌شه.
@@ -119,7 +139,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         // ================= وارد کردن و تایید OTP =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> StudentTwoFactorAuthentication(StudentTwoFactorAuthenticationViewModel model,string nationalCode,CancellationToken cancellationToken)
+        public async Task<IActionResult> StudentTwoFactorAuthentication(StudentTwoFactorAuthenticationViewModel model, string nationalCode, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
@@ -173,5 +193,56 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             await HttpContext.SignInAsync("StudentScheme", principal);
             //await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
+
+        // ================= متد کمکی CaptchaCode =================
+        #region CaptchaCode
+        [HttpGet]
+        [Route("student/captcha-image")]
+        public IActionResult CaptchaImage_()
+        {
+            var captchaCode = new Random().Next(100000, 999999).ToString();
+            HttpContext.Session.SetString("CaptchaCode", captchaCode);
+
+            int width = 120;
+            int height = 50;
+
+            // ایجاد surface با پشتیبانی از آلفا (شفاف)
+            var info = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul);
+            using var surface = SKSurface.Create(info);
+            var canvas = surface.Canvas;
+
+            // پس‌زمینه شفاف
+            canvas.Clear(SKColors.Transparent);
+
+            using var paint = new SKPaint
+            {
+                Color = SKColors.Black, // متن کاملا اپاسیتی
+                TextSize = 28,
+                IsAntialias = true,
+                Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+            };
+
+            // موقعیت متن را تنظیم کنید تا در مرکز یا جای دلخواه قرار گیرد
+            var bounds = new SKRect();
+            paint.MeasureText(captchaCode, ref bounds);
+            float x = 10;
+            float y = height / 2f + bounds.Height / 2f;
+
+            canvas.DrawText(captchaCode, x, y, paint);
+
+            using var image = surface.Snapshot();
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            return File(data.ToArray(), "image/png");
+        }
+
+
+        private void IncrementAttempts(string key)
+        {
+            var attempts = _memoryCache.Get<int>(key);
+            _memoryCache.Set(key, attempts + 1, TimeSpan.FromMinutes(5));
+        }
+        #endregion
     }
 }

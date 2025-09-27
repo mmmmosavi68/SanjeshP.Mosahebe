@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
 {
@@ -9,5 +10,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
         [Display(Name = "کد ملی")]
         public string NationalCode { get; set; }
 
+        [Required(ErrorMessage = "کد امنیتی الزامی است")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "کد امنیتی باید ۶ رقم باشد")]
+        [Display(Name = "کد امنیتی")]
+        public string CaptchaCode { get; set; }
     }
 }

@@ -2,9 +2,11 @@
 
 <form asp-action="LoginCodeRahgiri" method="post" class="login-form" novalidate>
     @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="error-message"></div>
+
     <div class="form-group">
         <div class="input-group neu-input">
-            <input asp-for="NationalCode" type="text" placeholder=" " />
+            <input asp-for="NationalCode" type="text" inputmode="numeric" placeholder=" " maxlength="10" autocomplete="off" />
             <label for="NationalCode">کد ملی را وارد نمایید</label>
             <div class="input-icon">
                 <i class="fa fa-id-card"></i>
@@ -15,13 +17,28 @@
 
     <div class="form-group">
         <div class="input-group neu-input">
-            <input asp-for="CodeRahgiri" type="text" placeholder=" " />
+            <input asp-for="CodeRahgiri" type="text" placeholder=" " maxlength="16" autocomplete="off" />
             <label for="CodeRahgiri">کد رهگیری را وارد نمایید</label>
             <div class="input-icon">
                 <i class="fa fa-key"></i>
             </div>
         </div>
         <span asp-validation-for="CodeRahgiri" class="error-message"></span>
+    </div>
+
+    <div class="form-group">
+        <div class="input-group neu-input captcha-input">
+            <input asp-for="CaptchaCode" type="text" inputmode="numeric" placeholder=" " aria-label="کد امنیتی" style="width:80%;" maxlength="6" autocomplete="off" />
+            <label for="CaptchaCode">کد امنیتی</label>
+            <div class="input-icon">
+                <img id="captchaImg" src="@Url.Content("~/student/captcha-image")" alt="کپچا"
+                     onclick="this.src='@Url.Content("~/student/captcha-image?")' + Math.random();"
+                     alt="کپچا"
+                     title="برای بارگذاری مجدد کلیک کنید"
+                     style="position: relative;left: 75px;top: -10px;height: 42px;" role="button" />
+            </div>
+        </div>
+        <span asp-validation-for="CaptchaCode" class="error-message"></span>
     </div>
 
     <button type="submit" class="neu-button login-btn login-btn">ورود به سیستم</button>
