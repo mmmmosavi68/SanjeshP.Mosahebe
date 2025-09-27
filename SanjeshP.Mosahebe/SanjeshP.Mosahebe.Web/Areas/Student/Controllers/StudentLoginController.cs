@@ -65,7 +65,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (!ModelState.IsValid)
                 return PartialView(model);
 
-
             var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
             if (string.IsNullOrEmpty(sessionCaptcha) || model.CaptchaCode != sessionCaptcha)
             {
@@ -102,8 +101,14 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (!ModelState.IsValid)
                 return PartialView(model);
 
-            var student = await _studentRepository.GetStudentByNationalCodeAsync(model.NationalCode, cancellationToken);
+            var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
+            if (string.IsNullOrEmpty(sessionCaptcha) || model.CaptchaCode != sessionCaptcha)
+            {
+                ModelState.AddModelError("CaptchaCode", "کد امنیتی اشتباه است");
+                return PartialView(model);
+            }
 
+            var student = await _studentRepository.GetStudentByNationalCodeAsync(model.NationalCode, cancellationToken);
             if (student == null)
             {
                 ModelState.AddModelError("", "کد ملی یافت نشد.");
@@ -147,8 +152,14 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 return PartialView(model);
             }
 
-            var student = await _studentRepository.GetStudentByNationalCodeAsync(nationalCode, cancellationToken);
+            var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
+            if (string.IsNullOrEmpty(sessionCaptcha) || model.CaptchaCode != sessionCaptcha)
+            {
+                ModelState.AddModelError("CaptchaCode", "کد امنیتی اشتباه است");
+                return PartialView(model);
+            }
 
+            var student = await _studentRepository.GetStudentByNationalCodeAsync(nationalCode, cancellationToken);
             if (student == null)
             {
                 ModelState.AddModelError("", "داوطلب یافت نشد.");
