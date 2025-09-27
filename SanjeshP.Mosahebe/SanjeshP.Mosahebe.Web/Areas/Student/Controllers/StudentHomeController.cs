@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Entities.StudentForm;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 {
+    [AllowAnonymous]
     [Area("Student")]
     public class StudentHomeController : Controller
     {
