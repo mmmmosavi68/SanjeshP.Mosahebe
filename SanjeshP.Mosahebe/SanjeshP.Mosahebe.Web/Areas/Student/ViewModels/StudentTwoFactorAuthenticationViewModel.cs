@@ -9,7 +9,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
         [RegularExpression(@"^\d{6}$", ErrorMessage = "کد باید ۶ رقم باشد")]
         [Display(Name = "کد دو مرحله‌ای")]
         public string TwoFactorCode { get; set; }
-        [ValidateNever]  // این باعث میشه اعتبارسنجی روی این پراپرتی اجرا نشه
+
+        [Required(ErrorMessage = "کد امنیتی الزامی است")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "کد امنیتی باید ۶ رقم باشد")]
         [Display(Name = "کد امنیتی")]
         public string CaptchaCode { get; set; }
     }

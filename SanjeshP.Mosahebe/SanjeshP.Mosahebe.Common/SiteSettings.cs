@@ -43,6 +43,7 @@ namespace SanjeshP.Mosahebe.Common
         public string StudentLoginPath { get; set; }
         public string StudentLogoutPath { get; set; }
         public int StudentExpireTimeSpanInMinutes { get; set; }
+        public int MaxSmsPerDay { get; set; }
     }
 
     public class PayamSMS
