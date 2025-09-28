@@ -19,6 +19,10 @@ using SanjeshP.Mosahebe.Entities.SiteSetting;
 using SanjeshP.Mosahebe.Web.Areas.Auth.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SanjeshP.Mosahebe.Common;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 {
@@ -26,22 +30,28 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
     [Area("Student")]
     public class StudentLoginController : Controller
     {
+        private readonly ILogger<StudentLoginController> _logger;
         private readonly IStudentRepository _studentRepository;
         private readonly IStudentOtpRepository _studentOtpRepository;
         private readonly IPayamSMS _payamSMS;
         private readonly IMemoryCache _memoryCache;
+        private readonly SiteSettings _siteSetting;
 
         public StudentLoginController(
+            ILogger<StudentLoginController> logger,
             IStudentRepository studentRepository,
             IStudentOtpRepository studentOtpRepository,
             IPayamSMS payamSMS,
-            IMemoryCache memoryCache
+            IMemoryCache memoryCache,
+            IOptionsSnapshot<SiteSettings> siteSetting
             )
         {
+            this._logger = logger;
             _studentRepository = studentRepository;
             _studentOtpRepository = studentOtpRepository;
             _payamSMS = payamSMS;
             _memoryCache = memoryCache;
+            this._siteSetting = siteSetting;
         }
 
         // ================= صفحه اصلی لاگین =================
@@ -78,6 +88,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (student == null)
             {
                 ModelState.AddModelError("", "کد ملی یا کد رهگیری اشتباه است.");
+                _logger.LogWarning("LoginCodeRahgiri failed for StudentId={StudentId}, NationalCode={NationalCode}, CodeRahgiri={CodeRahgiri}", student.Id, model.NationalCode, model.CodeRahgiri);
                 return PartialView(model);
             }
 
@@ -112,12 +123,32 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (student == null)
             {
                 ModelState.AddModelError("", "کد ملی یافت نشد.");
+                _logger.LogWarning("LoginOTP failed for StudentId={StudentId}, NationalCode={NationalCode}", student.Id, model.NationalCode);
                 return PartialView(model);
             }
 
+            // شمارش درخواست‌های OTP در روز جاری
+            // var todayStart = DateTime.UtcNow.Date;
+            // 1. دریافت تمام OTPهای کاربر
+            //var otps = await _studentOtpRepository.GetAllOtpBystudentIdAsync(student.Id, cancellationToken);
+            // 2. شمارش درخواست‌های ۲۴ ساعت گذشته
+            //var otpCountToday = otps.Count(o => o.CreatedDate >= DateTime.UtcNow.AddHours(-24));
+
+            var otpCountToday = await _studentOtpRepository.CountOtpByStudentSinceAsync(student.Id, DateTime.UtcNow.AddHours(-24), cancellationToken);
+
+            // 3. بررسی سقف ۱۰ بار
+            if (otpCountToday >= _siteSetting.authenticationStudentSettings.MaxSmsPerDay)
+            {
+                ModelState.AddModelError("",
+                    $"امروز {otpCountToday} بار درخواست ارسال کد کرده‌اید. بیش از ۱۰ بار امکان‌پذیر نیست.");
+                return PartialView(model);
+            }
+
+            // ۲. غیرفعال کردن (IsDeleted = true) همهٔ کدهای قبلی
+            await _studentOtpRepository.InvalidatePreviousOtpsAsync(student.Id, cancellationToken);
+
             // تولید OTP شش رقمی
             var otpCode = new Random().Next(100000, 999999).ToString();
-
             var otpEntity = new StudentOtp
             {
                 Id = Guid.NewGuid(),
@@ -164,15 +195,16 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 ModelState.AddModelError("", "داوطلب یافت نشد.");
                 ViewBag.NationalCode = nationalCode;
+                _logger.LogWarning("StudentTwoFactorAuthentication failed (student == null) for StudentId={StudentId}, Code={Code}", student.Id, model.TwoFactorCode);
                 return PartialView(model);
             }
 
             var otp = await _studentOtpRepository.GetValidOtpAsync(student.Id, model.TwoFactorCode, cancellationToken);
-
-            if (otp == null || otp.IsUsed)
+            if (otp == null || otp.IsUsed || otp.ExpiresAt < DateTime.UtcNow)
             {
                 ModelState.AddModelError("", "کد وارد شده صحیح نیست یا منقضی شده است.");
                 ViewBag.NationalCode = nationalCode;
+                _logger.LogWarning("OTP validation failed for StudentId={StudentId}, Code={Code}",student.Id, model.TwoFactorCode);
                 return PartialView(model);
             }
 

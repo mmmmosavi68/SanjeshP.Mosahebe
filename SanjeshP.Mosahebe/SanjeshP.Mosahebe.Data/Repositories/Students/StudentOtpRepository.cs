@@ -26,5 +26,27 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
              .SingleOrDefaultAsync(cancellationToken)
              .ConfigureAwait(false);
         }
+        public async Task InvalidatePreviousOtpsAsync(int studentId, CancellationToken cancellationToken)
+        {
+            // ۱. بارگذاری همه OTPهای کاربر که هنوز حذف یا استفاده نشده‌اند
+            var prevOtps = await Table
+                .Where(o => o.StudentId == studentId && !o.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            if (prevOtps.Count == 0)
+                return;
+
+            // ۲. علامت‌گذاری هر کدام به عنوان حذف شده
+            prevOtps.ForEach(o => o.IsDeleted = true);
+
+            // ۳. ذخیره تغییرات
+            await DbContext.SaveChangesAsync(cancellationToken);
+        }
+        public Task<int> CountOtpByStudentSinceAsync(int studentId, DateTime since, CancellationToken ct)
+        {
+            return Table
+                .Where(o => o.StudentId == studentId && o.CreatedDate >= since)
+                .CountAsync(ct);
+        }
     }
 }

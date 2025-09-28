@@ -12,6 +12,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Students
     public interface IStudentOtpRepository : IEntityFrameworkRepository<StudentOtp>
     {
         Task<StudentOtp> GetValidOtpAsync(int student_ID, string code, CancellationToken cancellationToken);
-
+        Task InvalidatePreviousOtpsAsync(int studentId,CancellationToken cancellationToken);
+        Task<int> CountOtpByStudentSinceAsync(int studentId, DateTime since, CancellationToken ct);
     }
 }
