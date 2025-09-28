@@ -70,7 +70,7 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
                                 .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Title })
             };
 
-            return View(model);
+            return PartialView("Create",model);
         }
 
         //ثبت فرم جدید
@@ -125,7 +125,7 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
                                 .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Title })
             };
 
-            return View(model);
+            return PartialView("Edit",model);
         }
 
         //نمایش فرم ویرایش

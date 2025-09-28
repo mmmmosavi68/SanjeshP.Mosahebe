@@ -1,10 +1,14 @@
 ﻿@model IEnumerable<SanjeshP.Mosahebe.Presentation.ViewModels.FormItemViewModel>
 
 <h2>لیست فرم‌ها</h2>
-
+@*
 <p>
     <a asp-action="Create" class="btn btn-primary">ایجاد فرم جدید</a>
-</p>
+</p>*@
+
+<div class="row mb-3">
+    <input type="button" class="btn btn-outline-primary" onclick="Create()" value="ایجاد فرم جدید" />
+</div>
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -33,19 +37,19 @@
                 <td>
                     <!-- دکمه تعریف آیتم -->
                     <a asp-area="StudentForm" asp-controller="FormItemDefinition" asp-action="Index" asp-route-formItemId="@item.Id" class="btn btn-sm btn-outline-info" title="تعریف آیتم"> <i class="fa fa-plus"></i></a>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning" title="ویرایش"><i class="fa fa-pen"></i></a>
+                    <a class="btn btn-sm btn-outline-warning" onclick="Edit('@item.Id')" title="ویرایش"><i class="fa fa-pen"></i></a>
                     <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteFormItem" title="حذف"><i class="fa fa-trash"></i></a>
                     @*<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">ویرایش</a>*@
-                   @* <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger">حذف</button>
-                    </form>*@
+                    @* <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger">حذف</button>
+                </form>*@
                 </td>
             </tr>
         }
     </tbody>
 </table>
 @section scripts {
-<script src="~/js/bootstrap-confirmation.min.js"></script>
+    <script src="~/js/bootstrap-confirmation.min.js"></script>
     <script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
     <script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
@@ -59,36 +63,45 @@
             autoWidth: false,
             buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
         }).buttons().container().appendTo('#tbl_exam_wrapper .col-md-6:eq(0)');
-    $('[data-toggle="DeleteFormItem"]').confirmation({
-        title: 'آیا از حذف مطمئن هستید؟',
-        btnCancelClass: 'btn btn-sm btn-primary',
-        btnCancelLabel: 'انصراف',
-        btnOkClass: 'btn btn-sm btn-danger',
-        btnOkLabel: 'حذف',
-        onConfirm: function () {
+        $('[data-toggle="DeleteFormItem"]').confirmation({
+            title: 'آیا از حذف مطمئن هستید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () {
                 DeleteFormItem($(this).attr('id'));
-        }
-    });
-        function DeleteFormItem(id) {
-        $.ajax({
-            method: "POST",
-            url: "/StudentForm/FormItem/Delete?Id=" + id,
-            success: function (response) {
-                    $("#tr_" + id).addClass("bg-danger").hide('slow');
-                //if (response.isSuccess) {
-                //    $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
-                //        //Toast.fire({ icon: 'success', title: response.message });
-                //    });
-                //} else {
-                //    //Toast.fire({ icon: 'warning', title: response.message });
-                //}
-            },
-            error: function () {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'فرمی جهت حذف ارسال نشده است یا خطایی رخ داده.'
-                });
             }
-        });}
-</script>
+        });
+
+        function Create() {
+            openModal('افزودن فرم جدید', '/StudentForm/FormItem/Create', false);
+        }
+
+        function Edit(id) {
+            openModal('ویرایش فرم', '/StudentForm/FormItem/Edit?id=' + id, false);
+        }
+        function DeleteFormItem(id) {
+            $.ajax({
+                method: "POST",
+                url: "/StudentForm/FormItem/Delete?Id=" + id,
+                success: function (response) {
+                    $("#tr_" + id).addClass("bg-danger").hide('slow');
+                    //if (response.isSuccess) {
+                    //    $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
+                    //        //Toast.fire({ icon: 'success', title: response.message });
+                    //    });
+                    //} else {
+                    //    //Toast.fire({ icon: 'warning', title: response.message });
+                    //}
+                },
+                error: function () {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'فرمی جهت حذف ارسال نشده است یا خطایی رخ داده.'
+                    });
+                }
+            });
+        }
+    </script>
 }

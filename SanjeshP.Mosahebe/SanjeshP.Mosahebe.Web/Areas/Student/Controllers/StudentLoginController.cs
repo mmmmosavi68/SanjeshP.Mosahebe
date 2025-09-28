@@ -51,7 +51,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             _studentOtpRepository = studentOtpRepository;
             _payamSMS = payamSMS;
             _memoryCache = memoryCache;
-            this._siteSetting = siteSetting;
+            this._siteSetting = siteSetting.Value;
         }
 
         // ================= صفحه اصلی لاگین =================
