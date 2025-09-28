@@ -1,0 +1,9 @@
+﻿@model SanjeshP.Mosahebe.Presentation.ViewModels.FormItemViewModel
+
+@{
+    ViewBag.FormAction = "Edit";
+}
+
+<h2>ویرایش فرم</h2>
+
+@await Html.PartialAsync("_FormItemForm", Model)

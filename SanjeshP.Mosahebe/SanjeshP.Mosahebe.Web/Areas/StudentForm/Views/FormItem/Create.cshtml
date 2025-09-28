@@ -1,0 +1,9 @@
+﻿@model SanjeshP.Mosahebe.Presentation.ViewModels.FormItemViewModel
+
+@{
+    ViewBag.FormAction = "Create";
+}
+
+<h2>ایجاد فرم جدید</h2>
+
+@await Html.PartialAsync("_FormItemForm", Model)

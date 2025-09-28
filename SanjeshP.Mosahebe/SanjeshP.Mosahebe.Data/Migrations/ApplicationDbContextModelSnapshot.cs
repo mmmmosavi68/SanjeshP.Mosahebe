@@ -1017,7 +1017,7 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<int>("FormItemCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FormItemTypeId")
+                    b.Property<int>("FormItemCoefficientId")
                         .HasColumnType("int");
 
                     b.Property<string>("HostIp")
@@ -1045,7 +1045,7 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
                     b.HasIndex("FormItemCategoryId");
 
-                    b.HasIndex("FormItemTypeId");
+                    b.HasIndex("FormItemCoefficientId");
 
                     b.ToTable("FormItems");
                 });
@@ -1209,9 +1209,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<int>("FormItemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FormItemTypeDefaultId")
-                        .HasColumnType("int");
-
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
 
@@ -1245,8 +1242,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FormItemId");
-
-                    b.HasIndex("FormItemTypeDefaultId");
 
                     b.ToTable("FormItemDefinitions");
                 });
@@ -1866,9 +1861,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemCoefficient", "FormItemType")
+                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemCoefficient", "FormItemCoefficient")
                         .WithMany("FormItem")
-                        .HasForeignKey("FormItemTypeId")
+                        .HasForeignKey("FormItemCoefficientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1887,12 +1882,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItem", "FormItem")
                         .WithMany("FormItemDefinitions")
                         .HasForeignKey("FormItemId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemCoefficient", "FormItemTypeDefault")
-                        .WithMany()
-                        .HasForeignKey("FormItemTypeDefaultId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

@@ -139,6 +139,13 @@ namespace SanjeshP.Mosahebe.Web
                     name: "student",
                     areaName: "Student",
                     pattern: "Student/{controller=Home}/{action=Index}/{id?}");
+
+                // StudentForm area
+                endpoints.MapAreaControllerRoute(
+                    name: "studentForm",
+                    areaName: "StudentForm",
+                    pattern: "StudentForm/{controller=Home}/{action=Index}/{id?}");
+
                 // User area
                 endpoints.MapAreaControllerRoute(
                     name: "user",

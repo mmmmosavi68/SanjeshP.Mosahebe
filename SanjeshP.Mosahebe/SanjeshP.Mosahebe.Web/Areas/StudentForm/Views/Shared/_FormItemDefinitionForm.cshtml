@@ -1,0 +1,59 @@
+﻿@model SanjeshP.Mosahebe.Presentation.ViewModels.FormItemDefinitionCreateViewModel
+
+<form asp-action="@ViewContext.RouteData.Values["action"]" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="FormItemId" />
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Label"></label>
+        <input asp-for="Label" />
+        <span asp-validation-for="Label" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="InputType"></label>
+        <select asp-for="InputType" asp-items="Html.GetEnumSelectList<SanjeshP.Mosahebe.Entities.StudentForm.InputType>()"></select>
+        <span asp-validation-for="InputType" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="InputTypeText"></label>
+        <input asp-for="InputTypeText" />
+    </div>
+
+    <div>
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <div>
+        <label asp-for="IsRequired"></label>
+        <input asp-for="IsRequired" type="checkbox" />
+    </div>
+
+    <div>
+        <label asp-for="ValidationPattern"></label>
+        <input asp-for="ValidationPattern" />
+    </div>
+
+    <div>
+        <label asp-for="ErrorMessage"></label>
+        <input asp-for="ErrorMessage" />
+    </div>
+
+    <div>
+        <button type="submit">ذخیره</button>
+        <a asp-action="Index" asp-route-formItemId="@Model.FormItemId">بازگشت</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

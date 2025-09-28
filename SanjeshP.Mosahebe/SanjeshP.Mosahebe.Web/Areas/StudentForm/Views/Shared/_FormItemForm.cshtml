@@ -1,0 +1,53 @@
+﻿@model SanjeshP.Mosahebe.Presentation.ViewModels.FormItemViewModel
+
+<form asp-action="@ViewBag.FormAction" method="post">
+    <div class="form-group">
+        <label>نام فرم</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>نوع آیتم</label>
+        <select asp-for="FormItemCoefficientId" class="form-control" asp-items="Model.Coefficients"></select>
+        <span asp-validation-for="FormItemCoefficientId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>زیردسته</label>
+        <select asp-for="FormItemCategoryId" class="form-control" asp-items="Model.Categories"></select>
+        <span asp-validation-for="FormItemCategoryId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>توضیحات</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>حداکثر امتیاز تکی</label>
+        <input asp-for="OneMaxScore" class="form-control" type="number" />
+        <span asp-validation-for="OneMaxScore" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>حداکثر امتیاز کل</label>
+        <input asp-for="AllMaxScore" class="form-control" type="number" />
+        <span asp-validation-for="AllMaxScore" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <div class="custom-control custom-checkbox">
+            <input type="checkbox" asp-for="IsActive" class="custom-control-input" id="IsActive" />
+            <label class="custom-control-label" for="IsActive">
+                @Html.DisplayNameFor(model => model.IsActive)
+            </label>
+        </div>
+    </div>
+    @if (@ViewBag.FormAction == "Create")
+    {
+        <button type="submit" class="btn btn-success">ذخیره</button>
+
+    }
+    else
+    {
+        <button type="submit" class="btn btn-warning">ویرایش</button>
+
+    }
+    <a asp-action="Index" class="btn btn-secondary">انصراف</a>
+</form>
