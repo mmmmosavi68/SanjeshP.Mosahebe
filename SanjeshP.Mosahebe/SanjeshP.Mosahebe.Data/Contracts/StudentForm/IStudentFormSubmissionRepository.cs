@@ -16,5 +16,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         Task AddStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken);
         Task UpdateStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken);
         Task DeleteStudentFormSubmissionAsync(int id, CancellationToken cancellationToken);
+        Task<StudentFormSubmissionScore?> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
+
     }
 }

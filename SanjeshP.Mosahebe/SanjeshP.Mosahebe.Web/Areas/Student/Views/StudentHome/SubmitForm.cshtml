@@ -1,50 +1,47 @@
-﻿@using SanjeshP.Mosahebe.Entities.StudentForm
+﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.FormSubmissionViewModel
+
 @{
-    var fields = ViewBag.Fields as IEnumerable<FormItemDefinition> ?? Enumerable.Empty<FormItemDefinition>();
-    var selected = ViewBag.Selected as int?;
+    ViewData["Title"] = "Submit Form";
 }
 
-<form asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student" method="post" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="formId" value="@selected" />
+<h2>فرم شماره @Model.FormId</h2>
 
-    <div class="mt-3">
-        @foreach (var f in fields)
-        {
-            <div class="form-group mb-3">
-                <label>@f.Label</label>
-                @switch (f.inputType)
-                {
-                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
-                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
-                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url:
-                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
-                        <input type="@(
-                            f.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text ? "text" :
-                            f.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number ? "number" :
-                            f.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url ? "url" :
-                            "file"
-                        )"
-                               name="@f.Name" class="form-control" @(f.IsRequired ? "required" : "") />
-                        break;
-                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
-                        <div class="form-check">
-                            <input type="checkbox" name="@f.Name" class="form-check-input" @(f.IsRequired ? "required" : "") />
-                            <label class="form-check-label">@f.Label</label>
-                        </div>
-                        break;
-                }
+<form asp-action="SubmitForm" method="post">
+    <input type="hidden" asp-for="FormId" />
 
-                @if (!string.IsNullOrEmpty(f.Description))
-                {
-                    <small class="form-text text-muted">@f.Description</small>
-                }
-            </div>
-        }
-    </div>
+    <h3>فیلدهای فرم</h3>
+    @foreach (var field in Model.Fields)
+    {
+        <div>
+            <label>@field.Label</label>
+            @if (field.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text)
+            {
+                <input type="text" name="SubmittedValues[@field.Id]" />
+            }
+            else if (field.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number)
+            {
+                <input type="number" name="SubmittedValues[@field.Id]" />
+            }
+            else if (field.inputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown)
+            {
+                <select name="SubmittedValues[@field.Id]">
+                    @foreach (var option in field.DropdownOptions?.Split('-') ?? new string[0])
+                    {
+                        <option value="@option">@option</option>
+                    }
+                </select>
+            }
+        </div>
+    }
 
-    <div class="text-right">
-        <button type="submit" class="btn btn-primary">ارسال</button>
-        <button type="button" id="btnCancel" class="btn btn-secondary">لغو</button>
-    </div>
+    <h3>فیلدهای ضریب</h3>
+    @foreach (var coefField in Model.CoefficientFields)
+    {
+        <div>
+            <label>@coefField.Label</label>
+            <input type="text" name="SubmittedValues[@coefField.Id]" />
+        </div>
+    }
+
+    <button type="submit">ارسال فرم</button>
 </form>

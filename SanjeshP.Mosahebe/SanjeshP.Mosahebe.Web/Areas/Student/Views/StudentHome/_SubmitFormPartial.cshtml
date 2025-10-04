@@ -1,0 +1,46 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.FormSubmissionViewModel
+
+<form id="formSubmission" method="post" asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student">
+    <input type="hidden" name="FormId" value="@Model.FormId" />
+
+    <h5>Fields</h5>
+    @foreach (var field in Model.Fields)
+    {
+        <div class="form-group">
+            <label>@field.Label</label>
+            <input type="text" name="@field.Name" class="form-control" />
+        </div>
+    }
+
+    @if (Model.CoefficientFields.Any())
+    {
+        <h5>Coefficients</h5>
+        @foreach (var coef in Model.CoefficientFields)
+        {
+            <div class="form-group">
+                <label>@coef.Label</label>
+                <input type="text" name="@coef.Name" class="form-control" />
+            </div>
+        }
+    }
+
+    <button type="submit" class="btn btn-primary">ثبت فرم</button>
+</form>
+
+<script>
+    $("#formSubmission").submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            url: form.attr("action"),
+            method: form.attr("method"),
+            data: form.serialize(),
+            success: function (response) {
+                alert(response.message);
+            },
+            error: function (xhr) {
+                alert("خطا در ثبت فرم");
+            }
+        });
+    });
+</script>

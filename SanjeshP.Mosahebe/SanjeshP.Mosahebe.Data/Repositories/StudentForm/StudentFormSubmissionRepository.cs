@@ -46,5 +46,11 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             submission.IsDeleted = true;
             await UpdateAsync(submission, cancellationToken);
         }
+        public async Task<StudentFormSubmissionScore> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
+        {
+            return await Table
+                .FirstOrDefaultAsync(x => x.StudentId == studentId && x.FormItemId == formItemId && !x.IsDeleted, cancellationToken);
+        }
+
     }
 }

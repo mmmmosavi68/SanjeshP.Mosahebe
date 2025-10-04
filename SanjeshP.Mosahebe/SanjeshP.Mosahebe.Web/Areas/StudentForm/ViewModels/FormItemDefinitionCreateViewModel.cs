@@ -5,10 +5,10 @@ namespace SanjeshP.Mosahebe.Presentation.ViewModels
 {
     public class FormItemDefinitionCreateViewModel
     {
-        public int Id { get; set; } // برای Edit
+        public int Id { get; set; }
 
         [Required]
-        public int FormItemId { get; set; } // ارتباط با FormItem
+        public int FormItemId { get; set; }
 
         [Required(ErrorMessage = "نام فیلد الزامی است")]
         public string Name { get; set; }
@@ -28,5 +28,8 @@ namespace SanjeshP.Mosahebe.Presentation.ViewModels
         public string ValidationPattern { get; set; }
 
         public string ErrorMessage { get; set; }
+
+        // جدید: گزینه‌های Dropdown
+        public string DropdownOptions { get; set; }
     }
 }

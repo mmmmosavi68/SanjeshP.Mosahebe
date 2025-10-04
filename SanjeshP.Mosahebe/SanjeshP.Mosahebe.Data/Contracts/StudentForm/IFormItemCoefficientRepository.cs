@@ -13,5 +13,8 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         Task AddAsync(FormItemCoefficient entity, CancellationToken cancellationToken);
         Task UpdateAsync(FormItemCoefficient entity, CancellationToken cancellationToken);
         Task DeleteAsync(int id, CancellationToken cancellationToken);
+        Task<IEnumerable<FormItemCoefficient>> GetByCoefficientIdAsync(int coefficientId, CancellationToken cancellationToken);
+
     }
+
 }

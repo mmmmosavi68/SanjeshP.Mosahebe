@@ -1,9 +1,14 @@
 ﻿@model IEnumerable<SanjeshP.Mosahebe.Entities.StudentForm.FormItemDefinition>
 <h2>تعریف آیتم های فرم</h2>
-<p>
+@*<p>
     <a asp-action="Create" asp-route-formItemId="@ViewBag.FormItemId" class="btn btn-primary">افزودن آیتم جدید</a>
-</p>
-<table class="table table-bordered table-striped">
+</p>*@
+<div class="row mb-3">
+    <input type="button" class="btn btn-outline-primary" onclick="CreateDefinition(@ViewBag.FormItemId)" value="افزودن آیتم جدید" />
+</div>
+
+
+<table class ="table table-bordered table-striped">
     <thead>
         <tr>
             <th>نام</th>
@@ -22,7 +27,8 @@
                 <td>@item.inputType</td>
                 <td>@(item.IsRequired ? "بله" : "خیر")</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning" title="ویرایش"><i class="fa fa-pen"></i></a>
+                    <a class="btn btn-sm btn-outline-warning" onclick="EditDefinition('@item.Id')" title="ویرایش"><i class="fa fa-pen"></i></a>
+                    @*<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning" title="ویرایش"><i class="fa fa-pen"></i></a>*@
                     <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteFormItemDefinition" title="حذف"><i class="fa fa-trash"></i></a>
 
 @*
@@ -61,6 +67,15 @@
                 DeleteItemDefinition($(this).attr('id'));
             }
         });
+
+        function CreateDefinition(formItemId) {
+            openModal('افزودن آیتم جدید', '/StudentForm/FormItemDefinition/Create?formItemId=' + formItemId, false);
+        }
+
+        function EditDefinition(id) {
+            openModal('ویرایش آیتم', '/StudentForm/FormItemDefinition/Edit?id=' + id, false);
+        }
+
         function DeleteItemDefinition(id) {
             var token = $('input[name="__RequestVerificationToken"]').val(); // اگر در صفحه فرم دارید
             $.ajax({

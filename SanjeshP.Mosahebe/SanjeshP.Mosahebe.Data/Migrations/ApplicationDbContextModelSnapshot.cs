@@ -676,102 +676,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.ToTable("LoginSettings");
                 });
 
-            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.FieldDefinition", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("FormId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("HostIp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Label")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TypeText")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FieldDefinitions");
-                });
-
-            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.FormSubmission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("FieldDefinitionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FormId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("HostIp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("SubmittedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FormSubmissions");
-                });
-
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.Student", b =>
                 {
                     b.Property<int>("Id")
@@ -1203,6 +1107,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DropdownOptions")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
@@ -1259,10 +1166,10 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("FormItemDefinitionId")
+                    b.Property<int?>("FormItemCoefficientDefinitionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FormSubmissionId")
+                    b.Property<int?>("FormItemDefinitionId")
                         .HasColumnType("int");
 
                     b.Property<string>("HostIp")
@@ -1277,6 +1184,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("StudentFormSubmissionScoreId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
@@ -1285,9 +1195,11 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FormItemCoefficientDefinitionId");
+
                     b.HasIndex("FormItemDefinitionId");
 
-                    b.HasIndex("FormSubmissionId");
+                    b.HasIndex("StudentFormSubmissionScoreId");
 
                     b.ToTable("StudentFormSubmissionData");
                 });
@@ -1888,15 +1800,17 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.StudentForm.StudentFormSubmissionData", b =>
                 {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemCoefficientDefinition", "FormItemCoefficientDefinition")
+                        .WithMany()
+                        .HasForeignKey("FormItemCoefficientDefinitionId");
+
                     b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemDefinition", "FormItemDefinition")
                         .WithMany()
-                        .HasForeignKey("FormItemDefinitionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("FormItemDefinitionId");
 
-                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.StudentFormSubmissionScore", "FormSubmission")
+                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.StudentFormSubmissionScore", "StudentFormSubmissionScore")
                         .WithMany("StudentFormSubmissionDatas")
-                        .HasForeignKey("FormSubmissionId")
+                        .HasForeignKey("StudentFormSubmissionScoreId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

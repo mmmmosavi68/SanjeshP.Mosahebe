@@ -1,139 +1,188 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Entities.StudentForm;
-using Microsoft.AspNetCore.Authorization;
+using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 {
-    [AllowAnonymous]
     [Area("Student")]
     public class StudentHomeController : Controller
     {
-        
-        private readonly IStudentFormRepository _studentFormRepository;
-        private readonly IStudentFieldDefinitionRepository _studentFieldDefinitionRepository;
-        private readonly IStudentFormSubmissionRepository _studentFormSubmissionRepository;
-        private readonly IStudentFormSubmissionValueRepository _studentFormSubmissionValueRepository;
+        private readonly IFormItemRepository _formItemRepository;
+        private readonly IFormItemDefinitionRepository _formItemDefinitionRepository;
+        private readonly IFormItemCoefficientDefinitionRepository _coefficientDefinitionRepository;
+        private readonly IFormItemCoefficientRepository _coefficientRepository;
+        private readonly IStudentFormSubmissionRepository _submissionRepository;
+        private readonly IStudentFormSubmissionValueRepository _submissionValueRepository;
 
         public StudentHomeController(
-            IStudentFormRepository studentFormRepository,
-            IStudentFieldDefinitionRepository studentFieldDefinitionRepository,
-            IStudentFormSubmissionRepository studentFormSubmissionRepository,
-            IStudentFormSubmissionValueRepository studentFormSubmissionValueRepository)
+            IFormItemRepository formItemRepository,
+            IFormItemDefinitionRepository formItemDefinitionRepository,
+            IFormItemCoefficientDefinitionRepository coefficientDefinitionRepository,
+            IFormItemCoefficientRepository coefficientRepository,
+            IStudentFormSubmissionRepository submissionRepository,
+            IStudentFormSubmissionValueRepository submissionValueRepository)
         {
-            _studentFormRepository = studentFormRepository;
-            _studentFieldDefinitionRepository = studentFieldDefinitionRepository;
-            _studentFormSubmissionRepository = studentFormSubmissionRepository;
-            _studentFormSubmissionValueRepository = studentFormSubmissionValueRepository;
+            _formItemRepository = formItemRepository;
+            _formItemDefinitionRepository = formItemDefinitionRepository;
+            _coefficientDefinitionRepository = coefficientDefinitionRepository;
+            _coefficientRepository = coefficientRepository;
+            _submissionRepository = submissionRepository;
+            _submissionValueRepository = submissionValueRepository;
         }
 
-        // صفحه لیست فرم‌ها
-        [HttpGet]
+        // GET: /Student/StudentHome
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            var forms = await _studentFormRepository.GetAllStudentFormsNoTrackingAsync(cancellationToken);
+            var forms = await _formItemRepository.GetFormItemsWithIncludesAsync(cancellationToken);
             return View(forms);
         }
 
-        // وقتی کاربر یک فرم رو انتخاب می‌کنه
-        // فرم به صورت Ajax نمایش داده میشه و View ندارد
-        [HttpGet]
+        // GET: /Student/StudentHome/LoadForm?formId=1
         public async Task<IActionResult> LoadForm(int formId, CancellationToken cancellationToken)
         {
-            var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
-            ViewBag.Fields = fields;
-            ViewBag.Selected = formId;
-            return PartialView("SubmitForm");
-        }
+            var form = await _formItemRepository.GetByFormItemIdAsync(formId, cancellationToken);
+            if (form == null)
+                return NotFound();
 
-        // وقتی کاربر فرم رو ارسال می‌کنه
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitForm(int formId, CancellationToken cancellationToken)
-        {
-            var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
+            //var FormItemDefinitions = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken);
+            //var FormItemCoefficientDefinitions = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
 
-            // ثبت رکورد اصلی FormSubmission
-            var submission = new StudentFormSubmissionScore
+            var viewModel = new FormSubmissionViewModel
             {
-                FormItemId = formId,
-                // می‌تونی StudentId یا CandidateId رو اینجا ست کنی
+                FormId = form.Id,
+                Fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken)
             };
 
-            await _studentFormSubmissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
+            if (form.FormItemCoefficientId > 0)
+            {
+                viewModel.CoefficientFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
+                var coef = await _coefficientRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
+                viewModel.Coefficients = coef.ToList();
+            }
 
-            // ذخیره مقادیر هر فیلد
+            return PartialView("_SubmitFormPartial", viewModel);
+        }
+
+        // POST: /Student/StudentHome/SubmitForm
+        [HttpPost]
+        public async Task<IActionResult> SubmitForm(FormSubmissionViewModel model, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("اطلاعات فرم ناقص است");
+
+            var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var previousSubmission = await _submissionRepository
+                .GetByStudentAndFormAsync(studentId, model.FormId, cancellationToken);
+
+            if (previousSubmission != null)
+            {
+                previousSubmission.IsDeleted = true;
+                await _submissionRepository.UpdateAsync(previousSubmission, cancellationToken);
+            }
+
+            var submission = new StudentFormSubmissionScore
+            {
+                FormItemId = model.FormId,
+                StudentId = studentId,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            await _submissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
+
+            // ✅ دریافت فیلدهای Definition از دیتابیس (نه از model)
+            var fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+
             foreach (var field in fields)
             {
-                string value = "";
-
-                if (field.inputType == Entities.StudentForm.InputType.File)
+                var value = Request.Form[field.Name];
+                if (!string.IsNullOrEmpty(value))
                 {
-                    var file = Request.Form.Files[field.Name];
-                    if (file != null && file.Length > 0)
+                    var studentFormSubmissionData = new StudentFormSubmissionData
                     {
-                        var filePath = Path.Combine("uploads", file.FileName);
-                        using (var stream = System.IO.File.Create(filePath))
-                            await file.CopyToAsync(stream, cancellationToken);
+                        StudentFormSubmissionScoreId = submission.Id,
+                        FormItemDefinitionId = field.Id,
+                        InputType = field.inputType,
+                        Value = value
+                    };
+                    await _submissionValueRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
+                }
+            }
 
-                        value = file.FileName;
+            // ✅ دریافت فیلدهای Coefficient از دیتابیس
+            var formItem = await  _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+            var formItemCoefficient = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItem.FormItemCoefficientId, cancellationToken);
+
+                foreach (var coefField in formItemCoefficient)
+                {
+                    var value = Request.Form[coefField.Name];
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        var studentFormSubmissionData = new StudentFormSubmissionData
+                        {
+                            StudentFormSubmissionScoreId = submission.Id,
+                            FormItemCoefficientDefinitionId = coefField.Id,
+                            InputType = coefField.inputType,
+                            Value = value
+                        };
+                        await _submissionValueRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
                     }
                 }
-                else if (field.inputType == InputType.Checkbox)
-                {
-                    value = Request.Form.ContainsKey(field.Name) ? "true" : "false";
-                }
-                else
-                {
-                    value = Request.Form[field.Name];
-                }
+            
 
-                var submissionValue = new StudentFormSubmissionData
-                {
-                    FormSubmissionId = submission.Id,
-                    //FieldDefinitionId = field.Id,
-                    InputType = field.inputType,
-                    Value = value
-                };
-
-                await _studentFormSubmissionValueRepository.AddStudentFormSubmissionValueAsync(submissionValue, cancellationToken);
-            }
-
-            return RedirectToAction("Index");
+            return Json(new { success = true, message = "فرم با موفقیت ثبت شد" });
         }
 
-        // گرفتن ارسال‌های قبلی یک فرم
-        // فرم به صورت Ajax نمایش داده میشه و View ندارد
-        [HttpGet]
-        public async Task<IActionResult> GetFormSubmissions(int formId, CancellationToken cancellationToken)
-        {
-            var fields = await _studentFieldDefinitionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
-            var submissions = await _studentFormSubmissionRepository.GetByStudentFormIdAsync(formId, cancellationToken);
 
-            var result = new List<FormSubmissionViewModel>();
+        //public async Task<IActionResult> SubmitForm(FormSubmissionViewModel model, CancellationToken cancellationToken)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("اطلاعات فرم ناقص است");
 
-            foreach (var submission in submissions.OrderByDescending(s => s.Id))
-            {
-                var values = await _studentFormSubmissionValueRepository.GetByStudentFormSubmissionValueIdAsync(submission.Id, cancellationToken);
+        //    var submission = new StudentFormSubmissionScore
+        //    {
+        //        FormItemId = model.FormId
+        //    };
 
-                foreach (var value in values)
-                {
-                    result.Add(new FormSubmissionViewModel
-                    {
-                        //FieldLabel = fields.FirstOrDefault(f => f.Id == value.FieldDefinitionId)?.Label,
-                        Value = value.Value,
-                        SubmittedAt = submission.CreatedDate // فرض کردم CreatedDate تو مدل‌هات هست
-                    });
-                }
-            }
+        //    await _submissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
 
-            return PartialView("_FormSubmissionsTable", result);
-        }
+        //    // ذخیره مقادیر فیلدهای Definition
+        //    foreach (var field in model.Fields)
+        //    {
+        //        var value = Request.Form[field.Name].ToString();
+        //        if (!string.IsNullOrEmpty(value))
+        //        {
+        //            await _submissionValueRepository.AddStudentFormSubmissionValueAsync(new StudentFormSubmissionData
+        //            {
+        //                StudentFormSubmissionScoreId = submission.Id,
+        //                FormItemDefinitionId = field.Id,
+        //                Value = value
+        //            }, cancellationToken);
+        //        }
+        //    }
+
+        //    // ذخیره مقادیر فیلدهای Coefficient
+        //    foreach (var coefField in model.CoefficientFields)
+        //    {
+        //        var value = Request.Form[coefField.Name].ToString();
+        //        if (!string.IsNullOrEmpty(value))
+        //        {
+        //            await _submissionValueRepository.AddStudentFormSubmissionValueAsync(new StudentFormSubmissionData
+        //            {
+        //                StudentFormSubmissionScoreId = submission.Id,
+        //                FormItemCoefficientDefinitionId = coefField.Id,
+        //                Value = value
+        //            }, cancellationToken);
+        //        }
+        //    }
+
+        //    return Json(new { success = true, message = "فرم با موفقیت ثبت شد" });
+        //}
     }
 }

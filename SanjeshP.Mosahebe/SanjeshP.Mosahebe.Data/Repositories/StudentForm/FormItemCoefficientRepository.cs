@@ -42,5 +42,11 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             // اگر حذف فیزیکی:
             await DeleteAsync(entity, cancellationToken);
         }
+        public async Task<IEnumerable<FormItemCoefficient>> GetByCoefficientIdAsync(int coefficientId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Where(f => f.Id == coefficientId && !f.IsDeleted)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

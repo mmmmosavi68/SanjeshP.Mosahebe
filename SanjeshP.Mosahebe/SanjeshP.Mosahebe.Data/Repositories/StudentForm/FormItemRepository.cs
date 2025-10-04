@@ -23,7 +23,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<FormItem?> GetByFormItemIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<FormItem> GetByFormItemIdAsync(int id, CancellationToken cancellationToken)
         {
             return await Table
                 .Where(f => f.Id == id && !f.IsDeleted)

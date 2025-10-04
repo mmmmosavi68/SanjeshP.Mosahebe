@@ -19,7 +19,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<IEnumerable<StudentFormSubmissionData>> GetByStudentFormSubmissionValueIdAsync(int submissionId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                .Where(v => v.FormSubmissionId == submissionId && !v.IsDeleted)
+                .Where(v => v.StudentFormSubmissionScoreId == submissionId && !v.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
 

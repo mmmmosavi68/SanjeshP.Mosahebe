@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Hosting;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Data.Contracts.Users;
 using SanjeshP.Mosahebe.Entities.StudentForm;
@@ -95,7 +96,9 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
                 IsActive = model.IsActive,
                 CreatedBy = token.UserId,
                 FormItemCoefficientId = model.FormItemCoefficientId,
-                FormItemCategoryId = model.FormItemCategoryId
+                FormItemCategoryId = model.FormItemCategoryId,
+                HostIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString()
+
             };
 
             await _formItemRepository.AddFormItemAsync(entity, cancellationToken);
@@ -150,6 +153,7 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
             entity.FormItemCategoryId = model.FormItemCategoryId;
             entity.CreatedBy = token.UserId;
             entity.UpdatedDate = DateTime.Now;
+            entity.HostIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
             await _formItemRepository.UpdateFormItemAsync(entity, cancellationToken);
             return RedirectToAction(nameof(Index));

@@ -26,6 +26,10 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public string Description { get; set; }
         public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
         public string ErrorMessage { get; set; }
+        // جدید: گزینه‌های دراپ‌داون (اگر نوع فیلد Dropdown باشد)
+        public string DropdownOptions { get; set; }  // مقادیر با - جدا می‌شوند
+
+
 
         // Foreign Key
         public int FormItemId { get; set; }

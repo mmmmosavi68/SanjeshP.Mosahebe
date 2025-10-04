@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Presentation.ViewModels;
+using System.Security.Claims;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SanjeshP.Mosahebe.Data.Contracts.Users;
 
 namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 {
@@ -13,10 +16,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
     public class FormItemDefinitionController : Controller
     {
         private readonly IFormItemDefinitionRepository _repository;
-
-        public FormItemDefinitionController(IFormItemDefinitionRepository repository)
+        private readonly IUserTokenRepository _userTokenRepository;
+        public FormItemDefinitionController(IFormItemDefinitionRepository repository, IUserTokenRepository userTokenRepository)
         {
             _repository = repository;
+            _userTokenRepository = userTokenRepository;
         }
 
         public async Task<IActionResult> Index(int formItemId, CancellationToken cancellationToken)
@@ -30,26 +34,34 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
         public IActionResult Create(int formItemId)
         {
             var model = new FormItemDefinitionCreateViewModel { FormItemId = formItemId };
-            return View(model);
+            return PartialView("Create", model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(FormItemDefinitionCreateViewModel model, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return PartialView("Create", model);
+
+            var currentUserToken = User.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), cancellationToken);
 
             var entity = new FormItemDefinition
             {
                 FormItemId = model.FormItemId,
                 Name = model.Name,
                 Label = model.Label,
+                CreatedBy = token.UserId,
                 inputType = model.InputType,
-                InputTypeText = model.InputTypeText,
+                // اینجا مقدار متن قابل نمایش رو خودمون میسازیم
+                InputTypeText = model.InputType.ToString(),
                 IsRequired = model.IsRequired,
                 Description = model.Description,
                 ValidationPattern = model.ValidationPattern,
-                ErrorMessage = model.ErrorMessage
+                ErrorMessage = model.ErrorMessage,
+                DropdownOptions = model.DropdownOptions,
+                HostIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString()
+
             };
 
             await _repository.AddDefinitionAsync(entity, cancellationToken);
@@ -69,20 +81,23 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
                 Name = entity.Name,
                 Label = entity.Label,
                 InputType = entity.inputType,
-                InputTypeText = entity.InputTypeText,
+                InputTypeText = entity.inputType.ToString(), // ← اینجا تغییر دادیم
                 IsRequired = entity.IsRequired,
                 Description = entity.Description,
                 ValidationPattern = entity.ValidationPattern,
-                ErrorMessage = entity.ErrorMessage
+                ErrorMessage = entity.ErrorMessage,
+                DropdownOptions = entity.DropdownOptions
             };
-            return View(model);
+
+            return PartialView("Edit", model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(FormItemDefinitionCreateViewModel model, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return PartialView("Edit", model);
 
             var entity = await _repository.GetByDefinitionIdAsync(model.Id, cancellationToken);
             if (entity == null) return NotFound();
@@ -90,11 +105,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
             entity.Name = model.Name;
             entity.Label = model.Label;
             entity.inputType = model.InputType;
-            entity.InputTypeText = model.InputTypeText;
+            entity.InputTypeText = model.InputType.ToString();
+
             entity.IsRequired = model.IsRequired;
             entity.Description = model.Description;
             entity.ValidationPattern = model.ValidationPattern;
             entity.ErrorMessage = model.ErrorMessage;
+            entity.DropdownOptions = model.DropdownOptions;
+            entity.UpdatedDate = DateTime.Now;
+            entity.HostIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
             await _repository.UpdateDefinitionAsync(entity, cancellationToken);
             return RedirectToAction("Index", new { formItemId = entity.FormItemId });
@@ -106,8 +125,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
         {
             await _repository.DeleteDefinitionAsync(Id, cancellationToken);
             return RedirectToAction(nameof(Index));
-
-            //return RedirectToAction("Index", new { formItemId });
         }
     }
 }

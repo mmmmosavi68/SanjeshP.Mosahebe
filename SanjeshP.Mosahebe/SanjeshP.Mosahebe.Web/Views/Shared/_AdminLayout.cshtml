@@ -256,6 +256,7 @@
     <script src="~/admin/plugins/jalalidatepicker-main/jalalidatepicker.min.js"></script>
 
     <script>
+        var lastmodalid=''
         $(function () {
             $('a').tooltip();
             $('i').tooltip()
@@ -299,6 +300,7 @@
         function openModal(title, url, isLarge = false) {
             modalCount++;
             const modalId = `dynamicModal${modalCount}`;
+            lastmodalid = modalId;
             const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
             const modalTemplate = `
                         <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">

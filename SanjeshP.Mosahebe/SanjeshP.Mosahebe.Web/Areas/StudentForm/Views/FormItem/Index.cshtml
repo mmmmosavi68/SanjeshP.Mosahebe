@@ -37,6 +37,7 @@
                 <td>
                     <!-- دکمه تعریف آیتم -->
                     <a asp-area="StudentForm" asp-controller="FormItemDefinition" asp-action="Index" asp-route-formItemId="@item.Id" class="btn btn-sm btn-outline-info" title="تعریف آیتم"> <i class="fa fa-plus"></i></a>
+                   
                     <a class="btn btn-sm btn-outline-warning" onclick="Edit('@item.Id')" title="ویرایش"><i class="fa fa-pen"></i></a>
                     <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteFormItem" title="حذف"><i class="fa fa-trash"></i></a>
                     @*<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">ویرایش</a>*@

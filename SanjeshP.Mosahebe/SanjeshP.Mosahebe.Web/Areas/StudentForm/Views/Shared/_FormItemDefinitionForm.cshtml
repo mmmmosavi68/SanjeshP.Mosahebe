@@ -5,55 +5,87 @@
     <input type="hidden" asp-for="FormItemId" />
     <input type="hidden" asp-for="Id" />
 
-    <div>
-        <label asp-for="Name"></label>
-        <input asp-for="Name" />
+    <div class="form-group">
+        <label asp-for="Name">نام آیتم</label>
+        <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
-    <div>
-        <label asp-for="Label"></label>
-        <input asp-for="Label" />
+    <div class="form-group">
+        <label asp-for="Label">برچسب قابل نمایش</label>
+        <input asp-for="Label" class="form-control" />
         <span asp-validation-for="Label" class="text-danger"></span>
     </div>
 
-    <div>
-        <label asp-for="InputType"></label>
-        <select asp-for="InputType" asp-items="Html.GetEnumSelectList<SanjeshP.Mosahebe.Entities.StudentForm.InputType>()"></select>
+    <div class="form-group">
+        <label asp-for="InputType">نوع فیلد ورودی</label>
+        <select asp-for="InputType" id="InputType" class="form-control"
+                asp-items="Html.GetEnumSelectList<SanjeshP.Mosahebe.Entities.StudentForm.InputType>()"></select>
         <span asp-validation-for="InputType" class="text-danger"></span>
     </div>
 
-    <div>
-        <label asp-for="InputTypeText"></label>
-        <input asp-for="InputTypeText" />
+    <div class="form-group" id="dropdown-options-container" style="display:none;">
+        <label asp-for="DropdownOptions">گزینه‌های لیست (فقط برای Dropdown، با - جدا شود)</label>
+        <input asp-for="DropdownOptions" class="form-control" placeholder="مثال: گزینه1-گزینه2-گزینه3" />
     </div>
 
-    <div>
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description"></textarea>
+
+    <div class="form-group">
+        <label asp-for="Description">توضیحات</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
     </div>
 
-    <div>
-        <label asp-for="IsRequired"></label>
-        <input asp-for="IsRequired" type="checkbox" />
+    <div class="form-group">
+        <label asp-for="ValidationPattern">قاعده اعتبارسنجی (Regex)</label>
+        <input asp-for="ValidationPattern" class="form-control" placeholder="مثال: ^\\d+$ برای عدد" />
     </div>
 
-    <div>
-        <label asp-for="ValidationPattern"></label>
-        <input asp-for="ValidationPattern" />
+    <div class="form-group">
+        <label asp-for="ErrorMessage">پیغام خطا درصورت اشتباه بودن</label>
+        <input asp-for="ErrorMessage" class="form-control" placeholder="مثال: لطفاً فقط عدد وارد کنید" />
     </div>
-
-    <div>
-        <label asp-for="ErrorMessage"></label>
-        <input asp-for="ErrorMessage" />
+    <div class="form-group">
+        <div class="custom-control custom-checkbox">
+            <input asp-for="IsRequired" type="checkbox" class="custom-control-input" id="IsRequired" />
+            <label class="custom-control-label" for="IsRequired">آیتم اجباری باشد؟</label>
+        </div>
     </div>
-
-    <div>
-        <button type="submit">ذخیره</button>
-        <a asp-action="Index" asp-route-formItemId="@Model.FormItemId">بازگشت</a>
+    <div class="mt-3">
+        @if (ViewContext.RouteData.Values["action"]?.ToString() == "Create")
+        {
+            <button type="submit" class="btn btn-success">ذخیره</button>
+        }
+        else
+        {
+            <button type="submit" class="btn btn-warning">ویرایش</button>
+        }
+        <a asp-action="Index" asp-route-formItemId="@Model.FormItemId" class="btn btn-secondary">انصراف</a>
     </div>
 </form>
 
-@section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+    <script>
+    $(document).ready(function () {
+
+        function toggleDropdownOptions() {
+            var selectedValue = parseInt($("#InputType").val()); // مقدار انتخاب شده
+            if (selectedValue === 7) { // 7 = Dropdown
+                $("#dropdown-options-container").show();
+            } else {
+                $("#dropdown-options-container").hide();
+            }
+        }
+
+        // بررسی اولیه هنگام بارگذاری فرم (Create یا Edit)
+        toggleDropdownOptions();
+
+        // هنگام تغییر انتخاب
+        $("#InputType").on("change", function () {
+            toggleDropdownOptions();
+        });
+    });
+    </script>
+
+
+
+

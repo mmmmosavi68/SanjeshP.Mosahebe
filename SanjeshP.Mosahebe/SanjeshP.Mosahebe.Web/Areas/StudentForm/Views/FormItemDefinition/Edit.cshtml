@@ -1,3 +1,7 @@
 ﻿@model SanjeshP.Mosahebe.Presentation.ViewModels.FormItemDefinitionCreateViewModel
-<h2>ویرایش فیلد</h2>
+@{
+    ViewBag.FormAction = "Edit";
+}
 @await Html.PartialAsync("_FormItemDefinitionForm", Model)
+
+

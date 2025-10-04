@@ -1,98 +1,86 @@
-﻿@using SanjeshP.Mosahebe.Entities.StudentForm
-@model IEnumerable<FormItem>   // یا Form، بسته به اسم دقیق کلاس
+﻿@model IEnumerable<SanjeshP.Mosahebe.Entities.StudentForm.FormItem>
 
 @{
-    ViewData["Title"] = "فهرست فرم‌ها";
+    ViewData["Title"] = "فرم‌های داوطلب";
 }
 
-<div class="d-flex align-items-center mb-3 gap-3">
-    <div>
-        <select class="custom-select form-control" id="formSelect">
-            <option selected disabled>انتخاب کنید...</option>
-            @foreach (var form in Model)
-            {
-                <option value="@form.Id">@form.Title</option>
-            }
-        </select>
+<div class="container mt-4">
+
+    <h3>انتخاب فرم</h3>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select id="formSelect" class="form-control">
+                <option value="">-- یک فرم انتخاب کنید --</option>
+                @foreach (var form in Model)
+                {
+                    <option value="@form.Id">@form.Title</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button id="btnAdd" class="btn btn-primary">افزودن فرم</button>
+        </div>
     </div>
-    <button class="btn btn-success mr-3" id="btnAdd">+ افزودن</button>
-</div>
 
-<!-- جدول نمایش رکوردها -->
-<div id="submissionsContainer" class="table-wrapper">
-    <!-- جدول با Ajax لود می‌شود -->
-</div>
+    <!-- کانتینر فرم داینامیک -->
+    <div id="formContainer" style="display:none;"></div>
 
-<!-- کانتینر فرم (ابتدا مخفی) -->
-<div id="formContainer" class="mb-3" style="display:none;"></div>
+    <!-- کانتینر جدول رکوردها -->
+    <div id="submissionsContainer">
+        <h4>رکوردهای ارسال شده</h4>
+        <table class="table table-bordered" id="submissionsTable">
+            <thead>
+                <tr>
+                    <th>FormId</th>
+                    <th>تاریخ ارسال</th>
+                    <th>اقدامات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- رکوردها با Ajax بارگذاری می‌شوند -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // انتخاب اولین فرم (اگر انتخاب نشده باشد)
-            var initialFormId = $("#formSelect").val();
-            if (!initialFormId) {
-                initialFormId = $("#formSelect option:eq(1)").val();
-                $("#formSelect").val(initialFormId);
-            }
-            loadSubmissions(initialFormId);
-        });
 
-        // تغییر فرم انتخاب شده، بارگذاری جدول رکوردها
-        $("#formSelect").change(function () {
-            var formId = $(this).val();
-            loadSubmissions(formId);
-        });
-
-        // تابع بارگذاری جدول
-        function loadSubmissions(formId) {
-            if (!formId) return;
-            $("#formContainer").hide();
-            $("#submissionsContainer").show().load("/Student/StudentHome/GetFormSubmissions?formId=" + formId);
-        }
-
-        // کلیک دکمه افزودن، نمایش فرم و مخفی کردن جدول
-        $("#btnAdd").click(function () {
-            var formId = $("#formSelect").val();
-
-            if (!formId) {
-                alert("لطفاً یک فرم انتخاب کنید.");
-                return;
-            }
-
-            $("#submissionsContainer").hide();
-            $("#formContainer").show().load("/Student/StudentHome/LoadForm?formId=" + formId);
-        });
-
-        // ارسال فرم با Ajax
-        $(document).on("submit", "#formContainer form", function (e) {
-            e.preventDefault();
-            var $form = $(this);
-            var formData = new FormData(this);
-
-            $.ajax({
-                url: $form.attr("action"),
-                type: $form.attr("method"),
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function () {
-                    iziToast.success({ title: 'موفق', message: 'فرم با موفقیت ارسال شد' });
-                    $("#formContainer").hide().html('');
-                    $("#submissionsContainer").show();
-                    var formId = $("#formSelect").val();
-                    loadSubmissions(formId);
-                },
-                error: function () {
-                    iziToast.error({ title: 'خطا', message: 'ارسال فرم موفقیت‌آمیز نبود' });
+            // دکمه افزودن فرم
+            $("#btnAdd").click(function () {
+                var formId = $("#formSelect").val();
+                if (!formId) {
+                    alert("لطفاً یک فرم انتخاب کنید.");
+                    return;
                 }
-            });
-        });
 
-        // دکمه لغو داخل فرم
-        $(document).on("click", "#btnCancel", function () {
-            $("#formContainer").hide().html('');
-            $("#submissionsContainer").show();
+                $("#submissionsContainer").hide();
+                $("#formContainer").show().load("/Student/StudentHome/LoadForm?formId=" + formId);
+            });
+
+            // لود رکوردهای ارسال شده
+            function loadSubmissions() {
+                // مثال: Ajax برای گرفتن رکوردها از کنترلر
+                $.get("/Student/StudentHome/GetSubmissions", function (data) {
+                    var tbody = $("#submissionsTable tbody");
+                    tbody.empty();
+                    $.each(data, function (i, item) {
+                        tbody.append(
+                            `<tr>
+                                <td>${item.FormId}</td>
+                                <td>${item.CreatedDate}</td>
+                                <td><button class='btn btn-sm btn-info'>جزئیات</button></td>
+                            </tr>`
+                        );
+                    });
+                });
+            }
+
+            loadSubmissions();
+
         });
     </script>
 }
