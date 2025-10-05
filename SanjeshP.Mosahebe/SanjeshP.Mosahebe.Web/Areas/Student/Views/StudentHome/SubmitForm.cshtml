@@ -6,7 +6,7 @@
 
 <h2>فرم شماره @Model.FormId</h2>
 
-<form asp-action="SubmitForm" method="post">
+<form asp-action="SubmitForm" asp-controller="StudentHome" method="post">
     <input type="hidden" asp-for="FormId" />
 
     <h3>فیلدهای فرم</h3>
