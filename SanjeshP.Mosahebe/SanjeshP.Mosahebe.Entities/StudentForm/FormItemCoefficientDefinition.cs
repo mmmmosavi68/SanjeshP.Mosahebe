@@ -27,5 +27,8 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public string Description { get; set; }
         public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
         public string ErrorMessage { get; set; }
+
+        // ✅ اضافه شده برای نمایش Dropdown
+        public string DropdownOptions { get; set; }  // مقادیر با - جدا می‌شوند
     }
 }

@@ -1,25 +1,74 @@
 ﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.FormSubmissionViewModel
-
-<form id="formSubmission" method="post" asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student">
+<form id="formSubmission" method="post" asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student" enctype="multipart/form-data">
     <input type="hidden" name="FormId" value="@Model.FormId" />
 
-    <h5>Fields</h5>
     @foreach (var field in Model.Fields)
     {
         <div class="form-group">
             <label>@field.Label</label>
-            <input type="text" name="@field.Name" class="form-control" />
+            @switch (field.inputType)
+            {
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
+                    <input type="text" name="@field.Name" class="form-control" />
+                    break;
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
+                    <input type="number" name="@field.Name" class="form-control" />
+                    break;
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
+                    <input type="file" name="@field.Name" class="form-control" />
+                    break;
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
+                    <input type="checkbox" name="@field.Name" value="true" />
+                    break;
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
+                    <select name="@field.Name" class="form-control">
+                        @if (!string.IsNullOrEmpty(field.DropdownOptions))
+                        {
+                            var options = field.DropdownOptions.Split('-');
+                            foreach (var opt in options)
+                            {
+                                <option value="@opt">@opt</option>
+                            }
+                        }
+                    </select>
+                    break;
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
+                    <input type="date" name="@field.Name" class="form-control" />
+                    break;
+            }
         </div>
     }
 
-    @if (Model.CoefficientFields.Any())
+    @* Coefficient Fields *@
+    @if (Model.CoefficientFields != null)
     {
-        <h5>Coefficients</h5>
-        @foreach (var coef in Model.CoefficientFields)
+        foreach (var coef in Model.CoefficientFields)
         {
             <div class="form-group">
                 <label>@coef.Label</label>
-                <input type="text" name="@coef.Name" class="form-control" />
+                @switch (coef.inputType)
+                {
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
+                        <input type="text" name="@coef.Name" class="form-control" />
+                        break;
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
+                        <input type="number" name="@coef.Name" class="form-control" />
+                        break;
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
+                        <input type="file" name="@coef.Name" class="form-control" />
+                        break;
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
+                        <input type="checkbox" name="@coef.Name" value="true" />
+                        break;
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
+                        <select name="@coef.Name" class="form-control">
+                            @* اگر DropdownOptions اضافه بشه، می‌تونید اینجا اضافه کنید *@
+                        </select>
+                        break;
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
+                        <input type="date" name="@coef.Name" class="form-control" />
+                        break;
+                }
             </div>
         }
     }
@@ -27,20 +76,37 @@
     <button type="submit" class="btn btn-primary">ثبت فرم</button>
 </form>
 
-<script>
-    $("#formSubmission").submit(function (e) {
-        e.preventDefault();
-        var form = $(this);
-        $.ajax({
-            url: form.attr("action"),
-            method: form.attr("method"),
-            data: form.serialize(),
-            success: function (response) {
-                alert(response.message);
-            },
-            error: function (xhr) {
-                alert("خطا در ثبت فرم");
-            }
+<div id="formMessage" style="margin-top:10px;"></div>
+
+
+    <script>
+        $(document).ready(function () {
+        $('#formSubmission').submit(function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var formData = new FormData(this);
+                console.log(form);
+            console.log(formData)
+                $.ajax({
+                    url: '@Url.Action("SubmitForm", "StudentHome", new { area = "Student" })',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
+                            $('#studentForm')[0].reset();
+                        } else {
+                            $('#formMessage').html('<div class="alert alert-danger">' + response.message + '</div>');
+                        }
+                    },
+                    error: function (xhr) {
+                        $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
+                    }
+                });
+            });
         });
-    });
-</script>
+    </script>
+
+

@@ -3,6 +3,7 @@ using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
 using System;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -77,31 +78,60 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 return BadRequest("اطلاعات فرم ناقص است");
 
             var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var studentNationalCode = User.FindFirst("NationalCode")?.Value; // فرض بر این است که کد ملی تو Claims هست
 
+            if (string.IsNullOrEmpty(studentNationalCode))
+                return BadRequest("کد ملی داوطلب نامعتبر است.");
+
+            // حذف ارسال قبلی اگر وجود دارد
             var previousSubmission = await _submissionRepository
                 .GetByStudentAndFormAsync(studentId, model.FormId, cancellationToken);
-
             if (previousSubmission != null)
             {
                 previousSubmission.IsDeleted = true;
                 await _submissionRepository.UpdateAsync(previousSubmission, cancellationToken);
             }
 
+            // ایجاد رکورد جدید برای Submission
             var submission = new StudentFormSubmissionScore
             {
                 FormItemId = model.FormId,
                 StudentId = studentId,
                 CreatedDate = DateTime.UtcNow
             };
-
             await _submissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
 
-            // ✅ دریافت فیلدهای Definition از دیتابیس (نه از model)
-            var fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+            // مسیر پایه برای ذخیره فایل‌ها
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentNationalCode);
+            if (!Directory.Exists(basePath))
+                Directory.CreateDirectory(basePath);
 
+            // ذخیره فیلدهای Definition
+            var fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
             foreach (var field in fields)
             {
-                var value = Request.Form[field.Name];
+                string value = null;
+
+                if (field.inputType == InputType.File)
+                {
+                    var file = Request.Form.Files[field.Name];
+                    if (file != null && file.Length > 0)
+                    {
+                        var fileName = Path.GetFileName(file.FileName);
+                        var savePath = Path.Combine(basePath, fileName);
+
+                        using (var stream = new FileStream(savePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        value = fileName;
+                    }
+                }
+                else
+                {
+                    value = Request.Form[field.Name];
+                }
+
                 if (!string.IsNullOrEmpty(value))
                 {
                     var studentFormSubmissionData = new StudentFormSubmissionData
@@ -115,13 +145,35 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 }
             }
 
-            // ✅ دریافت فیلدهای Coefficient از دیتابیس
-            var formItem = await  _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
-            var formItemCoefficient = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItem.FormItemCoefficientId, cancellationToken);
-
-                foreach (var coefField in formItemCoefficient)
+            // ذخیره فیلدهای Coefficient
+            var formItem = await _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+            if (formItem.FormItemCoefficientId > 0)
+            {
+                var coefFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItem.FormItemCoefficientId, cancellationToken);
+                foreach (var coefField in coefFields)
                 {
-                    var value = Request.Form[coefField.Name];
+                    string value = null;
+
+                    if (coefField.inputType == InputType.File)
+                    {
+                        var file = Request.Form.Files[coefField.Name];
+                        if (file != null && file.Length > 0)
+                        {
+                            var fileName = Path.GetFileName(file.FileName);
+                            var savePath = Path.Combine(basePath, fileName);
+
+                            using (var stream = new FileStream(savePath, FileMode.Create))
+                            {
+                                await file.CopyToAsync(stream);
+                            }
+                            value = fileName;
+                        }
+                    }
+                    else
+                    {
+                        value = Request.Form[coefField.Name];
+                    }
+
                     if (!string.IsNullOrEmpty(value))
                     {
                         var studentFormSubmissionData = new StudentFormSubmissionData
@@ -134,55 +186,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                         await _submissionValueRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
                     }
                 }
-            
+            }
 
             return Json(new { success = true, message = "فرم با موفقیت ثبت شد" });
         }
-
-
-        //public async Task<IActionResult> SubmitForm(FormSubmissionViewModel model, CancellationToken cancellationToken)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return BadRequest("اطلاعات فرم ناقص است");
-
-        //    var submission = new StudentFormSubmissionScore
-        //    {
-        //        FormItemId = model.FormId
-        //    };
-
-        //    await _submissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
-
-        //    // ذخیره مقادیر فیلدهای Definition
-        //    foreach (var field in model.Fields)
-        //    {
-        //        var value = Request.Form[field.Name].ToString();
-        //        if (!string.IsNullOrEmpty(value))
-        //        {
-        //            await _submissionValueRepository.AddStudentFormSubmissionValueAsync(new StudentFormSubmissionData
-        //            {
-        //                StudentFormSubmissionScoreId = submission.Id,
-        //                FormItemDefinitionId = field.Id,
-        //                Value = value
-        //            }, cancellationToken);
-        //        }
-        //    }
-
-        //    // ذخیره مقادیر فیلدهای Coefficient
-        //    foreach (var coefField in model.CoefficientFields)
-        //    {
-        //        var value = Request.Form[coefField.Name].ToString();
-        //        if (!string.IsNullOrEmpty(value))
-        //        {
-        //            await _submissionValueRepository.AddStudentFormSubmissionValueAsync(new StudentFormSubmissionData
-        //            {
-        //                StudentFormSubmissionScoreId = submission.Id,
-        //                FormItemCoefficientDefinitionId = coefField.Id,
-        //                Value = value
-        //            }, cancellationToken);
-        //        }
-        //    }
-
-        //    return Json(new { success = true, message = "فرم با موفقیت ثبت شد" });
-        //}
     }
 }
