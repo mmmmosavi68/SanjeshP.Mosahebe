@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Index";
+}
+
+
+<div id="StudentList">
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // این کد باعث می‌شود که پنجره‌های مودال قابل جابه‌جایی باشند
+            $('.modal-dialog').draggable({
+                handle: ".modal-header"
+            });
+            // این کد PartialView را بارگذاری می‌کند
+            $("#StudentList").load("/DV/EducationDocument/StudentsList", function () { });
+        });
+    </script>
+}
+
+
