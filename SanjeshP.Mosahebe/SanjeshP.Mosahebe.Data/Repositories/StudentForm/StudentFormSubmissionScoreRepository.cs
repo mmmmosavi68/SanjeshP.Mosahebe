@@ -10,6 +10,7 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using SanjeshP.Mosahebe.Entities.Exam;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {

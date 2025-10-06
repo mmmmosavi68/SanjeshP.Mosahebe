@@ -22,6 +22,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         //Mousavi
         Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetDetailsAsync(int id, CancellationToken cancellationToken);
+
         Task<StudentFormSubmissionScore> GetDetailsAsyncReadOnly(int id, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken);
     }
