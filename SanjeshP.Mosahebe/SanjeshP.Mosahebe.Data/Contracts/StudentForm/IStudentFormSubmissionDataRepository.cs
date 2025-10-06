@@ -8,7 +8,7 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
 {
-    public interface IStudentFormSubmissionValueRepository : IEntityFrameworkRepository<StudentFormSubmissionData>
+    public interface IStudentFormSubmissionDataRepository : IEntityFrameworkRepository<StudentFormSubmissionData>
     {
         Task<IEnumerable<StudentFormSubmissionData>> GetByStudentFormSubmissionValueIdAsync(int submissionId, CancellationToken cancellationToken);
         Task<StudentFormSubmissionData?> GetByStudentValueIdAsync(int id, CancellationToken cancellationToken);

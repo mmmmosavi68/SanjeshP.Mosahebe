@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using SanjeshP.Mosahebe.Convertor;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Entities.StudentForm;
+using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.Exam;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
 using System;
 using System.IO;
@@ -14,27 +17,31 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
     [Area("Student")]
     public class StudentHomeController : Controller
     {
+        private readonly IMapper _mapper;
+
         private readonly IFormItemRepository _formItemRepository;
         private readonly IFormItemDefinitionRepository _formItemDefinitionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _coefficientDefinitionRepository;
         private readonly IFormItemCoefficientRepository _coefficientRepository;
-        private readonly IStudentFormSubmissionRepository _submissionRepository;
-        private readonly IStudentFormSubmissionValueRepository _submissionValueRepository;
+        private readonly IStudentFormSubmissionScoreRepository _submissionScoreRepository;
+        private readonly IStudentFormSubmissionDataRepository _submissionDataRepository;
 
-        public StudentHomeController(
+        public StudentHomeController(IMapper mapper,
             IFormItemRepository formItemRepository,
             IFormItemDefinitionRepository formItemDefinitionRepository,
             IFormItemCoefficientDefinitionRepository coefficientDefinitionRepository,
             IFormItemCoefficientRepository coefficientRepository,
-            IStudentFormSubmissionRepository submissionRepository,
-            IStudentFormSubmissionValueRepository submissionValueRepository)
+            IStudentFormSubmissionScoreRepository submissionScoreRepository,
+            IStudentFormSubmissionDataRepository submissionDataRepository)
         {
+            _mapper = mapper;
+
             _formItemRepository = formItemRepository;
             _formItemDefinitionRepository = formItemDefinitionRepository;
             _coefficientDefinitionRepository = coefficientDefinitionRepository;
             _coefficientRepository = coefficientRepository;
-            _submissionRepository = submissionRepository;
-            _submissionValueRepository = submissionValueRepository;
+            _submissionScoreRepository = submissionScoreRepository;
+            _submissionDataRepository = submissionDataRepository;
         }
 
         // GET: /Student/StudentHome
@@ -67,7 +74,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 viewModel.Coefficients = coef.ToList();
             }
 
-            return PartialView("_SubmitFormPartial", viewModel);
+            return PartialView("LoadForm", viewModel);
         }
 
         // POST: /Student/StudentHome/SubmitForm
@@ -84,12 +91,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 return BadRequest("کد ملی داوطلب نامعتبر است.");
 
             // حذف ارسال قبلی اگر وجود دارد
-            var previousSubmission = await _submissionRepository
+            var previousSubmission = await _submissionScoreRepository
                 .GetByStudentAndFormAsync(studentId, model.FormId, cancellationToken);
             if (previousSubmission != null)
             {
                 previousSubmission.IsDeleted = true;
-                await _submissionRepository.UpdateAsync(previousSubmission, cancellationToken);
+                await _submissionScoreRepository.UpdateAsync(previousSubmission, cancellationToken);
             }
 
             // ایجاد رکورد جدید برای Submission
@@ -99,7 +106,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 StudentId = studentId,
                 CreatedDate = DateTime.UtcNow
             };
-            await _submissionRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
+            await _submissionScoreRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
 
             // مسیر پایه برای ذخیره فایل‌ها
             var basePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentNationalCode);
@@ -141,7 +148,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                         InputType = field.inputType,
                         Value = value
                     };
-                    await _submissionValueRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
+                    await _submissionDataRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
                 }
             }
 
@@ -183,12 +190,55 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                             InputType = coefField.inputType,
                             Value = value
                         };
-                        await _submissionValueRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
+                        await _submissionDataRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
                     }
                 }
             }
 
             return Json(new { success = true, message = "فرم با موفقیت ثبت شد" });
         }
+        public async Task<IActionResult> SubmissionDataList(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                var data = await _submissionScoreRepository.GetByStudentAsync(studentId, cancellationToken);
+                var result = data.Select(e => new AllSubmissionDataViewModel
+                {
+                    FormTitle = e.FormItem.Title,
+                    CreateDatePersian = DateConvertor.ToShamsiDateTime(e.CreatedDate)
+                }).ToList();
+
+                return PartialView("SubmissionDataList", result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "خطا در سرور");
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> DetailSubmissionData(int id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                var datadetail = await _submissionScoreRepository.GetFormSubmissionDataByStudentAndFormAsync(studentId,id, cancellationToken);
+                if (datadetail == null)
+                {
+                    return NotFound();
+                }
+
+                var model = _mapper.Map<SubmissionDataDetailViewModel>(datadetail);
+
+                return PartialView("DetailSubmissionData", model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "خطا در سرور");
+            }
+        }
+
     }
 }

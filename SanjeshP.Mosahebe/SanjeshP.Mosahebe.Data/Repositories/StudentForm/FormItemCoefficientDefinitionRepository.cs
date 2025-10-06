@@ -24,8 +24,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 
         public async Task<FormItemCoefficientDefinition?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            return await TableNoTracking
-                .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted, cancellationToken);
+            return await TableNoTracking.FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted, cancellationToken);
         }
 
         // متد جدید: گرفتن تعریف همراه با Coefficients (برای استفاده در محاسبات)

@@ -24,23 +24,10 @@
     </div>
 
     <!-- کانتینر فرم داینامیک -->
-    <div id="formContainer" style="display:none;"></div>
+    <div id="LoadFormContainer" style="display:none;"></div>
 
     <!-- کانتینر جدول رکوردها -->
-    <div id="submissionsContainer">
-        <h4>رکوردهای ارسال شده</h4>
-        <table class="table table-bordered" id="submissionsTable">
-            <thead>
-                <tr>
-                    <th>FormId</th>
-                    <th>تاریخ ارسال</th>
-                    <th>اقدامات</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- رکوردها با Ajax بارگذاری می‌شوند -->
-            </tbody>
-        </table>
+    <div id="SubmissionDataContainer">
     </div>
 
 </div>
@@ -58,8 +45,11 @@
                 }
 
                 $("#submissionsContainer").hide();
-                $("#formContainer").show().load("/Student/StudentHome/LoadForm?formId=" + formId);
+                $("#LoadFormContainer").show().load("/Student/StudentHome/LoadForm?formId=" + formId);
             });
+
+            // این کد PartialView را بارگذاری می‌کند
+            $("#SubmissionDataContainer").load("/Student/StudentHome/SubmissionDataList", function () { });
 
             // لود رکوردهای ارسال شده
             //function loadSubmissions() {

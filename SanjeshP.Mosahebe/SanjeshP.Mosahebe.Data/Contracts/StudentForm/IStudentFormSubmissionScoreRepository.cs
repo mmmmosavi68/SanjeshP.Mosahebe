@@ -9,7 +9,7 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
 {
-    public interface IStudentFormSubmissionRepository : IEntityFrameworkRepository<StudentFormSubmissionScore>
+    public interface IStudentFormSubmissionScoreRepository : IEntityFrameworkRepository<StudentFormSubmissionScore>
     {
         Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore?> GetByStudentFormSubmissionIdAsync(int id, CancellationToken cancellationToken);
@@ -17,10 +17,11 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         Task UpdateStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken);
         Task DeleteStudentFormSubmissionAsync(int id, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore?> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
+        Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAsync(int studentId, CancellationToken cancellationToken);
+        Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
         //Mousavi
         Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetDetailsAsync(int id, CancellationToken cancellationToken);
-
         Task<StudentFormSubmissionScore> GetDetailsAsyncReadOnly(int id, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken);
     }

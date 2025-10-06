@@ -30,18 +30,18 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly ILogger<EducationDocumentController> _logger;
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IStudentRepository _studentRepository;
-        private readonly IStudentFormSubmissionRepository _studentFormSubmissionRepository;
+        private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _formItemCoefficientDefinitionRepository;
-        private readonly IStudentFormSubmissionValueRepository _studentFormSubmissionValueRepository;
+        private readonly IStudentFormSubmissionDataRepository _studentFormSubmissionValueRepository;
 
         public EducationDocumentController(IMapper mapper
                                         , IWebHostEnvironment env
                                         , ILogger<EducationDocumentController> logger
                                         , IUserTokenRepository userTokenRepository
                                         , IStudentRepository studentRepository
-                                        , IStudentFormSubmissionRepository studentFormSubmissionRepository
+                                        , IStudentFormSubmissionScoreRepository studentFormSubmissionRepository
                                         , IFormItemCoefficientDefinitionRepository formItemCoefficientDefinitionRepository
-                                        , IStudentFormSubmissionValueRepository studentFormSubmissionValueRepository)
+                                        , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository)
         {
             _mapper = mapper;
             _env = env;

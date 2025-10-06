@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "SubmissionDataList";
+}
+
+@using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
+@model IEnumerable<AllSubmissionDataViewModel>
+
+@{
+    int i = 1;
+}
+
+<div class="bg-light rounded p-4">
+    <table class="table-hover table-striped table text-center" id="tbl_data">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>نوع مدرک</th>
+                <th>تاریخ ارسال</th>
+                <th>مشاهده</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.FormItemId)">
+                    <td>@i</td>
+                    <td>@Html.DisplayFor(modelItem => item.FormTitle)</td>
+                    <td>@Html.DisplayFor(modelItem => item.CreateDatePersian)</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-info" onclick="DetailSubmissionData('@item.FormItemId')" title="مشاهده"><i class="fa fa-info"></i></a>
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.FormItemId" data-toggle="DeleteSubmissionData" title="حذف فرم"><i class="fa fa-trash"></i></a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $('#tbl_data').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#tbl_data_wrapper .col-md-6:eq(0)');
+
+        $('.selectAll').click(function () {
+            var table = $(this).closest('table');
+            $('input:checkbox', table).prop('checked', this.checked);
+        });
+
+        $('[data-toggle="DeleteSubmissionData"]').confirmation({
+            title: 'آیا از حذف مطمئن هستید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () {
+                DeleteSubmissionData($(this).attr('id'));
+            }
+        });
+    });
+    function DetailSubmissionData(id) {
+        openModal('جزئیات فرم', '/Student/StudentHome/DetailSubmissionData?Id=' + id, false);
+    }
+    //function DeleteSubmissionData(id) {
+    //    $.ajax({
+    //        method: "POST",
+    //        url: "/Student/StudentHome/DeleteSubmissionData?submissionId=" + id,
+    //        success: function (response) {
+    //            if (response.isSuccess) {
+    //                $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
+    //                    Toast.fire({ icon: 'success', title: response.message });
+    //                });
+    //                $("#examList").load("/Exam/Exam/ExamsList");
+    //            } else {
+    //                Toast.fire({ icon: 'warning', title: response.message });
+    //            }
+    //        },
+    //        error: function () {
+    //            Toast.fire({
+    //                icon: 'error',
+    //                title: 'فرمی جهت حذف ارسال نشده است یا خطایی رخ داده.'
+    //            });
+    //        }
+    //    });
+    //}
+</script>
+

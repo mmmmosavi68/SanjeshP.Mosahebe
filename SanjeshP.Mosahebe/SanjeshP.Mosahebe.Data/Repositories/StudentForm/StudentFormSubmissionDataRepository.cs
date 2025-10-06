@@ -12,9 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {
-    public class StudentFormSubmissionValueRepository : EntityFrameworkRepository<StudentFormSubmissionData>, IStudentFormSubmissionValueRepository, IScopedDependency
+    public class StudentFormSubmissionDataRepository : EntityFrameworkRepository<StudentFormSubmissionData>, IStudentFormSubmissionDataRepository, IScopedDependency
     {
-        public StudentFormSubmissionValueRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+        public StudentFormSubmissionDataRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
         public async Task<IEnumerable<StudentFormSubmissionData>> GetByStudentFormSubmissionValueIdAsync(int submissionId, CancellationToken cancellationToken)
         {
