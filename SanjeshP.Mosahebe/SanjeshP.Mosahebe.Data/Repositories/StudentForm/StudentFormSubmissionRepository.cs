@@ -52,5 +52,69 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                 .FirstOrDefaultAsync(x => x.StudentId == studentId && x.FormItemId == formItemId && !x.IsDeleted, cancellationToken);
         }
 
+        // Mousavi
+        public async Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(s => s.FormItem)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                .Where(s => s.StudentId == studentId)
+                .OrderByDescending(s => s.CreatedDate)
+                .ToListAsync(cancellationToken);
+        }
+
+        //Mousavi
+        public async Task<StudentFormSubmissionScore> GetDetailsAsync(int id, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(s => s.FormItem)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+        //Mousavi
+        public async Task<StudentFormSubmissionScore> GetDetailsAsyncReadOnly(int id, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(s => s.FormItem)
+                    .ThenInclude(fi => fi.FormItemCoefficient)
+                        .ThenInclude(fic => fic.CoefficientId) // اگر FormItemCoefficient مجموعه Coefficients نگه می‌دارد
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                        .ThenInclude(ficd => ficd.CoefficientId) // اگر FormItemCoefficientDefinition هم Collection Coefficients دارد
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+        //Mousavi
+        //public async Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken)
+        //{
+        //    // از Table (با Tracking) استفاده می‌کنیم تا تغییرات روی همین موجودیت‌ها قابل ذخیره باشد
+        //    return await Table
+        //        .Include(s => s.FormItem)
+        //            .ThenInclude(fi => fi.FormItemCoefficient)
+        //                .ThenInclude(fic => fic.CoefficientId)
+        //        .Include(s => s.StudentFormSubmissionDatas)
+        //            .ThenInclude(d => d.FormItemDefinition)
+        //        .Include(s => s.StudentFormSubmissionDatas)
+        //            .ThenInclude(d => d.FormItemCoefficientDefinition)
+        //                .ThenInclude(ficd => ficd.CoefficientId)
+        //        .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        //}
+        public async Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken)
+        {
+            return await Table
+                .Include(s => s.FormItem)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                        .ThenInclude(fd => fd.Coefficients) // در صورت وجود نِیوِیگیشن
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+
     }
 }

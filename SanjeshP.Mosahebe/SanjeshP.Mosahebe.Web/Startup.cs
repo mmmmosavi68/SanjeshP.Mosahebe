@@ -109,6 +109,11 @@ namespace SanjeshP.Mosahebe.Web
                     name: "auth",
                     areaName: "Auth",
                     pattern: "Auth/{controller=Home}/{action=Index}/{id?}");
+                // DocumentVerification area
+                endpoints.MapAreaControllerRoute(
+                    name: "documentVerification",
+                    areaName: "DocumentVerification",
+                    pattern: "DV/{controller=Home}/{action=Index}/{id?}");
                 // Exam area
                 endpoints.MapAreaControllerRoute(
                     name: "exam",
@@ -124,6 +129,11 @@ namespace SanjeshP.Mosahebe.Web
                     name: "home",
                     areaName: "Home",
                     pattern: "Home/{controller=Home}/{action=Index}/{id?}");
+                // Interview area
+                endpoints.MapAreaControllerRoute(
+                    name: "interview",
+                    areaName: "Interview",
+                    pattern: "Interview/{controller=Home}/{action=Index}/{id?}");
                 // Menu area
                 endpoints.MapAreaControllerRoute(
                     name: "menu",
