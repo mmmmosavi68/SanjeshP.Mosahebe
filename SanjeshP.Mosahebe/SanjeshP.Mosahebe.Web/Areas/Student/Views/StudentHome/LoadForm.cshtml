@@ -79,34 +79,34 @@
 <div id="formMessage" style="margin-top:10px;"></div>
 
 
-    <script>
-        $(document).ready(function () {
+<script>
+    $(document).ready(function () {
         $('#formSubmission').submit(function (e) {
-                e.preventDefault();
-                var form = $(this);
-                var formData = new FormData(this);
-                console.log(form);
+            e.preventDefault();
+            var form = $(this);
+            var formData = new FormData(this);
+            console.log(form);
             console.log(formData)
-                $.ajax({
-                    url: '@Url.Action("SubmitForm", "StudentHome", new { area = "Student" })',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-                        if (response.success) {
-                            $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
-                            $('#studentForm')[0].reset();
-                        } else {
-                            $('#formMessage').html('<div class="alert alert-danger">' + response.message + '</div>');
-                        }
-                    },
-                    error: function (xhr) {
-                        $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
+            $.ajax({
+                url: '@Url.Action("SubmitForm", "StudentHome", new { area = "Student" })',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
+                        $('#studentForm')[0].reset();
+                    } else {
+                        $('#formMessage').html('<div class="alert alert-danger">' + response.message + '</div>');
                     }
-                });
+                },
+                error: function (xhr) {
+                    $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
+                }
             });
         });
-    </script>
+    });
+</script>
 
 

@@ -10,12 +10,13 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using SanjeshP.Mosahebe.Entities.Exam;
 
 namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {
-    public class StudentFormSubmissionRepository : EntityFrameworkRepository<StudentFormSubmissionScore>, IStudentFormSubmissionRepository, IScopedDependency
+    public class StudentFormSubmissionScoreRepository : EntityFrameworkRepository<StudentFormSubmissionScore>, IStudentFormSubmissionScoreRepository, IScopedDependency
     {
-        public StudentFormSubmissionRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+        public StudentFormSubmissionScoreRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
         public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken)
         {
@@ -52,5 +53,25 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                 .FirstOrDefaultAsync(x => x.StudentId == studentId && x.FormItemId == formItemId && !x.IsDeleted, cancellationToken);
         }
 
+        public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAsync(int studentId, CancellationToken cancellationToken)
+        {
+
+            return await TableNoTracking
+            .Include(fss => fss.FormItem)                      // جدول FormItems
+            .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
+            .Where(fss => fss.StudentId == studentId)
+            .ToListAsync(cancellationToken);
+
+        }
+
+        public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+            .Include(fss => fss.FormItem)                      // جدول FormItems
+            .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
+            .Where(fss => fss.StudentId == studentId)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+        }
     }
 }
