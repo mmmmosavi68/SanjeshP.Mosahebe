@@ -15,6 +15,8 @@
             <tr class='trhead'>
                 <th>#</th>
                 <th>نوع مدرک</th>
+                <th>خلاصه اطلاعات</th> <!-- ستون جدید -->
+
                 <th>تاریخ ارسال</th>
                 <th>مشاهده</th>
                 <th>عملیات</th>
@@ -26,9 +28,17 @@
                 <tr id="tr_@(item.FormItemId)">
                     <td>@i</td>
                     <td>@Html.DisplayFor(modelItem => item.FormTitle)</td>
+                    <td>
+                        @{
+                            var text = string.Join(" | ", item.SubmissionValues); // همه مقادیر را در یک خط
+                            var displayText = text.Length > 80 ? text.Substring(0, 80) + "..." : text;
+                        }
+                        <span title="@text">@displayText</span>
+                    </td>
+
                     <td>@Html.DisplayFor(modelItem => item.CreateDatePersian)</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-info" onclick="DetailSubmissionData('@item.FormItemId')" title="مشاهده"><i class="fa fa-info"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="DetailSubmissionData('@item.FormItemId', '@item.FormTitle')" title="مشاهده"><i class="fa fa-info"></i></a>
                     </td>
                     <td>
                         <a class="btn btn-sm btn-outline-danger" id="@item.FormItemId" data-toggle="DeleteSubmissionData" title="حذف فرم"><i class="fa fa-trash"></i></a>
@@ -74,8 +84,8 @@
             }
         });
     });
-    function DetailSubmissionData(id) {
-        openModal('جزئیات فرم', '/Student/StudentHome/DetailSubmissionData?Id=' + id, false);
+    function DetailSubmissionData(id,title) {
+        openModal(title, '/Student/StudentHome/DetailSubmissionData?id=' + id, false);
     }
     //function DeleteSubmissionData(id) {
     //    $.ajax({

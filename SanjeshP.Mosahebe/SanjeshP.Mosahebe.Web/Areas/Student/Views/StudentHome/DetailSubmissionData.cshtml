@@ -1,7 +1,44 @@
 ﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.SubmissionDataDetailViewModel
 
-@*     <p><strong>@Html.DisplayNameFor(m => m.Title):</strong> @Model.Title</p>
-    <p><strong>@Html.DisplayNameFor(m => m.Description):</strong> @Model.Description</p>
-    <p><strong>@Html.DisplayName("نوع آزمون"):</strong> @Model.TypeOfExamTitle</p>
-    <p><strong>@Html.DisplayNameFor(m => m.IsActive):</strong> @(Model.IsActive ? "فعال" : "غیرفعال")</p>
- *@
+
+<div class="row">
+    <div class="col-sm-6">
+        @foreach (var field in Model.StudentFormSubmissionDatas)
+        {
+            var idx = field.Id;
+            var oneMax = Model.FormItem?.OneMaxScore ?? 0;
+
+            <div class="field-line mb-2" data-idx="@idx" data-one-max="@oneMax">
+                <label class="fw-bold me-1">
+                    @((field.FormItemDefinition?.Label)
+                        ?? (field.FormItemCoefficientDefinition?.Label)
+                        ?? "بدون عنوان")
+                </label>:
+                <span>
+                    @* مقدار بر اساس نوع فیلد *@
+                    @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
+                    {
+                        <a asp-controller="EducationDocument"
+                           asp-action="DownloadSubmissionFile"
+                           asp-route-submissionDataId="@field.Id"
+                           asp-route-studentId="@Model.StudentId"
+                           target="_blank" rel="noopener noreferrer">دانلود فایل</a>
+                    }
+                    else if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox)
+                    {
+                        <span>@(field.Value == "true" ? "بله" : "خیر")</span>
+                    }
+                    else
+                    {
+                        <span>@field.Value</span>
+                    }
+                </span>
+
+                @* مقادیر مخفی برای بایند کردن در پست *@
+                <input type="hidden" name="Forms[@Model.FormItemId].Datas[@idx].SubmissionDataId" value="@field.Id" />
+                <input type="hidden" name="Forms[@Model.FormItemId].Datas[@idx].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
+                <input type="hidden" name="Forms[@Model.FormItemId].Datas[@idx].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
+            </div>
+        }
+    </div>
+</div>

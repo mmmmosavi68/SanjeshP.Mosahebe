@@ -60,6 +60,9 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             return await TableNoTracking
             .Include(fss => fss.FormItem)                      // جدول FormItems
             .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
+                .ThenInclude(d => d.FormItemDefinition)
+            .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
             .Where(fss => fss.StudentId == studentId)
             .ToListAsync(cancellationToken);
 
@@ -71,7 +74,10 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             return await TableNoTracking
             .Include(fss => fss.FormItem)                      // جدول FormItems
             .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
-            .Where(fss => fss.StudentId == studentId)
+                .ThenInclude(d => d.FormItemDefinition)
+             .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+            .Where(fss => fss.StudentId == studentId && fss.FormItemId == formItemId)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
         }

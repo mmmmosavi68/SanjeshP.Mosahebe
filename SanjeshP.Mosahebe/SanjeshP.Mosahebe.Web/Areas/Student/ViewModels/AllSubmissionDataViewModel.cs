@@ -9,5 +9,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
         public int FormItemId { get; set; }
         public string FormTitle { get; set; }      // عنوان فرم
         public string CreateDatePersian { get; set; }
+
+        // مقادیر فرم
+        public List<string> SubmissionValues { get; set; } = new();
     }
 }

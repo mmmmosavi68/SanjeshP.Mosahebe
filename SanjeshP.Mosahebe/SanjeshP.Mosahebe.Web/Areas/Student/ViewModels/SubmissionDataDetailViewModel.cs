@@ -1,22 +1,21 @@
 ﻿using SanjeshP.Mosahebe.Entities.StudentForm;
+using SanjeshP.Mosahebe.WebFramework.Api;
 using System;
 using System.Collections.Generic;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
 {
-    public class SubmissionDataDetailViewModel
+    public class SubmissionDataDetailViewModel :BaseDto<SubmissionDataDetailViewModel,StudentFormSubmissionScore,int>
     {
-        // فیلدهای جدول اصلی
-        public int Id { get; set; }
-        public DateTime CreatedDate { get; set; }
+        /// شناسه فرم اصلی (مثلاً فرم اطلاعات زبان، فرم سوابق پژوهشی)
         public int FormItemId { get; set; }
+        public FormItem FormItem { get; set; }
 
-        // فیلدهای جدول FormItem
-        public string FormTitle { get; set; }
-        public string FormDescription { get; set; }
+        /// شناسه دانشجو یا داوطلبی که این فرم را پر کرده
+        public int? StudentId { get; set; }
 
-        // فیلدهای جدول StudentFormSubmissionData
-        public string SubmissionDataValue { get; set; }
-        public string SubmissionDataInputType { get; set; }
+        /// مجموعه مقادیر پر شده برای این ارسال (هر فیلد یک مقدار)
+        public ICollection<StudentFormSubmissionData> StudentFormSubmissionDatas { get; set; }
+
     }
 }

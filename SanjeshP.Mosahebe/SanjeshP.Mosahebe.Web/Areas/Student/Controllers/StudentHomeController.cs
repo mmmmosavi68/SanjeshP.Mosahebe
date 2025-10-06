@@ -64,6 +64,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var viewModel = new FormSubmissionViewModel
             {
                 FormId = form.Id,
+                
                 Fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken)
             };
 
@@ -203,12 +204,20 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-                var data = await _submissionScoreRepository.GetByStudentAsync(studentId, cancellationToken);
-                var result = data.Select(e => new AllSubmissionDataViewModel
+                var forms = await _submissionScoreRepository.GetByStudentAsync(studentId, cancellationToken);
+
+                var result = forms.Select(f => new AllSubmissionDataViewModel
                 {
-                    FormTitle = e.FormItem.Title,
-                    CreateDatePersian = DateConvertor.ToShamsiDateTime(e.CreatedDate)
-                }).ToList();
+                    FormItemId = f.FormItemId,
+                    FormTitle = f.FormItem.Title,
+                    CreateDatePersian = DateConvertor.ToShamsiDateTime(f.CreatedDate), // فرض بر این که این پراپرتی توی entity هست یا خودت تبدیلش می‌کنی
+                    SubmissionValues = f.StudentFormSubmissionDatas.Select(d =>
+                                                {var label = d.FormItemDefinition?.Label
+                                                                ?? d.FormItemCoefficientDefinition?.Label
+                                                                ?? "بدون عنوان";
+                                                    return $"{label}: {d.Value}";
+                                                }).ToList()
+                });
 
                 return PartialView("SubmissionDataList", result);
             }
