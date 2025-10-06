@@ -1,0 +1,318 @@
+﻿@model IEnumerable<StudentFormSubmissionScore>
+@using SanjeshP.Mosahebe.Entities.StudentForm
+@{
+    Layout = null; // اگر layout دارید خط را حذف کنید
+}
+
+
+<style>
+    .scoreItemContainer {
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.05);
+    }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+    }
+
+    .shadow {
+        transition: all 0.6s ease; /* smooth transition برای hover */
+    }
+
+        .shadow:hover {
+            box-shadow: 0px 13px 22px rgb(0 0 0 / 62%) !important;
+            transform: scale(1.03); /* 5% بزرگتر */
+        }
+</style>
+
+<form asp-action="SaveScores" method="post" novalidate>
+    <div class="container mt-2 pl-4 pr-4">
+        @foreach (var form in Model)
+        {
+            var sid = form.StudentId;
+            <div class="card scoreItemContainer shadow  mb-3" data-id="@form.Id">
+                <div class="card-header card-title bg-light">
+                    <strong>@form.FormItem?.Title</strong>
+                </div>
+
+                <div class="card-body " id="scoreItem_@form.Id">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            @* ستون اطلاعات مدارک: هر field را نمایش بده *@
+                            @foreach (var field in form.StudentFormSubmissionDatas)
+                            {
+                                var idx = field.Id;
+                                var oneMax = form.FormItem?.OneMaxScore ?? 0;
+                                <div class="mb-2 field-line" data-idx="@idx" data-one-max="@oneMax">
+                                    <label class="me-1">@((field.FormItemDefinition?.Label) ?? (field.FormItemCoefficientDefinition?.Label) ?? "بدون عنوان")</label>:
+                                    <span>
+                                        @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
+                                        {
+                                            <a asp-controller="EducationDocument"
+                                               asp-action="DownloadSubmissionFile"
+                                               asp-route-submissionDataId="@field.Id"
+                                               asp-route-studentId="@sid"
+                                               target="_blank" rel="noopener noreferrer">دانلود فایل</a>
+                                        }
+                                        else if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox)
+                                        {
+                                            <span>@(field.Value == "true" ? "بله" : "خیر")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@field.Value</span>
+                                        }
+                                    </span>
+
+                                    @* Hidden data for binding per field *@
+                                    <input type="hidden" name="Forms[@form.Id].Datas[@idx].SubmissionDataId" value="@field.Id" />
+                                    <input type="hidden" name="Forms[@form.Id].Datas[@idx].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
+                                    <input type="hidden" name="Forms[@form.Id].Datas[@idx].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-sm-6 ">
+                            <div class="card shadow">
+                                <div class="card-header bg-info">نتیجه</div>
+                                <div class="row card-body">
+                                    <div class="col-6">
+                                        @* چک‌باکس تایید (برای کل form یا می‌توانید برای هر field جداگانه کنید) *@
+                                        <input type="checkbox"
+                                               id="notRejected_@form.Id"
+                                               class="notRejected form-check-input"
+                                               data-id="@form.Id" />
+                                        <label for="notRejected_@form.Id" class="form-check-label">مدرک، مورد تایید است.</label>
+
+                                        @* datalist دلایل رد (پیش‌فرض فعال) *@
+                                        <input list="rejectedList_@form.Id"
+                                               maxlength="1000"
+                                               id="rejectReason_@form.Id"
+                                               name="Forms[@form.Id].RejectReason"
+                                               type="text"
+                                               class="rejectReason form-control mt-2"
+                                               placeholder="علت عدم تایید" />
+
+                                        <datalist id="rejectedList_@form.Id">
+                                            <option value="تکراری"></option>
+                                            <option value="موقعیت اشتباه"></option>
+                                            <option value="لیست سیاه"></option>
+                                        </datalist>
+                                    </div>
+                                    @if (form.FormItem?.OneMaxScore > 0)
+                                    {
+
+
+                                        <div class="col-6">
+                                            <label>امتیاز شما:</label>
+
+                                            @* برای این مثال ورودی نمره به سطح form اختصاص داده شده است.
+                                    اگر می‌خواهید برای هر field جداگانه نمره بگیرید، نام فیلد را مطابق Datas[@idx].ManualScore بسازید. *@
+
+                                            <input id="scoreValue_@form.Id"
+                                                   name="Forms[@form.Id].ScoreValue"
+                                                   type="text"
+                                                   class="scoreTextValue form-control"
+                                                   placeholder="امتیاز خود را برای این مدرک وارد نمایید."
+                                                   data-one-max="@(form.FormItem?.OneMaxScore ?? 0)"
+                                                   min="0"
+                                                   max="@(form.FormItem?.OneMaxScore ?? 0)"
+                                                   disabled />
+
+                                            <span class="form-text text-muted">حداکثر امتیاز: @(form.FormItem?.OneMaxScore ?? 0)</span>
+
+                                            <div class="invalid-feedback mt-1" id="scoreFeedback_@form.Id" style="display:none">
+                                                لطفاً عددی بین 0 و @(form.FormItem?.OneMaxScore ?? 0) وارد کنید.
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- /.row -->
+                </div> <!-- /.card-body -->
+            </div> <!-- /.card -->
+            @* Hidden fields for form-level binding *@
+            <input type="hidden" name="Forms[@form.Id].FormSubmissionScoreId" value="@form.Id" />
+            <input type="hidden" name="Forms[@form.Id].FormItemId" value="@form.FormItemId" />
+        }
+    </div>
+
+    <div class="container mb-5">
+        <button type="submit" class="btn btn-success">ذخیره نمرات</button>
+    </div>
+</form>
+
+<script>
+    $(function () {
+        // محدود کردن فرمت ورودی به عدد با حداکثر دو رقم اعشار
+        $(document).on('input', '.scoreTextValue', function () {
+            var $this = $(this);
+            var val = $this.val();
+            var m = val.match(/^\d+(\.\d{0,2})?/);
+            var newVal = m ? m[0] : '';
+            if (newVal !== val) $this.val(newVal);
+
+            validateScoreInput($this);
+        });
+
+        // مقداردهی اولیه و ست کردن وضعیت بر اساس هر checkbox
+        $('.notRejected').each(function () {
+            var id = $(this).data('id');
+            toggleScoreByCheckbox(id, $(this).prop('checked'));
+        });
+
+        // تغییر وضعیت هنگام چک‌باکس
+        $(document).on('change', '.notRejected', function () {
+            var id = $(this).data('id');
+            toggleScoreByCheckbox(id, $(this).prop('checked'));
+        });
+
+        function toggleScoreByCheckbox(id, checked) {
+            var $reject = $('#rejectReason_' + id);
+            var $score = $('#scoreValue_' + id);
+            var $feedback = $('#scoreFeedback_' + id);
+
+            if (checked) {
+                if ($reject.length) {
+                    $reject.val('');
+                    $reject.prop('disabled', true);
+                    $reject.prop('required', false);
+                }
+                if ($score.length) {
+                    $score.prop('disabled', false);
+                    $score.prop('required', true);
+                    // set max from data-one-max if missing
+                    var dataOneMax = $score.data('oneMax') || $score.data('one-max');
+                    if (!$score.attr('max') && dataOneMax) {
+                        $score.attr('max', dataOneMax);
+                    }
+                    validateScoreInput($score);
+                }
+                if ($feedback.length) $feedback.hide();
+            } else {
+                if ($score.length) {
+                    $score.prop('required', false);
+                    $score.prop('disabled', true);
+                    $score.val('');
+                    $score.removeClass('is-invalid');
+                }
+                if ($reject.length) {
+                    $reject.prop('disabled', false);
+                    $reject.prop('required', true);
+                }
+                if ($feedback.length) $feedback.hide();
+            }
+        }
+
+        function validateScoreInput($input) {
+            if (!$input || $input.length === 0) return true;
+            var id = $input.attr('id') || '';
+            var idx = id.replace('scoreValue_', '');
+            var $feedback = $('#scoreFeedback_' + idx);
+
+            if ($input.prop('disabled')) {
+                $input.removeClass('is-invalid');
+                if ($feedback.length) $feedback.hide();
+                return true;
+            }
+
+            var val = $input.val();
+            if (val === '' || isNaN(parseFloat(val))) {
+                $input.addClass('is-invalid');
+                if ($feedback.length) {
+                    $feedback.text('لطفاً یک عدد معتبر وارد کنید.').show();
+                }
+                return false;
+            }
+
+            var num = parseFloat(val);
+            var min = parseFloat($input.attr('min') || '0');
+            var maxAttr = parseFloat($input.attr('max') || '');
+            var dataMax = parseFloat($input.data('one-max') || $input.data('oneMax') || '');
+            var max = (!isNaN(maxAttr) && maxAttr > 0) ? maxAttr : (!isNaN(dataMax) ? dataMax : 0);
+
+            if (num < min || (max > 0 && num > max)) {
+                $input.addClass('is-invalid');
+                if ($feedback.length) {
+                    $feedback.text('مقدار باید بین ' + min + ' و ' + max + ' باشد.').show();
+                }
+                return false;
+            }
+
+            $input.removeClass('is-invalid');
+            if ($feedback.length) $feedback.hide();
+            return true;
+        }
+
+        // اعتبارسنجی جامع قبل از ارسال فرم
+        $('form[asp-action="SaveScores"], form').on('submit', function (e) {
+            var ok = true;
+
+            // اعتبارسنجی نمرات فعال
+            $('.scoreTextValue').each(function () {
+                if (!validateScoreInput($(this))) ok = false;
+            });
+
+            // بررسی هر فرم/آیتم: اگر تیک تایید زده نشده باشد، rejectReason باید مقدار داشته باشد
+            $('.notRejected').each(function () {
+                var id = $(this).data('id');
+                var checked = $(this).prop('checked');
+
+                // اگر تیک زده شده، باید نمره معتبر داشته باشد (خالی یا invalid خطاست)
+                if (checked) {
+                    var $score = $('#scoreValue_' + id);
+                    if ($score.length && ($score.val() === '' || $score.hasClass('is-invalid'))) {
+                        ok = false;
+                        $score.addClass('is-invalid');
+                    }
+                } else {
+                    // اگر تیک نخورده، rejectReason باید پر باشد (یا از datalist انتخاب شده باشد)
+                    var $reject = $('#rejectReason_' + id);
+                    if ($reject.length) {
+                        var val = ($reject.val() || '').toString().trim();
+                        if (val === '') {
+                            ok = false;
+                            // نشان دادن خطا برای rejectReason
+                            $reject.addClass('is-invalid');
+                            // ایجاد یا ظاهر کردن پیام خطا کنار فیلد (در صورت نبودن)
+                            var $fb = $('#rejectFeedback_' + id);
+                            if ($fb.length === 0) {
+                                $fb = $('<div/>', {
+                                    id: 'rejectFeedback_' + id,
+                                    'class': 'invalid-feedback',
+                                    text: 'لطفاً دلیل رد را وارد یا از لیست انتخاب کنید.'
+                                });
+                                $reject.after($fb);
+                            }
+                            $fb.show();
+                        } else {
+                            $reject.removeClass('is-invalid');
+                            $('#rejectFeedback_' + id).hide();
+                        }
+                    } else {
+                        // اگر عنصر وجود ندارد، علامت هشدار در console برای دیباگ
+                        console.warn('reject input not found for id=', id);
+                    }
+                }
+            });
+
+            if (!ok) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('لطفاً خطاهای فرم را اصلاح کنید.');
+                var $first = $('.is-invalid').first();
+                if ($first.length) $('html, body').animate({ scrollTop: $first.offset().top - 100 }, 300);
+            }
+        });
+
+    });
+</script>
+

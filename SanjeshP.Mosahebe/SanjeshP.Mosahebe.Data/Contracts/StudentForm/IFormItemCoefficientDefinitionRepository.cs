@@ -9,9 +9,11 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
     public interface IFormItemCoefficientDefinitionRepository : IEntityFrameworkRepository<FormItemCoefficientDefinition>
     {
         Task<IEnumerable<FormItemCoefficientDefinition>> GetByCoefficientIdAsync(int coefficientId, CancellationToken cancellationToken);
+        Task<FormItemCoefficientDefinition?> GetWithCoefficientsAsync(int id, CancellationToken cancellationToken);
         Task<FormItemCoefficientDefinition?> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task AddAsync(FormItemCoefficientDefinition entity, CancellationToken cancellationToken);
         Task UpdateAsync(FormItemCoefficientDefinition entity, CancellationToken cancellationToken);
         Task DeleteAsync(int id, CancellationToken cancellationToken);
+        Task<FormItemCoefficientDefinition?> GetFormItemCoefficientDefinitionWithCoefficientsAsync(int id, CancellationToken cancellationToken);
     }
 }

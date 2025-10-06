@@ -53,25 +53,5 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                 .FirstOrDefaultAsync(x => x.StudentId == studentId && x.FormItemId == formItemId && !x.IsDeleted, cancellationToken);
         }
 
-        public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAsync(int studentId, CancellationToken cancellationToken)
-        {
-
-            return await TableNoTracking
-            .Include(fss => fss.FormItem)                      // جدول FormItems
-            .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
-            .Where(fss => fss.StudentId == studentId)
-            .ToListAsync(cancellationToken);
-
-        }
-
-        public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
-        {
-            return await TableNoTracking
-            .Include(fss => fss.FormItem)                      // جدول FormItems
-            .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
-            .Where(fss => fss.StudentId == studentId)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-        }
     }
 }

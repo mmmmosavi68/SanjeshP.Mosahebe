@@ -17,9 +17,9 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         Task UpdateStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken);
         Task DeleteStudentFormSubmissionAsync(int id, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore?> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
-        Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAsync(int studentId, CancellationToken cancellationToken);
-        Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
 
-
+        Task<StudentFormSubmissionScore> GetDetailsAsyncReadOnly(int id, CancellationToken cancellationToken);
+        Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken);
     }
+
 }

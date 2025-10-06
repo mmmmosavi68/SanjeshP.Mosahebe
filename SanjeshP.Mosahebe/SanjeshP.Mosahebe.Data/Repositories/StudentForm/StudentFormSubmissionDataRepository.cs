@@ -45,5 +45,13 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             value.IsDeleted = true;
             await UpdateAsync(value, cancellationToken);
         }
+
+        public async Task<StudentFormSubmissionData?> GetSubmissionDataByIdAsync(int submissionDataId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Where(v => v.Id == submissionDataId && !v.IsDeleted)                
+                .Include(d => d.StudentFormSubmissionScore) // اگر نیاز دارید اطلاعات والد را هم داشته باشید
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

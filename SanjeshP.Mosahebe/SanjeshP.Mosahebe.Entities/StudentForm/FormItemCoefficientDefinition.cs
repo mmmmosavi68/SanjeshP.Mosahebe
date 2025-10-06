@@ -27,8 +27,12 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public string Description { get; set; }
         public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
         public string ErrorMessage { get; set; }
-
+        //<<<<<<< Updated upstream
         // ✅ اضافه شده برای نمایش Dropdown
         public string DropdownOptions { get; set; }  // مقادیر با - جدا می‌شوند
+                                                     //=======
+                                                     // new navigation: one definition -> many Coefficients
+        public ICollection<Coefficient> Coefficients { get; set; } = new List<Coefficient>();
+        //>>>>>>> Stashed changes
     }
 }
