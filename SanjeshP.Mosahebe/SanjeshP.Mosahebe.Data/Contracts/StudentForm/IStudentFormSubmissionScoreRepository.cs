@@ -19,12 +19,15 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         Task<StudentFormSubmissionScore?> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
         Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAsync(int studentId, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken);
+        Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndSubmissionScoresIDAsync(int studentId, int SubmissionId, CancellationToken cancellationToken);
+
         //Mousavi
         Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetDetailsAsync(int id, CancellationToken cancellationToken);
 
         Task<StudentFormSubmissionScore> GetDetailsAsyncReadOnly(int id, CancellationToken cancellationToken);
         Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken);
+    
     }
 
 }

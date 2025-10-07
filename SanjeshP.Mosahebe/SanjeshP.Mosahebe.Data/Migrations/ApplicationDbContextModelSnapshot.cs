@@ -846,6 +846,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<int>("CoefficientId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("FormItemCoefficientDefinitionId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -859,6 +862,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("real");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FormItemCoefficientDefinitionId");
 
                     b.ToTable("Coefficients");
                 });
@@ -1766,6 +1771,13 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.StudentForm.Coefficient", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemCoefficientDefinition", null)
+                        .WithMany("Coefficients")
+                        .HasForeignKey("FormItemCoefficientDefinitionId");
                 });
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.StudentForm.FormItem", b =>

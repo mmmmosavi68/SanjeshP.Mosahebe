@@ -36,14 +36,19 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task UpdateStudentFormSubmissionValueAsync(StudentFormSubmissionData value, CancellationToken cancellationToken) =>
             await UpdateAsync(value, cancellationToken);
 
-        public async Task DeleteStudentFormSubmissionValueAsync(int id, CancellationToken cancellationToken)
+        public async Task DeleteStudentFormSubmissionValueAsync(int submissionId, CancellationToken cancellationToken)
         {
-            var value = await GetByStudentValueIdAsync(id, cancellationToken);
-            if (value is null)
-                throw new KeyNotFoundException("مقدار فرم مورد نظر یافت نشد");
+            var values = await GetByStudentFormSubmissionValueIdAsync(submissionId, cancellationToken);
 
-            value.IsDeleted = true;
-            await UpdateAsync(value, cancellationToken);
+            if (values == null || !values.Any())
+                throw new KeyNotFoundException("هیچ مقدار فرمی برای این شناسه یافت نشد");
+
+            foreach (var value in values)
+            {
+                value.IsDeleted = true;
+            }
+
+            await UpdateRangeAsync(values, cancellationToken);
         }
 
         public async Task<StudentFormSubmissionData?> GetSubmissionDataByIdAsync(int submissionDataId, CancellationToken cancellationToken)

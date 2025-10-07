@@ -16,5 +16,6 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public float RangeStart { get; set; }
         public float RangeEnd { get; set; }
         public float Value { get; set; }
+
     }
 }

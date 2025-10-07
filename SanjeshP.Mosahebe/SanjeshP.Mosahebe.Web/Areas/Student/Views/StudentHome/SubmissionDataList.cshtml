@@ -25,7 +25,7 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr id="tr_@(item.FormItemId)">
+                <tr id="tr_@(item.SubmissionId)">
                     <td>@i</td>
                     <td>@Html.DisplayFor(modelItem => item.FormTitle)</td>
                     <td>
@@ -38,10 +38,10 @@
 
                     <td>@Html.DisplayFor(modelItem => item.CreateDatePersian)</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-info" onclick="DetailSubmissionData('@item.FormItemId', '@item.FormTitle')" title="مشاهده"><i class="fa fa-info"></i></a>
+                        <a class="btn btn-sm btn-outline-info" onclick="SubmissionDataDetail('@item.SubmissionId', '@item.FormTitle')" title="مشاهده"><i class="fa fa-info"></i></a>
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-outline-danger" id="@item.FormItemId" data-toggle="DeleteSubmissionData" title="حذف فرم"><i class="fa fa-trash"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" id="@item.SubmissionId" data-toggle="DeleteSubmissionData" title="حذف فرم"><i class="fa fa-trash"></i></a>
                     </td>
                 </tr>
                 i++;
@@ -84,30 +84,32 @@
             }
         });
     });
-    function DetailSubmissionData(id,title) {
-        openModal(title, '/Student/StudentHome/DetailSubmissionData?id=' + id, false);
+    function SubmissionDataDetail(id, title) {
+        openModal(title, '/Student/StudentHome/SubmissionDataDetail?id=' + id, false);
     }
-    //function DeleteSubmissionData(id) {
-    //    $.ajax({
-    //        method: "POST",
-    //        url: "/Student/StudentHome/DeleteSubmissionData?submissionId=" + id,
-    //        success: function (response) {
-    //            if (response.isSuccess) {
-    //                $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
-    //                    Toast.fire({ icon: 'success', title: response.message });
-    //                });
-    //                $("#examList").load("/Exam/Exam/ExamsList");
-    //            } else {
-    //                Toast.fire({ icon: 'warning', title: response.message });
-    //            }
-    //        },
-    //        error: function () {
-    //            Toast.fire({
-    //                icon: 'error',
-    //                title: 'فرمی جهت حذف ارسال نشده است یا خطایی رخ داده.'
-    //            });
-    //        }
-    //    });
-    //}
+    function DeleteSubmissionData(id) {
+        console.log(id)
+        $.ajax({
+            method: "POST",
+            url: "/Student/StudentHome/DeleteSubmissionData?submissionId=" + id,
+            success: function (response) {
+                console.log(response)
+                if (response.isSuccess) {
+                    $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
+                        Toast.fire({ icon: 'success', title: response.message });
+                    });
+                    $("#SubmissionDataContainer").load("/Student/StudentHome/SubmissionDataList");
+                } else {
+                    Toast.fire({ icon: 'warning', title: response.message });
+                }
+            },
+            error: function () {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'فرمی جهت حذف ارسال نشده است یا خطایی رخ داده.'
+                });
+            }
+        });
+    }
 </script>
 

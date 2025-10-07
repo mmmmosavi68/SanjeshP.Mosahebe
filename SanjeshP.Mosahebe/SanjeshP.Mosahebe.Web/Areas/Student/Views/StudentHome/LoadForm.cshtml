@@ -62,9 +62,30 @@
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
                         <select name="@coef.Name" class="form-control">
-                            @* اگر DropdownOptions اضافه بشه، می‌تونید اینجا اضافه کنید *@
+                            @if (Model.CoefficientList != null && Model.CoefficientList.Any())
+                            {
+                                // فقط آیتم‌هایی که مربوط به این فیلد هستن
+                                var options = Model.CoefficientList
+                                .Where(c => c.CoefficientId == coef.CoefficientId)
+                                .ToList();
+
+                                foreach (var opt in options)
+                                {
+                                    <option value="@opt.Id">@opt.Name</option>
+                                }
+                            }
+                            else if (!string.IsNullOrEmpty(coef.DropdownOptions))
+                            {
+                                // اگر CoefficientList خالی بود از DropdownOptions استفاده کن
+                                var opts = coef.DropdownOptions.Split('-');
+                                foreach (var opt in opts)
+                                {
+                                    <option value="@opt">@opt</option>
+                                }
+                            }
                         </select>
                         break;
+
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
                         <input type="date" name="@coef.Name" class="form-control" />
                         break;
@@ -95,6 +116,7 @@
                 contentType: false,
                 success: function (response) {
                     if (response.success) {
+                        $("#SubmissionDataContainer").load("/Student/StudentHome/SubmissionDataList");
                         $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
                         $('#studentForm')[0].reset();
                     } else {

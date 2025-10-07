@@ -50,7 +50,13 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<StudentFormSubmissionScore> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
         {
             return await Table
-                .FirstOrDefaultAsync(x => x.StudentId == studentId && x.FormItemId == formItemId && !x.IsDeleted, cancellationToken);
+                    .FirstOrDefaultAsync(
+                        x => x.StudentId == studentId
+                          && x.FormItemId == formItemId
+                          && x.IsDeleted==false
+                          && x.IsActive==true,
+                        cancellationToken)
+                    .ConfigureAwait(false);
         }
 
         // Rezaei
@@ -63,7 +69,9 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                 .ThenInclude(d => d.FormItemDefinition)
             .Include(s => s.StudentFormSubmissionDatas)
                     .ThenInclude(d => d.FormItemCoefficientDefinition)
-            .Where(fss => fss.StudentId == studentId)
+            .Where(fss => fss.StudentId == studentId
+                            && !fss.IsDeleted
+                                  && fss.IsActive)
             .ToListAsync(cancellationToken);
 
         }
@@ -71,29 +79,82 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         // Rezaei
         public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
         {
-            return await TableNoTracking
-            .Include(fss => fss.FormItem)                      // جدول FormItems
-            .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
-                .ThenInclude(d => d.FormItemDefinition)
-             .Include(s => s.StudentFormSubmissionDatas)
-                    .ThenInclude(d => d.FormItemCoefficientDefinition)
-            .Where(fss => fss.StudentId == studentId && fss.FormItemId == formItemId)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
+            var result = await TableNoTracking
+                   .Include(fss => fss.FormItem)
+                   .Include(fss => fss.StudentFormSubmissionDatas)
+                       .ThenInclude(d => d.FormItemDefinition)
+                   .Include(fss => fss.StudentFormSubmissionDatas)
+                       .ThenInclude(d => d.FormItemCoefficientDefinition)
+                   .Where(fss => fss.StudentId == studentId
+                              && fss.FormItemId == formItemId
+                              && !fss.IsDeleted
+                              && fss.IsActive)
+                   .FirstOrDefaultAsync(cancellationToken)
+                   .ConfigureAwait(false);
+
+            // فیلتر کردن دستی بعد از دریافت از دیتابیس
+            if (result != null)
+            {
+                result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                    .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+            }
+
+            return result;
+
+        }
+
+        public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndSubmissionScoresIDAsync(int studentId, int SubmissionId, CancellationToken cancellationToken)
+        {
+            var result = await TableNoTracking
+                   .Include(fss => fss.FormItem)
+                   .Include(fss => fss.StudentFormSubmissionDatas)
+                       .ThenInclude(d => d.FormItemDefinition)
+                   .Include(fss => fss.StudentFormSubmissionDatas)
+                       .ThenInclude(d => d.FormItemCoefficientDefinition)
+                   .Where(fss => fss.StudentId == studentId
+                              && fss.Id == SubmissionId
+                              && !fss.IsDeleted
+                              && fss.IsActive)
+                   .FirstOrDefaultAsync(cancellationToken)
+                   .ConfigureAwait(false);
+
+            // فیلتر کردن دستی بعد از دریافت از دیتابیس
+            if (result != null)
+            {
+                result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                    .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+            }
+
+            return result;
+
         }
 
         // Mousavi
         public async Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken)
         {
-            return await TableNoTracking
-                .Include(s => s.FormItem)
-                .Include(s => s.StudentFormSubmissionDatas)
-                    .ThenInclude(d => d.FormItemDefinition)
-                .Include(s => s.StudentFormSubmissionDatas)
-                    .ThenInclude(d => d.FormItemCoefficientDefinition)
-                .Where(s => s.StudentId == studentId)
-                .OrderByDescending(s => s.CreatedDate)
-                .ToListAsync(cancellationToken);
+            var results = await TableNoTracking
+                    .Include(s => s.FormItem)
+                    .Include(s => s.StudentFormSubmissionDatas)
+                        .ThenInclude(d => d.FormItemDefinition)
+                    .Include(s => s.StudentFormSubmissionDatas)
+                        .ThenInclude(d => d.FormItemCoefficientDefinition)
+                    .Where(s => s.StudentId == studentId && s.IsActive && !s.IsDeleted)
+                    .OrderByDescending(s => s.CreatedDate)
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+            // حالا داده‌های StudentFormSubmissionDatas رو فیلتر کن
+            foreach (var item in results)
+            {
+                item.StudentFormSubmissionDatas = item.StudentFormSubmissionDatas
+                    .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+            }
+
+            return results;
+
         }
 
         //Mousavi

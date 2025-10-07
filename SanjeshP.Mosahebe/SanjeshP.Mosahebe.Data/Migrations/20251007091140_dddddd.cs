@@ -2,24 +2,23 @@
 
 namespace SanjeshP.Mosahebe.Data.Migrations
 {
-    public partial class ADDFormItemCoefficientDefinitionId : Migration
+    public partial class dddddd : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
                 name: "FormItemCoefficientDefinitionId",
-                table: "StudentFormSubmissionData",
-                nullable: false,
-                defaultValue: 0);
+                table: "Coefficients",
+                nullable: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_StudentFormSubmissionData_FormItemCoefficientDefinitionId",
-                table: "StudentFormSubmissionData",
+                name: "IX_Coefficients_FormItemCoefficientDefinitionId",
+                table: "Coefficients",
                 column: "FormItemCoefficientDefinitionId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_StudentFormSubmissionData_FormItemCoefficientDefinitions_FormItemCoefficientDefinitionId",
-                table: "StudentFormSubmissionData",
+                name: "FK_Coefficients_FormItemCoefficientDefinitions_FormItemCoefficientDefinitionId",
+                table: "Coefficients",
                 column: "FormItemCoefficientDefinitionId",
                 principalTable: "FormItemCoefficientDefinitions",
                 principalColumn: "Id",
@@ -29,16 +28,16 @@ namespace SanjeshP.Mosahebe.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_StudentFormSubmissionData_FormItemCoefficientDefinitions_FormItemCoefficientDefinitionId",
-                table: "StudentFormSubmissionData");
+                name: "FK_Coefficients_FormItemCoefficientDefinitions_FormItemCoefficientDefinitionId",
+                table: "Coefficients");
 
             migrationBuilder.DropIndex(
-                name: "IX_StudentFormSubmissionData_FormItemCoefficientDefinitionId",
-                table: "StudentFormSubmissionData");
+                name: "IX_Coefficients_FormItemCoefficientDefinitionId",
+                table: "Coefficients");
 
             migrationBuilder.DropColumn(
                 name: "FormItemCoefficientDefinitionId",
-                table: "StudentFormSubmissionData");
+                table: "Coefficients");
         }
     }
 }

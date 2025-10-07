@@ -14,7 +14,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.StudentForm
         Task<StudentFormSubmissionData?> GetByStudentValueIdAsync(int id, CancellationToken cancellationToken);
         Task AddStudentFormSubmissionValueAsync(StudentFormSubmissionData studentFormSubmissionValue, CancellationToken cancellationToken);
         Task UpdateStudentFormSubmissionValueAsync(StudentFormSubmissionData studentFormSubmissionValue, CancellationToken cancellationToken);
-        Task DeleteStudentFormSubmissionValueAsync(int id, CancellationToken cancellationToken);
+        Task DeleteStudentFormSubmissionValueAsync(int submissionId, CancellationToken cancellationToken);
         // در IStudentFormSubmissionRepository (یا repository مناسب مربوط به StudentFormSubmissionData)
         Task<StudentFormSubmissionData?> GetSubmissionDataByIdAsync(int submissionDataId, CancellationToken cancellationToken);
 

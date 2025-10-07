@@ -5,6 +5,15 @@
 	  <LangVersion>9.0</LangVersion>
 
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20251007081447_alterCoefficient.cs" />
+    <Compile Remove="Migrations\20251007081447_alterCoefficient.Designer.cs" />
+    <Compile Remove="Migrations\20251007081718_alterCoefficienta.cs" />
+    <Compile Remove="Migrations\20251007081718_alterCoefficienta.Designer.cs" />
+    <Compile Remove="Migrations\20251007082550_alterCoefficientaggbgg.cs" />
+    <Compile Remove="Migrations\20251007082550_alterCoefficientaggbgg.Designer.cs" />
+  </ItemGroup>
 	<ItemGroup>
 		<None Remove="Scripts\View_UserMenubars.sql" />
 	</ItemGroup>

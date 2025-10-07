@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using SanjeshP.Mosahebe.Convertor;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
+using SanjeshP.Mosahebe.Data.Contracts.Students;
 using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.Exam;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
@@ -22,26 +25,35 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         private readonly IFormItemRepository _formItemRepository;
         private readonly IFormItemDefinitionRepository _formItemDefinitionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _coefficientDefinitionRepository;
-        private readonly IFormItemCoefficientRepository _coefficientRepository;
+        private readonly IFormItemCoefficientRepository _formItemCoefficientRepository;
         private readonly IStudentFormSubmissionScoreRepository _submissionScoreRepository;
         private readonly IStudentFormSubmissionDataRepository _submissionDataRepository;
+        private readonly ICoefficientRepository _coefficientRepository;
+        private readonly IWebHostEnvironment _env;
+        private readonly IStudentRepository _studentRepository;
+
 
         public StudentHomeController(IMapper mapper,
             IFormItemRepository formItemRepository,
             IFormItemDefinitionRepository formItemDefinitionRepository,
             IFormItemCoefficientDefinitionRepository coefficientDefinitionRepository,
-            IFormItemCoefficientRepository coefficientRepository,
+            IFormItemCoefficientRepository formItemCoefficientRepository,
             IStudentFormSubmissionScoreRepository submissionScoreRepository,
-            IStudentFormSubmissionDataRepository submissionDataRepository)
+            IStudentFormSubmissionDataRepository submissionDataRepository,
+            IStudentRepository studentRepository,
+            ICoefficientRepository  coefficientRepository,
+            IWebHostEnvironment env)
         {
             _mapper = mapper;
 
             _formItemRepository = formItemRepository;
             _formItemDefinitionRepository = formItemDefinitionRepository;
             _coefficientDefinitionRepository = coefficientDefinitionRepository;
-            _coefficientRepository = coefficientRepository;
+            _formItemCoefficientRepository = formItemCoefficientRepository;
             _submissionScoreRepository = submissionScoreRepository;
             _submissionDataRepository = submissionDataRepository;
+            this._coefficientRepository = coefficientRepository;
+            this._env = env;
         }
 
         // GET: /Student/StudentHome
@@ -64,15 +76,20 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var viewModel = new FormSubmissionViewModel
             {
                 FormId = form.Id,
-                
+
                 Fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken)
             };
 
             if (form.FormItemCoefficientId > 0)
             {
-                viewModel.CoefficientFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
-                var coef = await _coefficientRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
+                
+                var formItemcoefficient = await _formItemCoefficientRepository.GetByIdAsync(form.FormItemCoefficientId, cancellationToken);
+                var coefficients = await _coefficientRepository.GetByCoefficientIdAsync(formItemcoefficient.CoefficientId,cancellationToken);
+                viewModel.CoefficientFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItemcoefficient.CoefficientId, cancellationToken);
+                var coef = await _formItemCoefficientRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
                 viewModel.Coefficients = coef.ToList();
+                // اضافه کردن coefficients از _coefficientRepository
+                viewModel.CoefficientList = coefficients.ToList();
             }
 
             return PartialView("LoadForm", viewModel);
@@ -92,13 +109,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 return BadRequest("کد ملی داوطلب نامعتبر است.");
 
             // حذف ارسال قبلی اگر وجود دارد
-            var previousSubmission = await _submissionScoreRepository
-                .GetByStudentAndFormAsync(studentId, model.FormId, cancellationToken);
-            if (previousSubmission != null)
-            {
-                previousSubmission.IsDeleted = true;
-                await _submissionScoreRepository.UpdateAsync(previousSubmission, cancellationToken);
-            }
+            //var previousSubmission = await _submissionScoreRepository
+            //    .GetByStudentAndFormAsync(studentId, model.FormId, cancellationToken);
+            //if (previousSubmission != null)
+            //{
+            //    previousSubmission.IsDeleted = true;
+            //    await _submissionScoreRepository.UpdateAsync(previousSubmission, cancellationToken);
+            //}
 
             // ایجاد رکورد جدید برای Submission
             var submission = new StudentFormSubmissionScore
@@ -208,11 +225,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
                 var result = forms.Select(f => new AllSubmissionDataViewModel
                 {
+                    SubmissionId = f.Id,
                     FormItemId = f.FormItemId,
                     FormTitle = f.FormItem.Title,
                     CreateDatePersian = DateConvertor.ToShamsiDateTime(f.CreatedDate), // فرض بر این که این پراپرتی توی entity هست یا خودت تبدیلش می‌کنی
                     SubmissionValues = f.StudentFormSubmissionDatas.Select(d =>
-                                                {var label = d.FormItemDefinition?.Label
+                                                {
+                                                    var label = d.FormItemDefinition?.Label
                                                                 ?? d.FormItemCoefficientDefinition?.Label
                                                                 ?? "بدون عنوان";
                                                     return $"{label}: {d.Value}";
@@ -227,13 +246,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> DetailSubmissionData(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> SubmissionDataDetail(int id, CancellationToken cancellationToken)
         {
             try
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-                var datadetail = await _submissionScoreRepository.GetFormSubmissionDataByStudentAndFormAsync(studentId,id, cancellationToken);
+                var datadetail = await _submissionScoreRepository.GetFormSubmissionDataByStudentAndSubmissionScoresIDAsync(studentId, id, cancellationToken);
                 if (datadetail == null)
                 {
                     return NotFound();
@@ -241,7 +260,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
                 var model = _mapper.Map<SubmissionDataDetailViewModel>(datadetail);
 
-                return PartialView("DetailSubmissionData", model);
+                return PartialView("SubmissionDataDetail", model);
             }
             catch (Exception ex)
             {
@@ -249,5 +268,63 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             }
         }
 
+        public async Task<IActionResult> DeleteSubmissionData(int submissionId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (submissionId == 0)
+                {
+                    return Json(new { isSuccess = false, message = "فرمی جهت حذف ارسال نشده است یا خطایی رخ داده." });
+                }
+
+                await _submissionScoreRepository.DeleteStudentFormSubmissionAsync(submissionId, cancellationToken);
+                await _submissionDataRepository.DeleteStudentFormSubmissionValueAsync(submissionId, cancellationToken);
+
+                return Json(new { isSuccess = true, message = "فرم با موفقیت حذف شد." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { isSuccess = false, message = "خطا در سرور" });
+            }
+        }
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> DownloadSubmissionFile(int submissionDataId,  CancellationToken cancellationToken)
+        {
+            // دریافت داده‌ی دقیق submission-data (نام فایل در data.Value)
+            var data = await _submissionDataRepository.GetSubmissionDataByIdAsync(submissionDataId, cancellationToken);
+            if (data == null) return NotFound();
+
+            // بررسی دسترسی به فایل (اجباری)
+            //var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
+            // مثال: اگر بخواهید مطمئن شوید فایل متعلق به کاربر است:
+            // var parent = data.StudentFormSubmissionScore; // اگر Include کرده‌اید
+            // if (parent == null || parent.StudentId != currentUserStudentId) return Forbid();
+
+            // امن‌سازی مقدار Value: اغلب data.Value فقط نام فایل است، نه مسیر کامل
+            var fileName = Path.GetFileName(data.Value ?? string.Empty);
+            if (string.IsNullOrEmpty(fileName)) return NotFound();
+
+            // مسیر فیزیکی امن داخل wwwroot/uploads/{national}/{fileName}
+            var studentNationalCode = User.FindFirst("NationalCode")?.Value; // فرض بر این است که کد ملی تو Claims هست
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", studentNationalCode ?? string.Empty);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            // جلوگیری از مسیرهای فراری (path traversal)
+            var normalized = Path.GetFullPath(filePath);
+            if (!normalized.StartsWith(Path.GetFullPath(uploadsFolder), StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+
+            if (!System.IO.File.Exists(normalized)) return NotFound();
+
+            // تعیین mime type ایمن
+            var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(normalized, out var contentType))
+                contentType = "application/octet-stream";
+
+            var stream = System.IO.File.OpenRead(normalized);
+            return File(stream, contentType, fileName);
+        }
     }
 }

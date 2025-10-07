@@ -51,26 +51,6 @@
             // این کد PartialView را بارگذاری می‌کند
             $("#SubmissionDataContainer").load("/Student/StudentHome/SubmissionDataList", function () { });
 
-            // لود رکوردهای ارسال شده
-            //function loadSubmissions() {
-            //    // مثال: Ajax برای گرفتن رکوردها از کنترلر
-            //    $.get("/Student/StudentHome/GetSubmissions", function (data) {
-            //        var tbody = $("#submissionsTable tbody");
-            //        tbody.empty();
-            //        $.each(data, function (i, item) {
-            //            tbody.append(
-            //                `<tr>
-            //                    <td>${item.FormId}</td>
-            //                    <td>${item.CreatedDate}</td>
-            //                    <td><button class='btn btn-sm btn-info'>جزئیات</button></td>
-            //                </tr>`
-            //            );
-            //        });
-            //    });
-            //}
-
-            //loadSubmissions();
-
         });
     </script>
 }

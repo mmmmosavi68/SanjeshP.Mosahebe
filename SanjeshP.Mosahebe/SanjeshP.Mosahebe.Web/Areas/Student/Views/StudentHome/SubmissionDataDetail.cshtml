@@ -18,10 +18,9 @@
                     @* مقدار بر اساس نوع فیلد *@
                     @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
                     {
-                        <a asp-controller="EducationDocument"
+                        <a asp-controller="StudentHome"
                            asp-action="DownloadSubmissionFile"
                            asp-route-submissionDataId="@field.Id"
-                           asp-route-studentId="@Model.StudentId"
                            target="_blank" rel="noopener noreferrer">دانلود فایل</a>
                     }
                     else if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox)

@@ -13,6 +13,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
         // فیلدهای ضریب
         public IEnumerable<FormItemCoefficientDefinition> CoefficientFields { get; set; } = new List<FormItemCoefficientDefinition>();
         public IEnumerable<FormItemCoefficient> Coefficients { get; set; } = new List<FormItemCoefficient>();
+        public IEnumerable<Coefficient> CoefficientList { get; set; } 
 
         public string FieldSource { get; set; } // "Definition" یا "Coefficient"
     }
