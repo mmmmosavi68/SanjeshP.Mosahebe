@@ -85,10 +85,11 @@
         });
     });
     function SubmissionDataDetail(id, title) {
+          console.log(id)
         openModal(title, '/Student/StudentHome/SubmissionDataDetail?id=' + id, false);
     }
     function DeleteSubmissionData(id) {
-        console.log(id)
+      
         $.ajax({
             method: "POST",
             url: "/Student/StudentHome/DeleteSubmissionData?submissionId=" + id,

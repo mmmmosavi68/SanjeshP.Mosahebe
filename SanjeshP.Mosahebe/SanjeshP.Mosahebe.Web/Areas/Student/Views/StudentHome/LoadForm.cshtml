@@ -1,11 +1,16 @@
 ﻿@model SanjeshP.Mosahebe.Web.Areas.Student.ViewModels.FormSubmissionViewModel
+@{
+    ViewData["Title"] = "فرم ثبت اطلاعات";
+}
+
+<h2 class="mb-4">@Model.FormTitle</h2>
 <form id="formSubmission" method="post" asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student" enctype="multipart/form-data">
     <input type="hidden" name="FormId" value="@Model.FormId" />
 
     @foreach (var field in Model.Fields)
     {
         <div class="form-group">
-            <label>@field.Label</label>
+            <label class="fw-bold h5">@field.Label</label>
             @switch (field.inputType)
             {
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
@@ -36,6 +41,7 @@
                     <input type="date" name="@field.Name" class="form-control" />
                     break;
             }
+            <p class="text-secondary">@field.Description</p>
         </div>
     }
 
@@ -45,7 +51,7 @@
         foreach (var coef in Model.CoefficientFields)
         {
             <div class="form-group">
-                <label>@coef.Label</label>
+                <label class="fw-bold h5">@coef.Label</label>
                 @switch (coef.inputType)
                 {
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
@@ -90,45 +96,56 @@
                         <input type="date" name="@coef.Name" class="form-control" />
                         break;
                 }
+                <p class="text-secondary">@coef.Description</p>
             </div>
         }
     }
 
-    <button type="submit" class="btn btn-primary">ثبت فرم</button>
+    <button type="button" id="btnSave" class="btn btn-success mt-4">ذخیره اطلاعات</button>
+    <button type="submit" asp-action="Index" class="btn btn-dark mt-4">برگشت</button>
 </form>
 
 <div id="formMessage" style="margin-top:10px;"></div>
 
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+             $("#btnSave").click(function () {
+                var form = $("#formSubmission")[0];
+                var formData = new FormData(form);
 
-<script>
-    $(document).ready(function () {
-        $('#formSubmission').submit(function (e) {
-            e.preventDefault();
-            var form = $(this);
-            var formData = new FormData(this);
-            console.log(form);
-            console.log(formData)
-            $.ajax({
-                url: '@Url.Action("SubmitForm", "StudentHome", new { area = "Student" })',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    if (response.success) {
-                        $("#SubmissionDataContainer").load("/Student/StudentHome/SubmissionDataList");
-                        $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
-                        $('#studentForm')[0].reset();
-                    } else {
-                        $('#formMessage').html('<div class="alert alert-danger">' + response.message + '</div>');
+                $.ajax({
+                    url: '@Url.Action("SubmitForm", "StudentHome", new { area = "Student" })',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
+
+                            // ✅ ریدایرکت بعد از موفقیت
+                            if (response.redirectUrl) {
+                                setTimeout(function () {
+                                    window.location.href = response.redirectUrl;
+                                }, 1200);
+                            }
+                        } else {
+                            $('#formMessage').html('<div class="alert alert-danger">' + response.message + '</div>');
+                        }
+                    },
+                    error: function () {
+                        $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
                     }
-                },
-                error: function (xhr) {
-                    $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
-                }
+                });
+            });
+
+            // جلوگیری از ارسال پیش‌فرض فرم در صورت فشردن Enter
+            $('#formSubmission').on('submit', function (e) {
+                e.preventDefault();
             });
         });
-    });
-</script>
+    </script>
 
 
+}

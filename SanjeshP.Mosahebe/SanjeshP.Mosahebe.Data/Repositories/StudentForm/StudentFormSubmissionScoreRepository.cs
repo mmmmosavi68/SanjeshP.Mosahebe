@@ -53,8 +53,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                     .FirstOrDefaultAsync(
                         x => x.StudentId == studentId
                           && x.FormItemId == formItemId
-                          && x.IsDeleted==false
-                          && x.IsActive==true,
+                          && x.IsDeleted == false
+                          && x.IsActive == true,
                         cancellationToken)
                     .ConfigureAwait(false);
         }
@@ -107,25 +107,46 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndSubmissionScoresIDAsync(int studentId, int SubmissionId, CancellationToken cancellationToken)
         {
             var result = await TableNoTracking
-                   .Include(fss => fss.FormItem)
-                   .Include(fss => fss.StudentFormSubmissionDatas)
-                       .ThenInclude(d => d.FormItemDefinition)
-                   .Include(fss => fss.StudentFormSubmissionDatas)
-                       .ThenInclude(d => d.FormItemCoefficientDefinition)
-                   .Where(fss => fss.StudentId == studentId
-                              && fss.Id == SubmissionId
-                              && !fss.IsDeleted
-                              && fss.IsActive)
+                 .Include(s => s.FormItem)
+                     .ThenInclude(f => f.FormItemDefinitions)
+                 .Include(s => s.StudentFormSubmissionDatas)
+                     .ThenInclude(d => d.FormItemDefinition)
+                 .Include(s => s.StudentFormSubmissionDatas)
+                     .ThenInclude(d => d.FormItemCoefficientDefinition)
+                 .Where(s => s.StudentId == studentId && s.Id==SubmissionId && s.IsActive && !s.IsDeleted)
                    .FirstOrDefaultAsync(cancellationToken)
                    .ConfigureAwait(false);
 
-            // فیلتر کردن دستی بعد از دریافت از دیتابیس
-            if (result != null)
+
+
+
+            // همون منطق اضافه‌کردن فیلدهای خالی و مرتب‌سازی بمونه ✅
+
+            result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                .Where(d => d.IsActive && !d.IsDeleted)
+                .ToList();
+
+            var allDefs = result.FormItem?.FormItemDefinitions?.Where(d => d.IsActive && !d.IsDeleted).ToList() ?? new();
+
+            foreach (var def in allDefs)
             {
-                result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
-                    .Where(d => d.IsActive && !d.IsDeleted)
-                    .ToList();
+                if (!result.StudentFormSubmissionDatas.Any(d => d.FormItemDefinitionId == def.Id))
+                {
+                    result.StudentFormSubmissionDatas.Add(new StudentFormSubmissionData
+                    {
+                        FormItemDefinitionId = def.Id,
+                        FormItemDefinition = def,
+                        Value = null,
+                        InputType = def.inputType,
+                        IsActive = true
+                    });
+                }
             }
+
+            result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                    .OrderBy(d =>d.CreatedDate)
+                    .ToList();
+
 
             return result;
 
@@ -135,26 +156,46 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken)
         {
             var results = await TableNoTracking
-                    .Include(s => s.FormItem)
-                    .Include(s => s.StudentFormSubmissionDatas)
-                        .ThenInclude(d => d.FormItemDefinition)
-                    .Include(s => s.StudentFormSubmissionDatas)
-                        .ThenInclude(d => d.FormItemCoefficientDefinition)
-                    .Where(s => s.StudentId == studentId && s.IsActive && !s.IsDeleted)
-                    .OrderByDescending(s => s.CreatedDate)
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                .Include(s => s.FormItem)
+                    .ThenInclude(f => f.FormItemDefinitions)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                .Where(s => s.StudentId == studentId && s.IsActive && !s.IsDeleted)
+                .OrderByDescending(s => s.CreatedDate)
+                .ToListAsync(cancellationToken);
 
-            // حالا داده‌های StudentFormSubmissionDatas رو فیلتر کن
-            foreach (var item in results)
+            // همون منطق اضافه‌کردن فیلدهای خالی و مرتب‌سازی بمونه ✅
+            foreach (var score in results)
             {
-                item.StudentFormSubmissionDatas = item.StudentFormSubmissionDatas
+                score.StudentFormSubmissionDatas = score.StudentFormSubmissionDatas
                     .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+
+                var allDefs = score.FormItem?.FormItemDefinitions?.Where(d => d.IsActive && !d.IsDeleted).ToList() ?? new();
+
+                foreach (var def in allDefs)
+                {
+                    if (!score.StudentFormSubmissionDatas.Any(d => d.FormItemDefinitionId == def.Id))
+                    {
+                        score.StudentFormSubmissionDatas.Add(new StudentFormSubmissionData
+                        {
+                            FormItemDefinitionId = def.Id,
+                            FormItemDefinition = def,
+                            Value = null,
+                            InputType = def.inputType,
+                            IsActive = true
+                        });
+                    }
+                }
+
+                score.StudentFormSubmissionDatas = score.StudentFormSubmissionDatas
+                    .OrderBy(d => d.FormItemDefinition?.CreatedDate)
                     .ToList();
             }
 
             return results;
-
         }
 
         //Mousavi

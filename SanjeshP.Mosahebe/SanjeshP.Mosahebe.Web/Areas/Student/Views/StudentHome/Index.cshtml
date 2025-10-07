@@ -44,8 +44,8 @@
                     return;
                 }
 
-                $("#submissionsContainer").hide();
-                $("#LoadFormContainer").show().load("/Student/StudentHome/LoadForm?formId=" + formId);
+                // ریدایرکت به اکشن LoadForm ولی حالا به صورت View کامل
+                window.location.href = "/Student/StudentHome/LoadForm?formId=" + formId;
             });
 
             // این کد PartialView را بارگذاری می‌کند

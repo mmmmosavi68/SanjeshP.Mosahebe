@@ -5,6 +5,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
 {
     public class FormSubmissionViewModel
     {
+        public string FormTitle { get; set; }
         public int FormId { get; set; }
 
         // فیلدهای تعریف شده در فرم

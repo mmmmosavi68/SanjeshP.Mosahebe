@@ -76,7 +76,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var viewModel = new FormSubmissionViewModel
             {
                 FormId = form.Id,
-
+                FormTitle= form.Title,
                 Fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken)
             };
 
@@ -92,7 +92,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 viewModel.CoefficientList = coefficients.ToList();
             }
 
-            return PartialView("LoadForm", viewModel);
+            return View("LoadForm", viewModel);
         }
 
         // POST: /Student/StudentHome/SubmitForm
@@ -174,7 +174,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var formItem = await _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
             if (formItem.FormItemCoefficientId > 0)
             {
-                var coefFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItem.FormItemCoefficientId, cancellationToken);
+                var formItemCoefficient = await _formItemCoefficientRepository.GetByIdAsync(formItem.FormItemCoefficientId, cancellationToken);
+                var coefFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItemCoefficient.CoefficientId, cancellationToken);
                 foreach (var coefField in coefFields)
                 {
                     string value = null;
@@ -213,7 +214,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 }
             }
 
-            return Json(new { success = true, message = "فرم با موفقیت ثبت شد" });
+            return Json(new
+            {
+                success = true,
+                message = "فرم با موفقیت ثبت شد",
+                redirectUrl = Url.Action("LoadForm", "StudentHome", new { area = "Student", formId = model.FormId })
+            });
         }
         public async Task<IActionResult> SubmissionDataList(CancellationToken cancellationToken)
         {
@@ -256,6 +262,37 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 if (datadetail == null)
                 {
                     return NotFound();
+                }
+
+                // 🧩 فیلتر رکوردهای معتبر
+                datadetail.StudentFormSubmissionDatas = datadetail.StudentFormSubmissionDatas
+                    .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+
+                // 🧮 گرفتن آیدی‌هایی که در Value ذخیره شده‌اند
+                var valueIds = datadetail.StudentFormSubmissionDatas
+                    .Select(d => int.TryParse(d.Value, out var idValue) ? idValue : (int?)null)
+                    .Where(idValue => idValue.HasValue)
+                    .Select(idValue => idValue.Value)
+                    .ToList();
+
+                if (valueIds.Any())
+                {
+                    foreach (var data in datadetail.StudentFormSubmissionDatas)
+                    {
+                        if (int.TryParse(data.Value, out var coefId))
+                        {
+                            // دریافت از Repository
+                            var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
+
+                            if (coef != null)
+                            {
+                                // جایگزینی مقدار اصلی با مقدار توضیحی از جدول Coefficient
+                                //data.Value = $"{coef.Name} ({coef.Value})";
+                                data.Value = $"{coef.Name}";
+                            }
+                        }
+                    }
                 }
 
                 var model = _mapper.Map<SubmissionDataDetailViewModel>(datadetail);
