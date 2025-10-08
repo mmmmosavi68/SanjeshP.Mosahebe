@@ -169,9 +169,16 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             // همون منطق اضافه‌کردن فیلدهای خالی و مرتب‌سازی بمونه ✅
             foreach (var score in results)
             {
+                var datas = score.StudentFormSubmissionDatas ?? new List<StudentFormSubmissionData>();
+
                 score.StudentFormSubmissionDatas = score.StudentFormSubmissionDatas
                     .Where(d => d.IsActive && !d.IsDeleted)
                     .ToList();
+
+                score.StudentFormSubmissionDatas = datas
+                                                    .Where(d => d.IsActive && !d.IsDeleted)
+                                                    .ToList();
+
 
                 var allDefs = score.FormItem?.FormItemDefinitions?.Where(d => d.IsActive && !d.IsDeleted).ToList() ?? new();
 

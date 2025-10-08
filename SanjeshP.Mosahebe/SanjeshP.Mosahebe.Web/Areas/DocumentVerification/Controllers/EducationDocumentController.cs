@@ -17,6 +17,10 @@ using System.Globalization;
 using SanjeshP.Mosahebe.Data;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using SanjeshP.Mosahebe.Entities.Student;
+using SanjeshP.Mosahebe.Data.Repositories.StudentForm;
+using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
+using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
@@ -30,6 +34,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly ILogger<EducationDocumentController> _logger;
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IStudentRepository _studentRepository;
+        private readonly ICoefficientRepository _coefficientRepository;
         private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _formItemCoefficientDefinitionRepository;
         private readonly IStudentFormSubmissionDataRepository _studentFormSubmissionValueRepository;
@@ -39,6 +44,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , ILogger<EducationDocumentController> logger
                                         , IUserTokenRepository userTokenRepository
                                         , IStudentRepository studentRepository
+                                        , ICoefficientRepository coefficientRepository
                                         , IStudentFormSubmissionScoreRepository studentFormSubmissionRepository
                                         , IFormItemCoefficientDefinitionRepository formItemCoefficientDefinitionRepository
                                         , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository)
@@ -48,6 +54,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             _logger = logger;
             _userTokenRepository = userTokenRepository;
             _studentRepository = studentRepository;
+            this._coefficientRepository = coefficientRepository;
             _studentFormSubmissionRepository = studentFormSubmissionRepository;
             _formItemCoefficientDefinitionRepository = formItemCoefficientDefinitionRepository;
             _studentFormSubmissionValueRepository = studentFormSubmissionValueRepository;
@@ -115,135 +122,148 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
         {
             if (id <= 0) return BadRequest();
+            try
+            {
+                // گرفتن تمام فرم‌های داوطلب
+                var forms = await _studentFormSubmissionRepository.GetAllByStudentIdAsync(id, cancellationToken);
+                if (forms == null || !forms.Any())
+                {
+                    ViewBag.Message = "هیچ فرمی برای این داوطلب ثبت نشده است.";
+                    forms = new List<StudentFormSubmissionScore>(); // لیست خالی برای جلوگیری از خطا در foreach
+                }
 
-            var forms = await _studentFormSubmissionRepository.GetAllByStudentIdAsync(id, cancellationToken);
-            if (forms == null) return NotFound();
+                // 🧩 فیلتر رکوردهای معتبر و جایگزینی مقادیر Coefficient
+                foreach (var form in forms)
+                {
+                    form.StudentFormSubmissionDatas = form.StudentFormSubmissionDatas?
+                        .Where(d => d.IsActive && !d.IsDeleted)
+                        .ToList() ?? new();
 
-            return PartialView("Details", forms);
+                    // گرفتن آیدی‌هایی که در Value ذخیره شده‌اند
+                    var valueIds = form.StudentFormSubmissionDatas
+                        .Select(d => int.TryParse(d.Value, out var idValue) ? idValue : (int?)null)
+                        .Where(idValue => idValue.HasValue)
+                        .Select(idValue => idValue.Value)
+                        .Distinct()
+                        .ToList();
+
+                    // 🧮 اگر آیدی داریم، آن‌ها را از repository دریافت و جایگزین می‌کنیم
+                    if (valueIds.Any())
+                    {
+                        foreach (var data in form.StudentFormSubmissionDatas)
+                        {
+                            if (int.TryParse(data.Value, out var coefId))
+                            {
+                                var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
+
+                                if (coef != null)
+                                {
+                                    // جایگزینی مقدار با نام ضریب
+                                    data.Value = coef.Name;
+                                }
+                            }
+                        }
+                    }
+
+                    // مرتب‌سازی
+                    form.StudentFormSubmissionDatas = form.StudentFormSubmissionDatas
+                        .OrderBy(d => d.CreatedDate)
+                        .ToList();
+                }
+
+                // 🧭 مپ کردن به ViewModel
+                var model = _mapper.Map<IEnumerable<SubmissionDataDetailViewModel>>(forms);
+
+                return PartialView("Details", forms);
+            }
+            catch (Exception ex)
+            {
+                // لاگ دقیق‌تر می‌تونه اضافه بشه در آینده
+                return StatusCode(500, "خطا در سرور");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveScores([FromForm] List<FormDataInputViewModel> Forms, CancellationToken cancellationToken)
         {
+            // بررسی اینکه فرم‌ها خالی نباشند
             if (Forms == null || !Forms.Any())
             {
                 ModelState.AddModelError(string.Empty, "داده‌ای برای ذخیره ارسال نشده است");
                 return BadRequest(ModelState);
             }
 
+            // بررسی اینکه کاربر لاگین کرده باشد
             if (!User.Identity.IsAuthenticated) return Forbid();
 
             try
             {
+                // پیمایش بر روی تمام فرم‌های ارسال شده
                 foreach (var formInput in Forms)
                 {
-                    if (cancellationToken.IsCancellationRequested) break;
+                    if (cancellationToken.IsCancellationRequested) break; // توقف در صورت کنسل شدن عملیات
                     if (formInput == null) continue;
 
-                    var submissionScore = await _studentFormSubmissionRepository.GetDetailsForEditAsync(formInput.FormSubmissionScoreId, cancellationToken);
+                    // دریافت رکورد اصلی فرم از دیتابیس
+                    var submissionScore = await _studentFormSubmissionRepository
+                        .GetDetailsForEditAsync(formInput.FormSubmissionScoreId, cancellationToken);
+
                     if (submissionScore == null)
                     {
                         _logger.LogWarning("submissionScore not found id={Id}", formInput.FormSubmissionScoreId);
                         continue;
                     }
 
-                    var formItem = submissionScore.FormItem;
-                    var oneMaxScore = formItem?.OneMaxScore ?? 0;
-                    int totalScoreForForm = 0;
-                    bool anyRejected = false;
+                    var oneMaxScore = submissionScore.FormItem?.OneMaxScore ?? 0; // حداکثر امتیاز فرم
 
-                    foreach (var dataInput in formInput.Datas ?? Enumerable.Empty<SubmissionDataInputViewModel>())
+                    // اگر فرم تایید شده باشد
+                    if (formInput.IsApproved == true)
                     {
-                        if (cancellationToken.IsCancellationRequested) break;
-                        if (dataInput == null) continue;
+                        submissionScore.IsApproved = true; // علامت تایید
+                        submissionScore.RejectReason = null; // هیچ دلیل ردی وجود ندارد
 
-                        var submissionData = submissionScore.StudentFormSubmissionDatas
-                            .FirstOrDefault(d => d.Id == dataInput.SubmissionDataId);
-
-                        if (submissionData == null)
+                        // ذخیره نمره وارد شده
+                        if (int.TryParse(formInput.ScoreValue, out var score))
                         {
-                            _logger.LogWarning("submissionData not found id={Id}", dataInput.SubmissionDataId);
-                            continue;
-                        }
+                            // بررسی حداقل و حداکثر
+                            if (score < 0) score = 0;
+                            if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
 
-                        if (dataInput.FormItemCoefficientDefinitionId.HasValue)
-                        {
-                            submissionData.FormItemCoefficientDefinitionId = dataInput.FormItemCoefficientDefinitionId;
-                        }
-
-                        if (dataInput.IsApproved == true)
-                        {
-                            if (dataInput.ManualScore.HasValue)
-                            {
-                                var manual = dataInput.ManualScore.Value;
-                                if (manual < 0) manual = 0;
-                                if (oneMaxScore > 0 && manual > oneMaxScore) manual = oneMaxScore;
-
-                                submissionData.Value = manual.ToString(CultureInfo.InvariantCulture);
-                                totalScoreForForm += manual;
-                            }
-                            else if (dataInput.FormItemCoefficientDefinitionId.HasValue)
-                            {
-                                var coeffDef = await _formItemCoefficientDefinitionRepository.GetFormItemCoefficientDefinitionWithCoefficientsAsync(dataInput.FormItemCoefficientDefinitionId.Value, cancellationToken);
-                                if (coeffDef?.Coefficients != null && coeffDef.Coefficients.Any())
-                                {
-                                    if (float.TryParse(submissionData.Value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var numericValue))
-                                    {
-                                        var matched = coeffDef.Coefficients
-                                            .FirstOrDefault(x => numericValue >= x.RangeStart && numericValue <= x.RangeEnd);
-                                        if (matched != null)
-                                        {
-                                            var score = (int)Math.Round(matched.Value);
-                                            if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
-                                            totalScoreForForm += score;
-                                        }
-                                        else
-                                        {
-                                            _logger.LogInformation("No coefficient match for submissionData {Id} value {Value}", submissionData.Id, submissionData.Value);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        _logger.LogInformation("Unable to parse numeric value for submissionData {Id} value {Value}", submissionData.Id, submissionData.Value);
-                                    }
-                                }
-                            }
+                            submissionScore.Score = score;
                         }
                         else
                         {
-                            anyRejected = true;
-                            if (!string.IsNullOrWhiteSpace(dataInput.RejectReason))
-                            {
-                                _logger.LogInformation("Reject reason for submissionData {Id}: {Reason}", submissionData.Id, dataInput.RejectReason);
-                                // در صورت وجود فیلد RejectReason در مدل، اینجا مقداردهی شود
-                            }
+                            submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
                         }
                     }
+                    else // اگر فرم تایید نشده باشد
+                    {
+                        submissionScore.IsApproved = false;
+                        submissionScore.Score = 0; // نمره صفر برای فرم رد شده
+                        submissionScore.RejectReason = formInput.RejectReason?.Trim(); // ذخیره دلیل رد
+                    }
 
-                    submissionScore.Score = totalScoreForForm;
-                    submissionScore.IsApproved = !anyRejected;
-                    submissionScore.UpdatedDate = DateTime.UtcNow;
-                    await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken); // فرض وجود متد UpdateAsync در Base repository
+                    submissionScore.UpdatedDate = DateTime.UtcNow; // تاریخ بروزرسانی
+                    await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken);
                 }
 
-                await _studentFormSubmissionRepository.SaveChangesAsync(cancellationToken); // یا اگر SaveChanges در repo نیست، فراخوانی متد مناسب
+                // ذخیره تغییرات در دیتابیس
+                await _studentFormSubmissionRepository.SaveChangesAsync(cancellationToken);
+
+                // بازگشت به صفحه اصلی یا لیست فرم‌ها
                 return RedirectToAction("Index");
             }
-            //catch (OperationCanceledException)
-            //{
-            //    _logger.LogWarning("SaveScores cancelled");
-            //    return StatusCode(StatusCodes.Status499ClientClosedRequest);
-            //}
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while saving scores");
-                return StatusCode(StatusCodes.Status500InternalServerError, "خطا در ذخیره‌سازی نمرات");
+                _logger.LogError(ex, "خطا در ذخیره نمرات فرم‌ها");
+                return StatusCode(500, "خطا در سرور");
             }
         }
 
+
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> DownloadSubmissionFile(int submissionDataId,int studentId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DownloadSubmissionFile(int submissionDataId, int studentId, CancellationToken cancellationToken)
         {
             // دریافت داده‌ی دقیق submission-data (نام فایل در data.Value)
             var data = await _studentFormSubmissionValueRepository.GetSubmissionDataByIdAsync(submissionDataId, cancellationToken);

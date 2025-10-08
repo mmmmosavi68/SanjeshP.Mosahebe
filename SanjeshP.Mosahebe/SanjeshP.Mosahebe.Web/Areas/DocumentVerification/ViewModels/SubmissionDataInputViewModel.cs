@@ -11,5 +11,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         public bool? IsApproved { get; set; }
         public int? ManualScore { get; set; }
         public string RejectReason { get; set; }
+        public string Value { get; set; }
     }
 }
