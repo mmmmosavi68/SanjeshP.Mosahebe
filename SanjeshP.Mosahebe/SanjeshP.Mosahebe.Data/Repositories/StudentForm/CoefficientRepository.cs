@@ -18,6 +18,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<IEnumerable<Coefficient>> GetByCoefficientIdAsync(int coefficientId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
+                .Where(c=> c.CodeFarei!=0)
                 .ToListAsync(cancellationToken);
         }
     }

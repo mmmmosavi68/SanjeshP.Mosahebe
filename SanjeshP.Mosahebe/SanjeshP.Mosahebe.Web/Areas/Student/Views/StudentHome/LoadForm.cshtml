@@ -9,24 +9,35 @@
 
     @foreach (var field in Model.Fields)
     {
-        <div class="form-group">
+        <div class="form-group mb-4">
             <label class="fw-bold h5">@field.Label</label>
+            <span class="text-secondary">(@field.Description)</span>
+
+            @{
+                var requiredAttr = field.IsRequired ? "required" : "";
+                var validationAttr = !string.IsNullOrEmpty(field.ValidationPattern)
+                ? $"data-validation='{field.ValidationPattern}' data-errormessage='{field.ErrorMessage}'"
+                : "";
+            }
             @switch (field.inputType)
             {
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
-                    <input type="text" name="@field.Name" class="form-control" />
+                    <input type="text" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                    break;
+                case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url:
+                    <input type="url" inputmode="url" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
-                    <input type="number" name="@field.Name" class="form-control" />
+                    <input type="number" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
-                    <input type="file" name="@field.Name" class="form-control" />
+                    <input type="file" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
-                    <input type="checkbox" name="@field.Name" value="true" />
+                    <input type="checkbox" name="@field.Name" value="true" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
-                    <select name="@field.Name" class="form-control">
+                    <select name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr)>
                         @if (!string.IsNullOrEmpty(field.DropdownOptions))
                         {
                             var options = field.DropdownOptions.Split('-');
@@ -38,10 +49,10 @@
                     </select>
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
-                    <input type="date" name="@field.Name" class="form-control" />
+                    <input type="date" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
             }
-            <p class="text-secondary">@field.Description</p>
+            <span class="text-danger text-small validation-error" style="display:none"></span>
         </div>
     }
 
@@ -50,24 +61,37 @@
     {
         foreach (var coef in Model.CoefficientFields)
         {
-            <div class="form-group">
+            <div class="form-group mb-4">
                 <label class="fw-bold h5">@coef.Label</label>
+                <span class="text-secondary">
+                    (@coef.Description)</span>
+
+                @{
+                    var requiredAttr = coef.IsRequired ? "required" : "";
+                    var validationAttr = !string.IsNullOrEmpty(coef.ValidationPattern)
+                    ? $"data-validation='{coef.ValidationPattern}' data-errormessage='{coef.ErrorMessage}'"
+                    : "";
+                }
                 @switch (coef.inputType)
                 {
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
-                        <input type="text" name="@coef.Name" class="form-control" />
+                        <input type="text" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                        break;
+                    case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url:
+                        <input type="url" inputmode="url" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
-                        <input type="number" name="@coef.Name" class="form-control" />
+                        <input type="number" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
-                        <input type="file" name="@coef.Name" class="form-control" />
+                        <input type="file" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
-                        <input type="checkbox" name="@coef.Name" value="true" />
+                        <input type="checkbox" name="@coef.Name" value="true" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
-                        <select name="@coef.Name" class="form-control">
+                        <select name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr)>
+                            <option value="">-- انتخاب کنید --</option>
                             @if (Model.CoefficientList != null && Model.CoefficientList.Any())
                             {
                                 // فقط آیتم‌هایی که مربوط به این فیلد هستن
@@ -94,15 +118,17 @@
 
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
                         <input type="date" name="@coef.Name" class="form-control" />
+                        <span class="text-danger validation-error" style="display:none"></span>
                         break;
                 }
-                <p class="text-secondary">@coef.Description</p>
+                <span class="text-danger validation-error" style="display:none"></span>
+
             </div>
         }
     }
 
     <button type="button" id="btnSave" class="btn btn-success mt-4">ذخیره اطلاعات</button>
-    <button type="submit" asp-action="Index" class="btn btn-dark mt-4">برگشت</button>
+    <button type="button" id="btnBack" class="btn btn-dark mt-4">برگشت</button>
 </form>
 
 <div id="formMessage" style="margin-top:10px;"></div>
@@ -110,7 +136,73 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-             $("#btnSave").click(function () {
+
+            // ---------------------
+            // 🔹 تابع‌های کمکی
+            // ---------------------
+            function showError(input, msg) {
+                input.closest(".form-group").find(".validation-error")
+                    .text(msg)
+                    .show();
+            }
+
+            function validateForm() {
+                let isValid = true;
+                $("#formSubmission .validation-error").hide();
+
+                $("#formSubmission [name]").each(function () {
+                    let input = $(this);
+                    let val = input.val()?.trim();
+                    let isRequired = input.prop("required");
+                    let pattern = input.data("validation");
+                    let errorMsg = input.data("errormessage") || "مقدار وارد شده نامعتبر است.";
+
+                    // بررسی اجباری بودن
+                    if (isRequired) {
+                        if (input.attr("type") === "checkbox") {
+                            if (!input.is(":checked")) {
+                                showError(input, "این فیلد الزامی است.");
+                                isValid = false;
+                                return;
+                            }
+                        } else if (input.attr("type") === "file") {
+                            if (input[0].files.length === 0) {
+                                showError(input, "لطفاً فایل موردنظر را انتخاب کنید.");
+                                isValid = false;
+                                return;
+                            }
+                        } else if (!val) {
+                            showError(input, "پر کردن این فیلد الزامی است.");
+                            isValid = false;
+                            return;
+                        }
+                    }
+
+                    // بررسی regex
+                    if (pattern && val) {
+                        let regex = new RegExp(pattern);
+                        if (!regex.test(val)) {
+                            showError(input, errorMsg);
+                            isValid = false;
+                        }
+                    }
+                });
+
+                return isValid;
+            }
+
+            // ---------------------
+            // 🔹 ذخیره فرم
+            // ---------------------
+            $("#btnSave").click(function () {
+                var $btn = $(this);
+
+                if (!validateForm()) {
+                    $("#formMessage").html('<div class="alert alert-danger">لطفاً خطاهای فرم را برطرف کنید.</div>');
+                    return;
+                }
+
+                $btn.prop("disabled", true).text("در حال ذخیره...");
                 var form = $("#formSubmission")[0];
                 var formData = new FormData(form);
 
@@ -123,11 +215,9 @@
                     success: function (response) {
                         if (response.success) {
                             $('#formMessage').html('<div class="alert alert-success">' + response.message + '</div>');
-
-                            // ✅ ریدایرکت بعد از موفقیت
                             if (response.redirectUrl) {
                                 setTimeout(function () {
-                                    window.location.href = response.redirectUrl;
+                                    window.location.href = "index";
                                 }, 1200);
                             }
                         } else {
@@ -136,16 +226,22 @@
                     },
                     error: function () {
                         $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
+                    },
+                    complete: function () {
+                        $btn.prop("disabled", false).text("ذخیره اطلاعات");
                     }
                 });
             });
 
-            // جلوگیری از ارسال پیش‌فرض فرم در صورت فشردن Enter
-            $('#formSubmission').on('submit', function (e) {
-                e.preventDefault();
+            // ---------------------
+            // 🔹 برگشت بدون ولیدیشن
+            // ---------------------
+            $("#btnBack").click(function () {
+                window.location.href = '@Url.Action("Index", "StudentHome", new { area = "Student" })';
             });
+
         });
     </script>
-
-
 }
+
+
