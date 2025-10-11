@@ -23,7 +23,6 @@ namespace SanjeshP.Mosahebe.Entities.Exam
         // 2. navigation به آزمون مربوطه
         [ForeignKey(nameof(ExamId))]
         public Exams Exam { get; set; }
-        // ارتباط چند به چند با دانشجوها
-        public ICollection<Student.StudentField> StudentFields { get; set; }
+
     }
 }

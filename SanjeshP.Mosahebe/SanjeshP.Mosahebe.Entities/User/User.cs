@@ -84,6 +84,8 @@ namespace SanjeshP.Mosahebe.Entities.User
         [Display(Name = "ویرایش کننده")]
         public Guid? EditorUserId { get; set; }
 
+        public int ActiveStation { get; set; }
+
         public virtual User EditorUser { get; set; }
         public virtual User CreatorUser { get; set; }
         public virtual ICollection<UserProfile> UserProfiles { get; set; } = new List<UserProfile>();

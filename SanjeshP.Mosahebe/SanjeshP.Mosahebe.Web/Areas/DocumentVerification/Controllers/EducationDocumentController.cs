@@ -152,14 +152,17 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     {
                         foreach (var data in form.StudentFormSubmissionDatas)
                         {
-                            if (int.TryParse(data.Value, out var coefId))
+                            if (data.InputType == InputType.Dropdown)
                             {
-                                var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
-
-                                if (coef != null)
+                                if (int.TryParse(data.Value, out var coefId))
                                 {
-                                    // جایگزینی مقدار با نام ضریب
-                                    data.Value = coef.Name;
+                                    var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
+
+                                    if (coef != null)
+                                    {
+                                        // جایگزینی مقدار با نام ضریب
+                                        data.Value = coef.Name;
+                                    }
                                 }
                             }
                         }

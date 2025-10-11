@@ -41,7 +41,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             IStudentFormSubmissionScoreRepository submissionScoreRepository,
             IStudentFormSubmissionDataRepository submissionDataRepository,
             IStudentRepository studentRepository,
-            ICoefficientRepository  coefficientRepository,
+            ICoefficientRepository coefficientRepository,
             IWebHostEnvironment env)
         {
             _mapper = mapper;
@@ -76,15 +76,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             var viewModel = new FormSubmissionViewModel
             {
                 FormId = form.Id,
-                FormTitle= form.Title,
+                FormTitle = form.Title,
                 Fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken)
             };
 
             if (form.FormItemCoefficientId > 0)
             {
-                
+
                 var formItemcoefficient = await _formItemCoefficientRepository.GetByIdAsync(form.FormItemCoefficientId, cancellationToken);
-                var coefficients = await _coefficientRepository.GetByCoefficientIdAsync(formItemcoefficient.CoefficientId,cancellationToken);
+                var coefficients = await _coefficientRepository.GetByCoefficientIdAsync(formItemcoefficient.CoefficientId, cancellationToken);
                 viewModel.CoefficientFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItemcoefficient.CoefficientId, cancellationToken);
                 var coef = await _formItemCoefficientRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
                 viewModel.Coefficients = coef.ToList();
@@ -229,6 +229,47 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
                 var forms = await _submissionScoreRepository.GetByStudentAsync(studentId, cancellationToken);
 
+               
+
+                foreach (var form in forms)
+                {
+                    // 🧩 فیلتر رکوردهای معتبر
+                    form.StudentFormSubmissionDatas = form.StudentFormSubmissionDatas
+                        .Where(d => d.IsActive && !d.IsDeleted)
+                        .ToList();
+
+                    // 🧮 گرفتن آیدی‌هایی که در Value ذخیره شده‌اند
+                    var valueIds = form.StudentFormSubmissionDatas
+                        .Select(d => int.TryParse(d.Value, out var idValue) ? idValue : (int?)null)
+                        .Where(idValue => idValue.HasValue)
+                        .Select(idValue => idValue.Value)
+                        .ToList();
+
+                    if (valueIds.Any())
+                    {
+                        foreach (var data in form.StudentFormSubmissionDatas)
+                        {
+                            if (data.InputType == InputType.Dropdown)
+                            {
+                                if (int.TryParse(data.Value, out var coefId))
+                                {
+                                    // دریافت از Repository
+                                    var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
+
+                                    if (coef != null)
+                                    {
+                                        // جایگزینی مقدار اصلی با مقدار توضیحی از جدول Coefficient
+                                        //data.Value = $"{coef.Name} ({coef.Value})";
+                                        data.Value = $"{coef.Name}";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+
                 var result = forms.Select(f => new AllSubmissionDataViewModel
                 {
                     SubmissionId = f.Id,
@@ -236,13 +277,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                     FormTitle = f.FormItem.Title,
                     CreateDatePersian = DateConvertor.ToShamsiDateTime(f.CreatedDate), // فرض بر این که این پراپرتی توی entity هست یا خودت تبدیلش می‌کنی
                     SubmissionValues = f.StudentFormSubmissionDatas.Select(d =>
-                                                {
-                                                    var label = d.FormItemDefinition?.Label
-                                                                ?? d.FormItemCoefficientDefinition?.Label
-                                                                ?? "بدون عنوان";
-                                                    return $"{label}: {d.Value}";
-                                                }).ToList()
+                    {
+                        var label = d.FormItemDefinition?.Label
+                                    ?? d.FormItemCoefficientDefinition?.Label
+                                    ?? "بدون عنوان";
+                        return $"{label}: {d.Value}";
+                    }).ToList()
                 });
+
+
 
                 return PartialView("SubmissionDataList", result);
             }
@@ -280,16 +323,19 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 {
                     foreach (var data in datadetail.StudentFormSubmissionDatas)
                     {
-                        if (int.TryParse(data.Value, out var coefId))
+                        if (data.InputType == InputType.Dropdown)
                         {
-                            // دریافت از Repository
-                            var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
-
-                            if (coef != null)
+                            if (int.TryParse(data.Value, out var coefId))
                             {
-                                // جایگزینی مقدار اصلی با مقدار توضیحی از جدول Coefficient
-                                //data.Value = $"{coef.Name} ({coef.Value})";
-                                data.Value = $"{coef.Name}";
+                                // دریافت از Repository
+                                var coef = await _coefficientRepository.GetByIdAsync(cancellationToken, coefId);
+
+                                if (coef != null)
+                                {
+                                    // جایگزینی مقدار اصلی با مقدار توضیحی از جدول Coefficient
+                                    //data.Value = $"{coef.Name} ({coef.Value})";
+                                    data.Value = $"{coef.Name}";
+                                }
                             }
                         }
                     }
@@ -326,7 +372,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         }
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> DownloadSubmissionFile(int submissionDataId,  CancellationToken cancellationToken)
+        public async Task<IActionResult> DownloadSubmissionFile(int submissionDataId, CancellationToken cancellationToken)
         {
             // دریافت داده‌ی دقیق submission-data (نام فایل در data.Value)
             var data = await _submissionDataRepository.GetSubmissionDataByIdAsync(submissionDataId, cancellationToken);
