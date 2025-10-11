@@ -1,4 +1,5 @@
 ﻿using SanjeshP.Mosahebe.Entities.Common;
+using SanjeshP.Mosahebe.Entities.Interview;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -24,5 +25,6 @@ namespace SanjeshP.Mosahebe.Entities.Exam
         [ForeignKey(nameof(ExamId))]
         public Exams Exam { get; set; }
 
+        public ICollection<FieldStation> FieldStations { get; set; } = new List<FieldStation>();
     }
 }
