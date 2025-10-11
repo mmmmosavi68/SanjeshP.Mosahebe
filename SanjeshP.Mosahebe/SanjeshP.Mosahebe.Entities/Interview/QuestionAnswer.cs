@@ -17,7 +17,7 @@ namespace SanjeshP.Mosahebe.Entities.Interview
         public ICollection<Station> Stations { get; set; }
 
         public int QuestionID { get; set; }
-        public ICollection<Question> Questions { get; set; }
+        public ICollection<StationQuestion> Questions { get; set; }
 
         public float Value { get; set; }
     }
