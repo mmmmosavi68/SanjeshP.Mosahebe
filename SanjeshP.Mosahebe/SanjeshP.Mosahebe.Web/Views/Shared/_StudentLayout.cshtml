@@ -16,6 +16,46 @@
     <link rel="stylesheet" href="~/Admin/plugins/iziToast/iziToast.min.css" />
 
     <style>
+
+        .close {
+            float: right;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: .5;
+        }
+
+        .close, .mailbox-attachment-close {
+            float: right;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: .5;
+        }
+
+            .close:hover, .mailbox-attachment-close:hover {
+                color: #000;
+                text-decoration: none;
+            }
+
+            .close:not(:disabled):not(.disabled):hover, .mailbox-attachment-close:not(:disabled):not(.disabled):hover, .close:not(:disabled):not(.disabled):focus, .mailbox-attachment-close:not(:disabled):not(.disabled):focus {
+                opacity: .75;
+            }
+
+        button.close, button.mailbox-attachment-close {
+            padding: 0;
+            background-color: transparent;
+            border: 0;
+        }
+
+        a.close.disabled, a.disabled.mailbox-attachment-close {
+            pointer-events: none;
+        }
+
         .wrapper, body, html {
             font-size: 12px
         }

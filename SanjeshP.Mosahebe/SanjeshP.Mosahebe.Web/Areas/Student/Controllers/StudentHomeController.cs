@@ -1,14 +1,20 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using SanjeshP.Mosahebe.Common;
 using SanjeshP.Mosahebe.Convertor;
+using SanjeshP.Mosahebe.Data.Contracts.File;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Data.Contracts.Students;
+using SanjeshP.Mosahebe.Entities.File;
 using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.Exam;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -30,6 +36,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         private readonly IStudentFormSubmissionDataRepository _submissionDataRepository;
         private readonly ICoefficientRepository _coefficientRepository;
         private readonly IWebHostEnvironment _env;
+        private readonly IUploadedFileRepository _uploadedFileRepository;
+        private readonly SiteSettings _siteSettings;
         private readonly IStudentRepository _studentRepository;
 
 
@@ -42,7 +50,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             IStudentFormSubmissionDataRepository submissionDataRepository,
             IStudentRepository studentRepository,
             ICoefficientRepository coefficientRepository,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IOptions<SiteSettings> siteSettings,
+            IUploadedFileRepository uploadedFileRepository)
         {
             _mapper = mapper;
 
@@ -52,8 +62,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             _formItemCoefficientRepository = formItemCoefficientRepository;
             _submissionScoreRepository = submissionScoreRepository;
             _submissionDataRepository = submissionDataRepository;
-            this._coefficientRepository = coefficientRepository;
-            this._env = env;
+            _coefficientRepository = coefficientRepository;
+            _env = env;
+            _uploadedFileRepository = uploadedFileRepository;
+            _siteSettings = siteSettings.Value;
         }
 
         // GET: /Student/StudentHome
@@ -102,22 +114,153 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (!ModelState.IsValid)
                 return BadRequest("اطلاعات فرم ناقص است");
 
-            var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var studentNationalCode = User.FindFirst("NationalCode")?.Value; // فرض بر این است که کد ملی تو Claims هست
+            var studentIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(studentIdClaim) || !int.TryParse(studentIdClaim, out var studentId))
+                return BadRequest("کاربر نامعتبر است");
 
+            var studentNationalCode = User.FindFirst("NationalCode")?.Value;
             if (string.IsNullOrEmpty(studentNationalCode))
                 return BadRequest("کد ملی داوطلب نامعتبر است.");
 
-            // حذف ارسال قبلی اگر وجود دارد
-            //var previousSubmission = await _submissionScoreRepository
-            //    .GetByStudentAndFormAsync(studentId, model.FormId, cancellationToken);
-            //if (previousSubmission != null)
-            //{
-            //    previousSubmission.IsDeleted = true;
-            //    await _submissionScoreRepository.UpdateAsync(previousSubmission, cancellationToken);
-            //}
+            var fileSettings = _siteSettings.FileSettings ?? new FileSettings();
+            var allowedExt = new HashSet<string>(fileSettings.AllowedUploadExtensions ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            var maxFileSizeBytes = (long)fileSettings.MaxUploadFileSizeInMB * 1024 * 1024;
 
-            // ایجاد رکورد جدید برای Submission
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentNationalCode);
+            if (!Directory.Exists(basePath))
+                Directory.CreateDirectory(basePath);
+
+            var errors = new List<string>();
+
+            // نگهداری فایل‌های آماده شده: Key نام فیلد در فرم (field_{id} یا coef_{id}), فایل، storedName، و آیدی definition مربوط
+            var preparedFiles = new List<(string Key, IFormFile File, string StoredFileName, int? FormItemDefinitionId, int? FormItemCoefficientDefinitionId)>();
+
+            // لیست داده‌هایی که باید ذخیره شوند (شامل فایلها به عنوان مقدار StoredFileName)
+            var preparedData = new List<StudentFormSubmissionData>();
+
+            // 1) بررسی و آماده‌سازی فیلدهای Definition
+            var fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+            foreach (var field in fields)
+            {
+                string value = null;
+                var key = $"field_{field.Id}";
+
+                if (field.inputType == InputType.File)
+                {
+                    var file = Request.Form.Files[key];
+                    if (file != null && file.Length > 0)
+                    {
+                        if (file.Length > maxFileSizeBytes)
+                        {
+                            errors.Add($"فایل فیلد '{field.Label}' بزرگتر از حد مجاز ({fileSettings.MaxUploadFileSizeInMB} MB) است");
+                            continue;
+                        }
+
+                        var originalFileName = Path.GetFileName(file.FileName);
+                        var ext = Path.GetExtension(originalFileName).ToLowerInvariant();
+                        if (!allowedExt.Contains(ext))
+                        {
+                            errors.Add($"فرمت فایل فیلد '{field.Label}' مجاز نیست");
+                            continue;
+                        }
+
+                        var storedFileName = $"{Guid.NewGuid():N}{ext}";
+                        preparedFiles.Add((Key: key, File: file, StoredFileName: storedFileName, FormItemDefinitionId: field.Id, FormItemCoefficientDefinitionId: null));
+                        value = storedFileName;
+                    }
+                    else
+                    {
+                        if (field.IsRequired)
+                            errors.Add($"فیلد '{field.Label}' اجباری است");
+                    }
+                }
+                else
+                {
+                    value = Request.Form[key];
+                    if (field.IsRequired && string.IsNullOrWhiteSpace(value))
+                    {
+                        errors.Add($"فیلد '{field.Label}' اجباری است");
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    preparedData.Add(new StudentFormSubmissionData
+                    {
+                        FormItemDefinitionId = field.Id,
+                        InputType = field.inputType,
+                        Value = value
+                    });
+                }
+            }
+
+            // 2) بررسی و آماده‌سازی فیلدهای Coefficient
+            var formItem = await _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+            if (formItem?.FormItemCoefficientId > 0)
+            {
+                var formItemCoefficient = await _formItemCoefficientRepository.GetByIdAsync(formItem.FormItemCoefficientId, cancellationToken);
+                var coefFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItemCoefficient.CoefficientId, cancellationToken);
+
+                foreach (var coefField in coefFields)
+                {
+                    string value = null;
+                    var key = $"coef_{coefField.Id}";
+
+                    if (coefField.inputType == InputType.File)
+                    {
+                        var file = Request.Form.Files[key];
+                        if (file != null && file.Length > 0)
+                        {
+                            if (file.Length > maxFileSizeBytes)
+                            {
+                                errors.Add($"فایل فیلد '{coefField.Label}' بزرگتر از حد مجاز ({fileSettings.MaxUploadFileSizeInMB} MB) است");
+                                continue;
+                            }
+
+                            var originalFileName = Path.GetFileName(file.FileName);
+                            var ext = Path.GetExtension(originalFileName).ToLowerInvariant();
+                            if (!allowedExt.Contains(ext))
+                            {
+                                errors.Add($"فرمت فایل فیلد '{coefField.Label}' مجاز نیست");
+                                continue;
+                            }
+
+                            var storedFileName = $"{Guid.NewGuid():N}{ext}";
+                            preparedFiles.Add((Key: key, File: file, StoredFileName: storedFileName, FormItemDefinitionId: null, FormItemCoefficientDefinitionId: coefField.Id));
+                            value = storedFileName;
+                        }
+                        else
+                        {
+                            if (coefField.IsRequired)
+                                errors.Add($"فیلد '{coefField.Label}' اجباری است");
+                        }
+                    }
+                    else
+                    {
+                        value = Request.Form[key];
+                        if (coefField.IsRequired && string.IsNullOrWhiteSpace(value))
+                        {
+                            errors.Add($"فیلد '{coefField.Label}' اجباری است");
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        preparedData.Add(new StudentFormSubmissionData
+                        {
+                            FormItemCoefficientDefinitionId = coefField.Id,
+                            InputType = coefField.inputType,
+                            Value = value
+                        });
+                    }
+                }
+            }
+
+            // اگر خطا داریم، برگردانیم و هیچ چیزی ذخیره نشود
+            if (errors.Any())
+                return BadRequest(new { success = false, errors });
+
+            // همه چی اوکی است؛ رکورد Submission را ایجاد می‌کنیم
             var submission = new StudentFormSubmissionScore
             {
                 FormItemId = model.FormId,
@@ -126,90 +269,45 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             };
             await _submissionScoreRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
 
-            // مسیر پایه برای ذخیره فایل‌ها
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentNationalCode);
-            if (!Directory.Exists(basePath))
-                Directory.CreateDirectory(basePath);
-
-            // ذخیره فیلدهای Definition
-            var fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
-            foreach (var field in fields)
+            // ذخیره studentFormSubmissionDataها یکی‌یکی؛ اگر داده مربوط به فایل است، بعد از ذخیره data.Id فایل را روی دیسک بنویس و UploadedFile را بساز
+            // توجه: فرض بر این است که AddStudentFormSubmissionValueAsync پس از ذخیره، entity.Id را مقداردهی می‌کند (EF Core رفتار پیش‌فرض بعد از SaveChanges)
+            foreach (var data in preparedData)
             {
-                string value = null;
+                data.StudentFormSubmissionScoreId = submission.Id;
+                await _submissionDataRepository.AddStudentFormSubmissionValueAsync(data, cancellationToken);
 
-                if (field.inputType == InputType.File)
+                // اگر این data مربوط به فایلی است، پیدا کردن فایل متناظر در preparedFiles بر اساس storedFileName و definition id
+                if (data.InputType == InputType.File)
                 {
-                    var file = Request.Form.Files[field.Name];
-                    if (file != null && file.Length > 0)
-                    {
-                        var fileName = Path.GetFileName(file.FileName);
-                        var savePath = Path.Combine(basePath, fileName);
+                    // پیدا کردن preparedFile متناظر
+                    var match = preparedFiles.FirstOrDefault(p =>
+                        (p.FormItemDefinitionId.HasValue && p.FormItemDefinitionId.Value == data.FormItemDefinitionId) ||
+                        (p.FormItemCoefficientDefinitionId.HasValue && p.FormItemCoefficientDefinitionId.Value == data.FormItemCoefficientDefinitionId)
+                    );
 
+                    if (match.File != null)
+                    {
+                        var savePath = Path.Combine(basePath, match.StoredFileName);
                         using (var stream = new FileStream(savePath, FileMode.Create))
                         {
-                            await file.CopyToAsync(stream);
+                            await match.File.CopyToAsync(stream, cancellationToken);
                         }
-                        value = fileName;
-                    }
-                }
-                else
-                {
-                    value = Request.Form[field.Name];
-                }
 
-                if (!string.IsNullOrEmpty(value))
-                {
-                    var studentFormSubmissionData = new StudentFormSubmissionData
-                    {
-                        StudentFormSubmissionScoreId = submission.Id,
-                        FormItemDefinitionId = field.Id,
-                        InputType = field.inputType,
-                        Value = value
-                    };
-                    await _submissionDataRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
-                }
-            }
-
-            // ذخیره فیلدهای Coefficient
-            var formItem = await _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
-            if (formItem.FormItemCoefficientId > 0)
-            {
-                var formItemCoefficient = await _formItemCoefficientRepository.GetByIdAsync(formItem.FormItemCoefficientId, cancellationToken);
-                var coefFields = await _coefficientDefinitionRepository.GetByCoefficientIdAsync(formItemCoefficient.CoefficientId, cancellationToken);
-                foreach (var coefField in coefFields)
-                {
-                    string value = null;
-
-                    if (coefField.inputType == InputType.File)
-                    {
-                        var file = Request.Form.Files[coefField.Name];
-                        if (file != null && file.Length > 0)
+                        var uploaded = new UploadedFile
                         {
-                            var fileName = Path.GetFileName(file.FileName);
-                            var savePath = Path.Combine(basePath, fileName);
-
-                            using (var stream = new FileStream(savePath, FileMode.Create))
-                            {
-                                await file.CopyToAsync(stream);
-                            }
-                            value = fileName;
-                        }
-                    }
-                    else
-                    {
-                        value = Request.Form[coefField.Name];
-                    }
-
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        var studentFormSubmissionData = new StudentFormSubmissionData
-                        {
+                            StudentId = studentId,
                             StudentFormSubmissionScoreId = submission.Id,
-                            FormItemCoefficientDefinitionId = coefField.Id,
-                            InputType = coefField.inputType,
-                            Value = value
+                            StudentFormSubmissionDataId = data.Id,
+                            StoredFileName = match.StoredFileName,
+                            OriginalFileName = Path.GetFileName(match.File.FileName),
+                            ContentType = match.File.ContentType,
+                            Size = match.File.Length,
+                            UploadedAt = DateTime.UtcNow
                         };
-                        await _submissionDataRepository.AddStudentFormSubmissionValueAsync(studentFormSubmissionData, cancellationToken);
+                        await _uploadedFileRepository.AddUploadedFileAsync(uploaded, cancellationToken);
+
+                        // از لیست آماده حذف کن تا در صورت موارد مشابه تداخل نشود
+                        preparedFiles.Remove(match);
                     }
                 }
             }
@@ -221,6 +319,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 redirectUrl = Url.Action("LoadForm", "StudentHome", new { area = "Student", formId = model.FormId })
             });
         }
+
+
         public async Task<IActionResult> SubmissionDataList(CancellationToken cancellationToken)
         {
             try
@@ -229,7 +329,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
                 var forms = await _submissionScoreRepository.GetByStudentAsync(studentId, cancellationToken);
 
-               
+
 
                 foreach (var form in forms)
                 {

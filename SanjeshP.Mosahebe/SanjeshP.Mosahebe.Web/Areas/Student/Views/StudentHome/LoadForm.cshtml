@@ -9,6 +9,7 @@
 
     @foreach (var field in Model.Fields)
     {
+        var inputName = $"field_{field.Id}";
         <div class="form-group mb-4">
             <label class="fw-bold h5">@field.Label</label>
             <span class="text-secondary">(@field.Description)</span>
@@ -22,22 +23,22 @@
             @switch (field.inputType)
             {
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
-                    <input type="text" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                    <input type="text" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url:
-                    <input type="url" inputmode="url" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                    <input type="url" inputmode="url" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
-                    <input type="number" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                    <input type="number" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
-                    <input type="file" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                    <input type="file" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
-                    <input type="checkbox" name="@field.Name" value="true" @requiredAttr @Html.Raw(validationAttr) />
+                    <input type="checkbox" name="@inputName" value="true" @requiredAttr @Html.Raw(validationAttr) />
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
-                    <select name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr)>
+                    <select name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr)>
                         @if (!string.IsNullOrEmpty(field.DropdownOptions))
                         {
                             var options = field.DropdownOptions.Split('-');
@@ -49,7 +50,7 @@
                     </select>
                     break;
                 case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
-                    <input type="date" name="@field.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                    <input type="date" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                     break;
             }
             <span class="text-danger text-small validation-error" style="display:none"></span>
@@ -61,6 +62,7 @@
     {
         foreach (var coef in Model.CoefficientFields)
         {
+            var inputName = $"coef_{coef.Id}";
             <div class="form-group mb-4">
                 <label class="fw-bold h5">@coef.Label</label>
                 <span class="text-secondary">
@@ -75,22 +77,22 @@
                 @switch (coef.inputType)
                 {
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Text:
-                        <input type="text" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                        <input type="text" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Url:
-                        <input type="url" inputmode="url" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                        <input type="url" inputmode="url" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Number:
-                        <input type="number" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                        <input type="number" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.File:
-                        <input type="file" name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
+                        <input type="file" name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox:
-                        <input type="checkbox" name="@coef.Name" value="true" @requiredAttr @Html.Raw(validationAttr) />
+                        <input type="checkbox" name="@inputName" value="true" @requiredAttr @Html.Raw(validationAttr) />
                         break;
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Dropdown:
-                        <select name="@coef.Name" class="form-control" @requiredAttr @Html.Raw(validationAttr)>
+                        <select name="@inputName" class="form-control" @requiredAttr @Html.Raw(validationAttr)>
                             <option value="">-- انتخاب کنید --</option>
                             @if (Model.CoefficientList != null && Model.CoefficientList.Any())
                             {
@@ -117,7 +119,7 @@
                         break;
 
                     case SanjeshP.Mosahebe.Entities.StudentForm.InputType.Date:
-                        <input type="date" name="@coef.Name" class="form-control" />
+                        <input type="date" name="@inputName" class="form-control" />
                         <span class="text-danger validation-error" style="display:none"></span>
                         break;
                 }
@@ -224,8 +226,31 @@
                             $('#formMessage').html('<div class="alert alert-danger">' + response.message + '</div>');
                         }
                     },
-                    error: function () {
-                        $('#formMessage').html('<div class="alert alert-danger">خطا در ثبت فرم</div>');
+                    error: function (xhr) {
+                        // سعی کنیم JSON را پارس کنیم و اگر آرایه errors یا message وجود داشت نمایش دهیم
+                        var html = '<div class="alert alert-danger">خطایی رخ داد</div>';
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            if (data) {
+                                if (data.errors && Array.isArray(data.errors) && data.errors.length) {
+                                    html = '<div class="alert alert-danger"><ul class="mb-0">';
+                                    data.errors.forEach(function (e) {
+                                        html += '<li>' + e + '</li>';
+                                    });
+                                    html += '</ul></div>';
+                                } else if (data.message) {
+                                    html = '<div class="alert alert-danger">' + data.message + '</div>';
+                                } else if (typeof data === 'string') {
+                                    html = '<div class="alert alert-danger">' + data + '</div>';
+                                }
+                            }
+                        } catch (e) {
+                            // اگر JSON نبود، متن خام را نمایش بده (با فرمت ایمن)
+                            var text = xhr.responseText || 'خطای ناشناخته';
+                            html = '<div class="alert alert-danger">' + $('<div/>').text(text).html() + '</div>';
+                        }
+
+                        $('#formMessage').html(html);
                     },
                     complete: function () {
                         $btn.prop("disabled", false).text("ذخیره اطلاعات");

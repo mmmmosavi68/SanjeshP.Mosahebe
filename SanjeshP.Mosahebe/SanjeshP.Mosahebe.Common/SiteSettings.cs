@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace SanjeshP.Mosahebe.Common
 {
     public class SiteSettings
@@ -9,6 +11,7 @@ namespace SanjeshP.Mosahebe.Common
         public AuthenticationSettings authenticationSettings { get; set; }
         public AuthenticationStudentSettings authenticationStudentSettings { get; set; }
         public PayamSMS payamSMS { get; set; }
+        public FileSettings FileSettings { get; set; }
 
     }
 
@@ -57,5 +60,11 @@ namespace SanjeshP.Mosahebe.Common
         public string BaseUrl { get; set; }
         public string ApiPrefix { get; set; }
         public string Environment { get; set; }
+    }
+
+    public class FileSettings
+    {
+        public List<string> AllowedUploadExtensions { get; set; } = new();
+        public int MaxUploadFileSizeInMB { get; set; } = 10; // مقدار پیش‌فرض
     }
 }
