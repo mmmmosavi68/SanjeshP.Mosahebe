@@ -157,6 +157,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         {
             var results = await TableNoTracking
                 .Include(s => s.FormItem)
+                    .ThenInclude(f => f.FormItemCoefficient)
+                .Include(s => s.FormItem)
                     .ThenInclude(f => f.FormItemDefinitions)
                 .Include(s => s.StudentFormSubmissionDatas)
                     .ThenInclude(d => d.FormItemDefinition)

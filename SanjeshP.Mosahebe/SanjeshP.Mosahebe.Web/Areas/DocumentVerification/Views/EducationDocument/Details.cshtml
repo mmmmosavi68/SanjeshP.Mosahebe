@@ -86,7 +86,7 @@
                         </div>
                         <div class="col-sm-6">
                             <div class="card shadow">
-                                <div class="card-header bg-info">نتیجه</div>
+                                <div class="card-header bg-info">نتیجه _  @form.FormItem?.FormItemCoefficient?.Title</div>
                                 <div class="row card-body">
                                     <div class="col-6">
                                         @* Hidden fields ضروری برای مدل‌بایندینگ *@
@@ -117,25 +117,27 @@
                                             <option value="لیست سیاه"></option>
                                         </datalist>
                                     </div>
-
-                                    <div class="col-6">
-                                        <label>امتیاز شما:</label>
-                                        <input id="scoreValue_@form.Id"
-                                               name="Forms[@Model.ToList().IndexOf(form)].ScoreValue"
-                                               type="text"
-                                               class="scoreTextValue form-control"
-                                               placeholder="امتیاز خود را برای این مدرک وارد نمایید."
-                                               data-one-max="@form.FormItem?.OneMaxScore"
-                                               min="0"
-                                               max="@form.FormItem?.OneMaxScore"
-                                               disabled>
-                                        <span class="form-text text-muted">
-                                            حداکثر امتیاز: @form.FormItem?.OneMaxScore
-                                        </span>
-                                        <div class="invalid-feedback mt-1" id="scoreFeedback_@form.Id" style="display:none">
-                                            لطفاً عددی بین 0 و @form.FormItem?.OneMaxScore وارد کنید.
+                                    @if (form.FormItem?.FormItemCoefficient?.CoefficientId == 3)
+                                    {
+                                        <div class="col-6">
+                                            <label>امتیاز شما:</label>
+                                            <input id="scoreValue_@form.Id"
+                                                   name="Forms[@Model.ToList().IndexOf(form)].ScoreValue"
+                                                   type="text"
+                                                   class="scoreTextValue form-control"
+                                                   placeholder="امتیاز خود را برای این مدرک وارد نمایید."
+                                                   data-one-max="@form.FormItem?.OneMaxScore"
+                                                   min="0"
+                                                   max="@form.FormItem?.OneMaxScore"
+                                                   disabled>
+                                            <span class="form-text text-muted">
+                                                حداکثر امتیاز: @form.FormItem?.OneMaxScore
+                                            </span>
+                                            <div class="invalid-feedback mt-1" id="scoreFeedback_@form.Id" style="display:none">
+                                                لطفاً عددی بین 0 و @form.FormItem?.OneMaxScore وارد کنید.
+                                            </div>
                                         </div>
-                                    </div>
+                                    }
                                 </div>
                             </div>
                         </div>
