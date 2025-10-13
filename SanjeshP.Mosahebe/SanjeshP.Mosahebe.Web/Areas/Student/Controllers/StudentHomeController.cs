@@ -89,6 +89,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 FormId = form.Id,
                 FormTitle = form.Title,
+                FormDescription = form.Description,
                 Fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(form.Id, cancellationToken)
             };
 

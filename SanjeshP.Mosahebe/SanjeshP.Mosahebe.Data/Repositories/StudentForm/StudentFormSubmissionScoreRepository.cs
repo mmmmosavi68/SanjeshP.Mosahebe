@@ -249,6 +249,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         {
             return await Table
                 .Include(s => s.FormItem)
+                    .ThenInclude(s=>s.FormItemCoefficient)
                 .Include(s => s.StudentFormSubmissionDatas)
                     .ThenInclude(d => d.FormItemDefinition)
                 .Include(s => s.StudentFormSubmissionDatas)

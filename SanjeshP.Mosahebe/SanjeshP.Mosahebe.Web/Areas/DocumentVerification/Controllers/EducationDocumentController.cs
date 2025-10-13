@@ -225,18 +225,36 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                         submissionScore.IsApproved = true; // علامت تایید
                         submissionScore.RejectReason = null; // هیچ دلیل ردی وجود ندارد
 
-                        // ذخیره نمره وارد شده
-                        if (int.TryParse(formInput.ScoreValue, out var score))
-                        {
-                            // بررسی حداقل و حداکثر
-                            if (score < 0) score = 0;
-                            if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
+                        var coefficientId = submissionScore.FormItem?.FormItemCoefficient?.CoefficientId ?? 0;
+                        var coeffs = await _coefficientRepository.GetByCoefficientIdAsync(coefficientId, cancellationToken);
 
-                            submissionScore.Score = score;
-                        }
-                        else
+                        // حالت ۱: فرم‌های بدون ورودی دستی (مثل معدل، کتاب، زبان و ...)
+                        if (coefficientId == 0)
                         {
-                            submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
+                            submissionScore.Score = oneMaxScore;
+                        }
+                        else if (coefficientId != 3)
+                        {
+                            submissionScore.Score = CalculateScore(submissionScore, coeffs);
+                        }
+                        else if (coefficientId == 3)
+                        {
+                            // حالت ۲: فرم دارای ورودی دستی (CoefficientId = 3)
+                            // ذخیره نمره وارد شده
+                            if (int.TryParse(formInput.ScoreValue, out var score))
+                            {
+                                var coefficientValue = CalculateScore(submissionScore, coeffs);
+
+                                // بررسی حداقل و حداکثر
+                                if (score < 0) score = 0;
+                                if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
+
+                                submissionScore.Score = score * coefficientValue;
+                            }
+                            else
+                            {
+                                submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
+                            }
                         }
                     }
                     else // اگر فرم تایید نشده باشد
@@ -300,6 +318,100 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
             var stream = System.IO.File.OpenRead(normalized);
             return File(stream, contentType, fileName);
+        }
+
+
+        private float CalculateScore(StudentFormSubmissionScore submission, IEnumerable<Coefficient> coeffs)
+        {
+            var coeffId = submission.FormItem?.FormItemCoefficient?.CoefficientId ?? 0;
+
+            switch (coeffId)
+            {
+                case 1: // معدل
+                    var gradeField = submission.StudentFormSubmissionDatas
+                        .FirstOrDefault(f => f.FormItemCoefficientDefinition?.Name == "Grade");
+                    if (gradeField != null && float.TryParse(gradeField.Value, out var grade))
+                    {
+                        var c = coeffs.FirstOrDefault(x => grade >= x.RangeStart && grade <= x.RangeEnd);
+                        return c?.Value ?? 0;
+                    }
+                    break;
+                case 2: // معدل
+                    var authField_Book = submission.StudentFormSubmissionDatas
+                        .FirstOrDefault(f => f.FormItemCoefficientDefinition?.Name == "BookType");
+
+                    // فرض: authField از نوع StudentFormSubmissionData است
+                    if (authField_Book == null || string.IsNullOrWhiteSpace(authField_Book.Value))
+                    {
+                        throw new InvalidOperationException("مقدار فیلد همکاری در نگارش خالی است.");
+                    }
+
+                    // تلاش برای تبدیل رشته به عدد
+                    if (int.TryParse(authField_Book.Value, out var valueId_Book))
+                    {
+                        var c = coeffs.FirstOrDefault(x => x.Id == valueId_Book);
+                        if (c == null)
+                            throw new InvalidOperationException($"ضریب معتبر برای مقدار انتخابی ({valueId_Book}) یافت نشد.");
+
+                        // مقدار معتبر پیدا شد
+                        return c.Value;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"مقدار فیلد همکاری '{authField_Book.Value}' عددی نیست.");
+                    }
+                    break;
+                //if (authField_Book != null)
+                //{
+                //    // فرض: CodeFarei یا مقدار مستقیم
+                //    var c = coeffs.FirstOrDefault();
+                //    return c?.Value ?? 0;
+                //}
+                //break;
+                case 3: // دارای همکار
+                    var authField = submission.StudentFormSubmissionDatas
+                        .FirstOrDefault(f => f.FormItemCoefficientDefinition?.Name == "AuthPo");
+                    // فرض: authField از نوع StudentFormSubmissionData است
+                    if (authField == null || string.IsNullOrWhiteSpace(authField.Value))
+                    {
+                        throw new InvalidOperationException("مقدار فیلد همکاری در نگارش خالی است.");
+                    }
+
+                    // تلاش برای تبدیل رشته به عدد
+                    if (int.TryParse(authField.Value, out var valueId))
+                    {
+                        var c = coeffs.FirstOrDefault(x => x.Id == valueId);
+                        if (c == null)
+                            throw new InvalidOperationException($"ضریب معتبر برای مقدار انتخابی ({valueId}) یافت نشد.");
+
+                        // مقدار معتبر پیدا شد
+                        return c.Value;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"مقدار فیلد همکاری '{authField.Value}' عددی نیست.");
+                    }
+                    break;
+                //if (authField != null)
+                //{
+                //    // فرض: CodeFarei یا مقدار مستقیم
+                //    var c = coeffs.FirstOrDefault(c=>c.Id==authField.Value);
+                //    return c?.Value ?? 0;
+                //}
+
+
+                case 4: // زبان
+                    var langField = submission.StudentFormSubmissionDatas
+                        .FirstOrDefault(f => f.FormItemCoefficientDefinition?.Name == "Number");
+                    if (langField != null && float.TryParse(langField.Value, out var langScore))
+                    {
+                        var c = coeffs.FirstOrDefault(x => langScore >= x.RangeStart && langScore <= x.RangeEnd);
+                        return c?.Value ?? 0;
+                    }
+                    break;
+            }
+
+            return 0;
         }
     }
 }

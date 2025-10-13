@@ -6,6 +6,7 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,8 +19,13 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<IEnumerable<Coefficient>> GetByCoefficientIdAsync(int coefficientId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                .Where(c=> c.CodeFarei!=0)
+                .Where(c=> c.CodeFarei!=0 && c.CoefficientId == coefficientId)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Coefficient?> FirstOrDefaultAsync(Expression<Func<Coefficient, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking.FirstOrDefaultAsync(predicate, cancellationToken);
         }
     }
 }

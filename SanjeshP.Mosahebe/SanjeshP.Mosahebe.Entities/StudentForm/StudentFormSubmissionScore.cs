@@ -19,7 +19,7 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public ICollection<StudentFormSubmissionData> StudentFormSubmissionDatas { get; set; }
 
         /// نمره محاسبه‌شده برای این فرم (در صورت وجود فرایند محاسبه امتیاز)
-        public int? Score { get; set; }
+        public double? Score { get; set; }
 
         /// وضعیت تایید/رد فرم توسط مدیر یا کارشناس
         public bool? IsApproved { get; set; }

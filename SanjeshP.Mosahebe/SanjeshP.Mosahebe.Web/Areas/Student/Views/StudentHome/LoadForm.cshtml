@@ -3,7 +3,10 @@
     ViewData["Title"] = "فرم ثبت اطلاعات";
 }
 
-<h2 class="mb-4">@Model.FormTitle</h2>
+<div class="mb-4">
+<h2 >@Model.FormTitle</h2>
+<span class="text-danger mb-4">@Model.FormDescription</span>
+</div>
 <form id="formSubmission" method="post" asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student" enctype="multipart/form-data">
     <input type="hidden" name="FormId" value="@Model.FormId" />
 
