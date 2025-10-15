@@ -1,0 +1,72 @@
+﻿@model IEnumerable<SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.Station.StationViewModel>
+
+<div class="bg-light rounded p-4">
+    <h3>فهرست ایستگاه‌ها</h3>
+
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateStation()" value="افزودن ایستگاه جدید" />
+    </div>
+
+    <table class="table table-striped text-center" id="tbl_station">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>نام ایستگاه</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int i = 1;
+                foreach (var s in Model)
+                {
+                    <tr id="tr_@(s.Id)">
+                        <td>@i</td>
+                        <td>@s.Name</td>
+                        <td>@(s.IsActive ? "فعال" : "غیرفعال")</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-info" onclick="DetailStation('@s.Id')"><i class="fa fa-info"></i></a>
+                            <a class="btn btn-sm btn-outline-warning" onclick="EditStation('@s.Id')"><i class="fa fa-edit"></i></a>
+                            <a class="btn btn-sm btn-outline-primary" onclick="StationQuestionList('@s.Id')"><i class="fa fa-list"></i></a>
+                            <a class="btn btn-sm btn-outline-danger" data-id="@s.Id" data-toggle="DeleteStation"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function CreateStation() {
+        openModal('افزودن ایستگاه جدید', '/Interview/Station/CreateStation', false);
+    }
+
+    function EditStation(id) {
+        openModal('ویرایش ایستگاه', '/Interview/Station/EditStation?id=' + id, false);
+    }
+
+    function DetailStation(id) {
+        openModal('جزئیات ایستگاه', '/Interview/Station/DetailStation?id=' + id, false);
+    }
+    function StationQuestionList(stationId) {
+        openModal('سوالات ایستگاه', '/Interview/StationQuestion/Index?stationId=' + stationId, true);
+    }
+
+    // $('[data-toggle="DeleteStation"]').confirmation({
+    //     title: 'آیا از حذف مطمئن هستید؟',
+    //     onConfirm: function () {
+    //         var id = $(this).data('id');
+    //         $.post('/Interview/Station/DeleteStation?stationId=' + id, function (res) {
+    //             if (res.isSuccess) {
+    //                 $("#tr_" + id).hide('slow');
+    //                 Toast.fire({ icon: 'success', title: res.message });
+    //             } else {
+    //                 Toast.fire({ icon: 'error', title: res.message });
+    //             }
+    //         });
+    //     }
+    // });
+</script>

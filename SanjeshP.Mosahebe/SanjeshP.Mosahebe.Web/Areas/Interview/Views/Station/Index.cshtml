@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "فهرست ایستگاه‌ها";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div id="StationList"></div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $("#StationList").load("/Interview/Station/StationList");
+        });
+    </script>
+}

@@ -107,8 +107,4 @@
     <ProjectReference Include="..\SanjeshP.Mosahebe.WebFramework\SanjeshP.Mosahebe.WebFramework.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\Interview\ViewModels\" />
-  </ItemGroup>
-
 </Project>

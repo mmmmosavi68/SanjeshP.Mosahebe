@@ -1,0 +1,51 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StationQuestion.StationQuestionEditViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="edit-question-form" asp-action="EditQuestion" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Text"></label>
+                <input asp-for="Text" class="form-control" />
+                <span asp-validation-for="Text" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MaxValue"></label>
+                <input asp-for="MaxValue" class="form-control" />
+                <span asp-validation-for="MaxValue" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="button" id="save-edit-button" value="ذخیره تغییرات" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    $('#save-edit-button').click(function () {
+        $.ajax({
+            url: '@Url.Action("EditQuestion", "StationQuestion", new { area = "Interview" })',
+            type: 'POST',
+            data: $('#edit-question-form').serialize(),
+            success: function (response) {
+                if (response.isSuccess) {
+                    $('#Modal_AddEdit').modal('hide');
+                    iziToast.success({ message: 'ویرایش با موفقیت انجام شد' });
+                    // بازخوانی لیست
+                    var stationId = '@ViewBag.StationId';
+                    $("#StationQuestionList").load('/Interview/StationQuestion/StationQuestionList?stationId=' + stationId);
+                } else {
+                    iziToast.error({ message: response.message });
+                }
+            },
+            error: function () {
+                iziToast.error({ message: 'خطا در سرور' });
+            }
+        });
+    });
+</script>

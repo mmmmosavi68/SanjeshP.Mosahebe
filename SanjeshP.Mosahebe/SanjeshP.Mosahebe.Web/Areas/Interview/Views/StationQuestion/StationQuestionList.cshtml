@@ -1,0 +1,93 @@
+﻿@model IEnumerable<SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StationQuestion.StationQuestionViewModel>
+@{
+    int i = 1;
+    var stationId = ViewBag.StationId as int?;
+}
+
+<div class="bg-light rounded p-4">
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateQuestion('@stationId')" value="افزودن سوال جدید" />
+    </div>
+
+    <table class="table table-striped table-hover text-center" id="tbl_stationQuestion">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>متن سوال</th>
+                <th>حداکثر نمره</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var q in Model)
+            {
+                <tr id="tr_@(q.Id)">
+                    <td>@i</td>
+                    <td>@q.Text</td>
+                    <td>@q.MaxValue</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-warning" onclick="EditQuestion('@q.Id')"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-sm btn-outline-danger" data-id="@q.Id" data-toggle="DeleteQuestion"><i class="fa fa-trash"></i></a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+    $(function () {
+        $('#tbl_stationQuestion').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false
+        });
+
+        $('[data-toggle="DeleteQuestion"]').confirmation({
+            title: 'آیا از حذف این سوال مطمئن هستید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () {
+                DeleteQuestion($(this).attr('data-id'));
+            }
+        });
+    });
+
+    function CreateQuestion(stationId) {
+        openModal('افزودن سوال جدید', '/Interview/StationQuestion/CreateQuestion?stationId=' + stationId, false);
+    }
+
+    function EditQuestion(id) {
+        openModal('ویرایش سوال', '/Interview/StationQuestion/EditQuestion?id=' + id, false);
+    }
+
+    function DeleteQuestion(id) {
+        $.ajax({
+            method: "POST",
+            url: "/Interview/StationQuestion/DeleteQuestion?questionId=" + id,
+            success: function (response) {
+                if (response.isSuccess) {
+                    $("#tr_" + id).addClass("bg-danger").hide('slow', function () {
+                        Toast.fire({ icon: 'success', title: response.message });
+                    });
+                    $("#StationQuestionList").load('/Interview/StationQuestion/StationQuestionList?stationId=@stationId');
+                } else {
+                    Toast.fire({ icon: 'warning', title: response.message });
+                }
+            },
+            error: function () {
+                Toast.fire({ icon: 'error', title: 'خطا در حذف سوال' });
+            }
+        });
+    }
+</script>

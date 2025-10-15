@@ -1,0 +1,51 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StationQuestion.StationQuestionCreateViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="create-question-form" asp-action="CreateQuestion" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="StationId" />
+
+            <div class="form-group">
+                <label asp-for="Text"></label>
+                <input asp-for="Text" class="form-control" />
+                <span asp-validation-for="Text" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MaxValue"></label>
+                <input asp-for="MaxValue" class="form-control" />
+                <span asp-validation-for="MaxValue" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="button" id="save-button" value="افزودن سوال" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    $('#save-button').click(function () {
+        $.ajax({
+            url: '@Url.Action("CreateQuestion", "StationQuestion", new { area = "Interview" })',
+            type: 'POST',
+            data: $('#create-question-form').serialize(),
+            success: function (response) {
+                if (response.isSuccess) {
+                    $('#Modal_AddEdit').modal('hide');
+                    iziToast.success({ message: 'سوال با موفقیت اضافه شد' });
+                    $("#StationQuestionList").load('/Interview/StationQuestion/StationQuestionList?stationId=@Model.StationId');
+                } else {
+                    iziToast.error({ message: response.message });
+                }
+            },
+            error: function () {
+                iziToast.error({ message: 'خطا در سرور' });
+            }
+        });
+    });
+</script>
+

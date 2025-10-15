@@ -1,0 +1,38 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.Station.StationEditViewModel
+
+<form id="edit-station-form">
+    <input type="hidden" asp-for="Id" />
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IsActive"></label>
+        <select asp-for="IsActive" class="form-control">
+            <option value="true">فعال</option>
+            <option value="false">غیرفعال</option>
+        </select>
+    </div>
+
+    <button type="button" id="save-edit-button" class="btn btn-primary">ذخیره تغییرات</button>
+</form>
+
+<script>
+    $('#save-edit-button').click(function () {
+        $.ajax({
+            url: '/Interview/Station/EditStation',
+            type: 'POST',
+            data: $('#edit-station-form').serialize(),
+            success: function (res) {
+                if (res.isSuccess) {
+                    $('#Modal_AddEdit').modal('hide');
+                    $("#StationList").load("/Interview/Station/StationList");
+                    iziToast.success({ message: 'ویرایش با موفقیت انجام شد' });
+                } else {
+                    iziToast.error({ message: res.message });
+                }
+            }
+        });
+    });
+</script>

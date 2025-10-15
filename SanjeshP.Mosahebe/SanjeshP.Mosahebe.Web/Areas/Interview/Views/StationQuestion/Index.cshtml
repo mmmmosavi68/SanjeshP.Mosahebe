@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "لیست سوالات ایستگاه";
+}
+<div id="StationQuestionList">
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.modal-dialog').draggable({ handle: ".modal-header" });
+        $("#StationQuestionList").load('/Interview/StationQuestion/StationQuestionList?stationId=@ViewBag.StationId', function () { });
+    });
+</script>
