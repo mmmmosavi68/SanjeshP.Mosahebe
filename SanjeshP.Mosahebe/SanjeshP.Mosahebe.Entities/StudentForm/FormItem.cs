@@ -16,8 +16,8 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
     {
         public string Title { get; set; }      // عنوان فرم
         public string Description { get; set; }  // توضیح کوتاه (اختیاری)
-        public int OneMaxScore { get; set; }
-        public int AllMaxScore { get; set; }
+        public double OneMaxScore { get; set; }
+        public double AllMaxScore { get; set; }
         public FormSourceType SourceType { get; set; }
 
         // Foreign Key

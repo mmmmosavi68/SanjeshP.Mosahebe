@@ -1,0 +1,926 @@
+مدل پایه
+namespace SanjeshP.Mosahebe.Entities.Common
+{
+    public interface IEntity { }
+
+    public interface IEntity<TKey> : IEntity
+    {
+        TKey Id { get; set; }
+    }
+
+    public abstract class BaseEntity<TKey> : IEntity<TKey>
+    {
+        [Key]
+        public TKey Id { get; set; }
+
+        [Required(ErrorMessage = "تاریخ ایجاد الزامی است")]
+        [Display(Name = "تاریخ ایجاد")]
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        [Display(Name = "تاریخ به‌روزرسانی")]
+        public DateTime? UpdatedDate { get; set; }
+
+        [Required(ErrorMessage = "وضعیت فعال بودن الزامی است")]
+        [Display(Name = "فعال")]
+        public bool IsActive { get; set; } = true;
+
+        [Required(ErrorMessage = "وضعیت حذف الزامی است")]
+        [Display(Name = "حذف شده")]
+        public bool IsDeleted { get; set; } = false;
+
+        [Required(ErrorMessage = "شناسه سازنده الزامی است")]
+        [Display(Name = "شناسه سازنده")]
+        [ForeignKey("Creator")]
+        public Guid CreatedBy { get; set; }
+
+        [Display(Name = "آی‌پی میزبان")]
+        public string HostIp { get; set; }
+    }
+
+    public abstract class BaseEntity : BaseEntity<Guid>
+    {
+        public BaseEntity()
+        {
+            Id = Guid.NewGuid();
+        }
+    }
+
+    public class IntBaseEntity : BaseEntity<int> { }
+}
+
+مدل FormItem
+ public enum FormSourceType
+ {
+     None = 0,
+     AvgNumber = 1,
+     Book = 2,
+     Language = 3,
+     Partner = 4
+ }
+
+ public class FormItem : BaseEntity<int>
+ {
+     public string Title { get; set; }      // عنوان فرم
+     public string Description { get; set; }  // توضیح کوتاه (اختیاری)
+     public int OneMaxScore { get; set; }
+     public int AllMaxScore { get; set; }
+     public FormSourceType SourceType { get; set; }
+
+     // Foreign Key
+     public int FormItemCategoryId { get; set; }
+     // Navigation Property
+     public FormItemCategory FormItemCategory { get; set; }
+
+     public ICollection<FormItemDefinition> FormItemDefinitions { get; set; }
+
+     public int FormItemCoefficientId { get; set; }
+     public FormItemCoefficient FormItemCoefficient { get; set; }
+ }
+
+مدل فرم که در آن میگوید عنوان فرم چیست 
+FormItemCategory میگوید داخل کدام دسته بندی هست
+و با FormItemDefinition و FormItemCoefficient می آید و آیتم داخل فرم را برای کاربر نمایش میدهد
+
+    // نمایش دسته بندی آیتم های فرم
+    public class FormItemCategory : BaseEntity<int>
+    {
+        public string Title { get; set; }
+        public int MaxScore { get; set; }
+        public int MaxCount { get; set; }
+
+        public ICollection<FormItem> FormItem { get; set; }
+
+        // Foreign Key
+        public int FormCourseCategoryId { get; set; }
+
+        // Navigation Property
+        public FormCourseCategory FormCourseCategory { get; set; }
+    }
+
+    // دسته بندی آینم های فرم بر اساس آموزشی و پژوهشی
+    public class FormCourseCategory:BaseEntity<int>
+    {
+        public string Title { get; set; }
+        public int MaxScore { get; set; }
+
+        public ICollection<FormItemCategory> FormItemCategory { get; set; }
+    }
+
+ public enum InputType
+ {
+     Text = 1,
+     Number = 2,
+     Url = 3,
+     File = 4,
+     Checkbox = 5,
+     Date = 6,
+     Dropdown = 7
+ }
+
+ public class FormItemDefinition : BaseEntity<int>
+ {
+     public string Name { get; set; }       // نام فیلد (کلید یکتا در فرم)
+     public string Label { get; set; }      // عنوان قابل نمایش برای کاربر
+     public InputType inputType { get; set; }    // نوع فیلد (متن، عدد، فایل و...)
+     public string InputTypeText { get; set; }
+     public bool IsRequired { get; set; }
+     public string Description { get; set; }
+     public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
+     public string ErrorMessage { get; set; }
+     // جدید: گزینه‌های دراپ‌داون (اگر نوع فیلد Dropdown باشد)
+     public string DropdownOptions { get; set; }  // مقادیر با - جدا می‌شوند
+
+
+
+     // Foreign Key
+     public int FormItemId { get; set; }
+     // Navigation Property
+     public FormItem FormItem { get; set; }
+
+ }
+
+
+ public class FormItemCoefficient : BaseEntity<int>
+ {
+     public int CoefficientId { get; set; }       // ارتباط با جدول ضرایب
+     public string Title { get; set; }
+     public ICollection<FormItem> FormItem { get; set; }
+ }
+
+
+ public class FormItemCoefficientDefinition: BaseEntity<int>
+ {
+     public int CoefficientId { get; set; }       // ارتباط با جدول ضرایب
+     public string Name { get; set; }       // نام فیلد (کلید یکتا در فرم)
+     public string Label { get; set; }      // عنوان قابل نمایش برای کاربر
+     public InputType inputType { get; set; }    // نوع فیلد (متن، عدد، فایل و...)
+     public string InputTypeText { get; set; }
+     public bool IsRequired { get; set; }
+     public string Description { get; set; }
+     public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
+     public string ErrorMessage { get; set; }
+     //<<<<<<< Updated upstream
+     // ✅ اضافه شده برای نمایش Dropdown
+     public string DropdownOptions { get; set; }  // مقادیر با - جدا می‌شوند
+                                                  //=======
+                                                  // new navigation: one definition -> many Coefficients
+     public ICollection<Coefficient> Coefficients { get; set; } = new List<Coefficient>();
+     //>>>>>>> Stashed changes
+ }
+
+
+    public class Coefficient : IEntity
+    {
+        [Key]
+        public int Id { get; set; }
+        public int CoefficientId { get; set; }
+        public int CodeFarei { get; set; }
+        public string Name { get; set; }
+        public float RangeStart { get; set; }
+        public float RangeEnd { get; set; }
+        public float Value { get; set; }
+
+    }
+
+
+در نهایت وقتی کاربر اقدام به ثبت اطلاعات میکند تو دو جدول زیر قرار داده میشود
+
+    // مقدار هر فیلد در یک ارسال فرم (مثلاً نمره زبان، فایل رزومه، چک‌باکس تاییدیه و ...)
+ public class StudentFormSubmissionData : BaseEntity<int>
+ {
+     /// نوع فیلد (Text, Number, File, Checkbox, Dropdown, ...)
+     public InputType InputType { get; set; }
+
+     /// مقدار ذخیره‌شده
+     /// - برای Text/Number → متن یا عدد
+     /// - برای File → آدرس یا نام فایل
+     /// - برای Checkbox → true/false
+     /// - برای Dropdown → مقدار انتخاب شده (Value)
+     public string Value { get; set; }
+
+     /// رفرنس به رکورد اصلی StudentFormSubmission
+     /// هر ارسال یک فرم شامل چندین مقدار (Value) می‌شود.
+     public int StudentFormSubmissionScoreId { get; set; }
+     public StudentFormSubmissionScore StudentFormSubmissionScore  { get; set; }
+
+     /// شناسه تعریف فیلد (کدوم فیلد بوده؟ معدل، زبان، کتاب و ...)
+     public int? FormItemDefinitionId { get; set; }
+     public FormItemDefinition FormItemDefinition { get; set; }
+
+
+     public int? FormItemCoefficientDefinitionId { get; set; }
+     public FormItemCoefficientDefinition FormItemCoefficientDefinition { get; set; }
+ }
+
+    // ذخیره کل پاسخ‌های یک فرم توسط یک دانشجو
+    public class StudentFormSubmissionScore : BaseEntity<int>
+    {
+        /// شناسه فرم اصلی (مثلاً فرم اطلاعات زبان، فرم سوابق پژوهشی)
+        public int FormItemId { get; set; }
+        public FormItem FormItem { get; set; }
+
+        /// شناسه دانشجو یا داوطلبی که این فرم را پر کرده
+        public int? StudentId { get; set; }
+
+        /// مجموعه مقادیر پر شده برای این ارسال (هر فیلد یک مقدار)
+        public ICollection<StudentFormSubmissionData> StudentFormSubmissionDatas { get; set; }
+
+        /// نمره محاسبه‌شده برای این فرم (در صورت وجود فرایند محاسبه امتیاز)
+        public float? Score { get; set; }
+
+        /// وضعیت تایید/رد فرم توسط مدیر یا کارشناس
+        public bool? IsApproved { get; set; }
+
+        /// دلیل رد شدن فرم (اگر IsApproved = false)
+        public string RejectReason { get; set; }
+    }
+
+
+
+این کد Action من هستش
+    [HttpPost]
+    public async Task<IActionResult> SaveScores([FromForm] List<FormDataInputViewModel> Forms, CancellationToken cancellationToken)
+    {
+        // بررسی اینکه فرم‌ها خالی نباشند
+        if (Forms == null || !Forms.Any())
+        {
+            ModelState.AddModelError(string.Empty, "داده‌ای برای ذخیره ارسال نشده است");
+            return BadRequest(ModelState);
+        }
+
+        // بررسی اینکه کاربر لاگین کرده باشد
+        if (!User.Identity.IsAuthenticated) return Forbid();
+
+        try
+        {
+            // پیمایش بر روی تمام فرم‌های ارسال شده
+            foreach (var formInput in Forms)
+            {
+                if (cancellationToken.IsCancellationRequested) break; // توقف در صورت کنسل شدن عملیات
+                if (formInput == null) continue;
+
+                // دریافت رکورد اصلی فرم از دیتابیس
+                var submissionScore = await _studentFormSubmissionRepository
+                    .GetDetailsForEditAsync(formInput.FormSubmissionScoreId, cancellationToken);
+
+                if (submissionScore == null)
+                {
+                    _logger.LogWarning("submissionScore not found id={Id}", formInput.FormSubmissionScoreId);
+                    continue;
+                }
+
+                var oneMaxScore = submissionScore.FormItem?.OneMaxScore ?? 0; // حداکثر امتیاز فرم
+
+                // اگر فرم تایید شده باشد
+                if (formInput.IsApproved == true)
+                {
+                    submissionScore.IsApproved = true; // علامت تایید
+                    submissionScore.RejectReason = null; // هیچ دلیل ردی وجود ندارد
+
+
+
+
+                    // ذخیره نمره وارد شده
+                    if (submissionScore.FormItem?.FormItemCoefficient?.CoefficientId == 3)
+                    {
+                        if (int.TryParse(formInput.ScoreValue, out var score))
+                        {
+                            // بررسی حداقل و حداکثر
+                            if (score < 0) score = 0;
+                            if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
+
+                            submissionScore.Score = score;
+                        }
+                        else
+                        {
+                            submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
+                        }
+                    }
+                    //else
+                    //{
+                    //    var coefficientId = submissionScore.FormItem.FormItemCoefficient.CoefficientId;
+
+                    //    var Coefficient = await _coefficientRepository.GetByCoefficientIdAsync(coefficientId, cancellationToken);
+                    //    foreach (var item in Coefficient)
+                    //    {
+                    //        if (item.CoefficientId==1 && )
+                    //        {
+                    //            if (formInput.)
+                    //            {
+                    //                submissionScore.Score = item.Value;
+                    //            }
+                    //        }
+                    //    }
+                       
+                    //}
+                }
+                else // اگر فرم تایید نشده باشد
+                {
+                    submissionScore.IsApproved = false;
+                    submissionScore.Score = 0; // نمره صفر برای فرم رد شده
+                    submissionScore.RejectReason = formInput.RejectReason?.Trim(); // ذخیره دلیل رد
+                }
+
+                submissionScore.UpdatedDate = DateTime.UtcNow; // تاریخ بروزرسانی
+                await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken);
+            }
+
+            // ذخیره تغییرات در دیتابیس
+            await _studentFormSubmissionRepository.SaveChangesAsync(cancellationToken);
+
+            // بازگشت به صفحه اصلی یا لیست فرم‌ها
+            return RedirectToAction("Index");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "خطا در ذخیره نمرات فرم‌ها");
+            return StatusCode(500, "خطا در سرور");
+        }
+    }
+
+و این هم ویو
+@using SanjeshP.Mosahebe.Entities.StudentForm
+@model IEnumerable<StudentFormSubmissionScore>
+@{
+    Layout = null;
+    var forms = Model?.ToList() ?? new List<StudentFormSubmissionScore>();
+}
+
+
+<style>
+    .scoreItemContainer {
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.05);
+    }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+    }
+
+    .shadow {
+        transition: all 0.6s ease; /* smooth transition برای hover */
+    }
+
+        .shadow:hover {
+            box-shadow: 0px 13px 22px rgb(0 0 0 / 62%) !important;
+            transform: scale(1.03); /* 5% بزرگتر */
+        }
+</style>
+
+
+<form asp-action="SaveScores" method="post" novalidate>
+    <div class="container mt-2 pl-4 pr-4">
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-info">
+                @ViewBag.Message
+            </div>
+        }
+        @foreach (var form in Model)
+        {
+            var datas = form.StudentFormSubmissionDatas?.ToList() ?? new List<StudentFormSubmissionData>();
+            <div class="card scoreItemContainer shadow mb-3" data-id="@form.Id">
+                <div class="card-header card-title bg-light">
+                    <strong>@form.FormItem?.Title</strong>
+                </div>
+                <div class="card-body" id="scoreItem_@form.Id">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            @for (int i = 0; i < form.StudentFormSubmissionDatas.Count; i++)
+                            {
+                                var field = form.StudentFormSubmissionDatas.ElementAt(i);
+                                var oneMax = form.FormItem?.OneMaxScore ?? 0;
+                                <div class="mb-2 field-line" data-idx="@i" data-one-max="@oneMax">
+                                    <label class="me-1">@((field.FormItemDefinition?.Label) ?? (field.FormItemCoefficientDefinition?.Label) ?? "بدون عنوان")</label>:
+                                    <span>
+                                        @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
+                                        {
+                                            <a asp-controller="EducationDocument"
+                                               asp-action="DownloadSubmissionFile"
+                                               asp-route-submissionDataId="@field.Id"
+                                               asp-route-studentId="@form.StudentId"
+                                               target="_blank" rel="noopener noreferrer">دانلود فایل</a>
+                                        }
+                                        else if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox)
+                                        {
+                                            <span>@(field.Value == "true" ? "بله" : "خیر")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@field.Value</span>
+                                        }
+                                    </span>
+
+                                    @* اینجا باید index لیست Forms[i] هم اصلاح شود *@
+                                    <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].Datas[@i].SubmissionDataId" value="@field.Id" />
+                                    <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].Datas[@i].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
+                                    <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].Datas[@i].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
+                                </div>
+                            }
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="card shadow">
+                                <div class="card-header bg-info">نتیجه _  @form.FormItem?.FormItemCoefficient?.Title</div>
+                                <div class="row card-body">
+                                    <div class="col-6">
+                                        @* Hidden fields ضروری برای مدل‌بایندینگ *@
+                                        <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].FormSubmissionScoreId" value="@form.Id" />
+                                        <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].FormItemId" value="@form.FormItemId" />
+
+                                        @* تیک تایید فرم *@
+                                        <input type="checkbox"
+                                               id="notRejected_@form.Id"
+                                               class="notRejected form-check-input"
+                                               data-id="@form.Id"
+                                               name="Forms[@Model.ToList().IndexOf(form)].IsApproved"
+                                               value="true">
+                                        <label for="notRejected_@form.Id" class="form-check-label">مدرک، مورد تایید است.</label>
+
+                                        @* دلیل رد فرم *@
+                                        <input list="rejectedList_@form.Id"
+                                               maxlength="1000"
+                                               id="rejectReason_@form.Id"
+                                               name="Forms[@Model.ToList().IndexOf(form)].RejectReason"
+                                               type="text"
+                                               class="rejectReason form-control mt-2"
+                                               placeholder="علت عدم تایید"
+                                               required>
+                                        <datalist id="rejectedList_@form.Id">
+                                            <option value="تکراری"></option>
+                                            <option value="موقعیت اشتباه"></option>
+                                            <option value="لیست سیاه"></option>
+                                        </datalist>
+                                    </div>
+                                    @if (form.FormItem?.FormItemCoefficient?.CoefficientId == 3)
+                                    {
+                                        <div class="col-6">
+                                            <label>امتیاز شما:</label>
+                                            <input id="scoreValue_@form.Id"
+                                                   name="Forms[@Model.ToList().IndexOf(form)].ScoreValue"
+                                                   type="text"
+                                                   class="scoreTextValue form-control"
+                                                   placeholder="امتیاز خود را برای این مدرک وارد نمایید."
+                                                   data-one-max="@form.FormItem?.OneMaxScore"
+                                                   min="0"
+                                                   max="@form.FormItem?.OneMaxScore"
+                                                   disabled>
+                                            <span class="form-text text-muted">
+                                                حداکثر امتیاز: @form.FormItem?.OneMaxScore
+                                            </span>
+                                            <div class="invalid-feedback mt-1" id="scoreFeedback_@form.Id" style="display:none">
+                                                لطفاً عددی بین 0 و @form.FormItem?.OneMaxScore وارد کنید.
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                    </div> <!-- /.row -->
+                </div> <!-- /.card-body -->
+            </div> <!-- /.card -->
+        }
+    </div>
+    @if (ViewBag.Message == null)
+    {
+        <div class="container mb-5">
+            <button type="submit" class="btn btn-success">ذخیره نمرات</button>
+        </div>
+    }
+
+</form>
+
+<script>
+    $(function () {
+
+        // ===========================
+        // Helper: اعتبارسنجی ورودی عددی
+        // ===========================
+        function validateScoreInput($input) {
+            if (!$input || $input.length === 0) return true;
+
+            var id = $input.attr('id') || '';
+            var idx = id.replace('scoreValue_', '');
+            var $feedback = $('#scoreFeedback_' + idx);
+
+            if ($input.prop('disabled')) {
+                $input.removeClass('is-invalid');
+                if ($feedback.length) $feedback.hide();
+                return true;
+            }
+
+            var val = $input.val();
+            if (val === '' || isNaN(parseFloat(val))) {
+                $input.addClass('is-invalid');
+                if ($feedback.length) $feedback.text('لطفاً یک عدد معتبر وارد کنید.').show();
+                return false;
+            }
+
+            var num = parseFloat(val);
+            var min = parseFloat($input.attr('min') || '0');
+            var maxAttr = parseFloat($input.attr('max') || '');
+            var dataMax = parseFloat($input.data('one-max') || $input.data('oneMax') || '');
+            var max = (!isNaN(maxAttr) && maxAttr > 0) ? maxAttr : (!isNaN(dataMax) ? dataMax : 0);
+
+            if (num < min || (max > 0 && num > max)) {
+                $input.addClass('is-invalid');
+                if ($feedback.length) $feedback.text('مقدار باید بین ' + min + ' و ' + max + ' باشد.').show();
+                return false;
+            }
+
+            $input.removeClass('is-invalid');
+            if ($feedback.length) $feedback.hide();
+            return true;
+        }
+
+        // ===========================
+        // Helper: فعال/غیرفعال کردن score و rejectReason بر اساس checkbox
+        // ===========================
+        function toggleScoreByCheckbox(id, checked) {
+            var $reject = $('#rejectReason_' + id);
+            var $score = $('#scoreValue_' + id);
+            var $feedback = $('#scoreFeedback_' + id);
+
+            if (checked) {
+                if ($reject.length) {
+                    $reject.val('').prop('disabled', true).prop('required', false).removeClass('is-invalid');
+                }
+                if ($score.length) {
+                    $score.prop('disabled', false).prop('required', true);
+                    var dataOneMax = $score.data('oneMax') || $score.data('one-max');
+                    if (!$score.attr('max') && dataOneMax) $score.attr('max', dataOneMax);
+                    validateScoreInput($score);
+                }
+                if ($feedback.length) $feedback.hide();
+            } else {
+                if ($score.length) $score.prop('disabled', true).prop('required', false).val('').removeClass('is-invalid');
+                if ($reject.length) $reject.prop('disabled', false).prop('required', true);
+                if ($feedback.length) $feedback.hide();
+            }
+        }
+
+        // ===========================
+        // محدود کردن ورودی نمره به عدد با حداکثر دو رقم اعشار
+        // ===========================
+        $(document).on('input', '.scoreTextValue', function () {
+            var $this = $(this);
+            var val = $this.val();
+            var m = val.match(/^\d+(\.\d{0,2})?/);
+            var newVal = m ? m[0] : '';
+            if (newVal !== val) $this.val(newVal);
+
+            validateScoreInput($this);
+        });
+
+        // ===========================
+        // مقداردهی اولیه بر اساس وضعیت checkbox
+        // ===========================
+        $('.notRejected').each(function () {
+            var id = $(this).data('id');
+            toggleScoreByCheckbox(id, $(this).prop('checked'));
+        });
+
+        // ===========================
+        // تغییر وضعیت هنگام تغییر checkbox
+        // ===========================
+        $(document).on('change', '.notRejected', function () {
+            var id = $(this).data('id');
+            toggleScoreByCheckbox(id, $(this).prop('checked'));
+        });
+
+        // ===========================
+        // اعتبارسنجی جامع قبل از submit
+        // ===========================
+        $('form[asp-action="SaveScores"], form').on('submit', function (e) {
+            var ok = true;
+
+            // 1️⃣ اعتبارسنجی score
+            $('.scoreTextValue').each(function () {
+                if (!validateScoreInput($(this))) ok = false;
+            });
+
+            // 2️⃣ بررسی هر checkbox و rejectReason
+            $('.notRejected').each(function () {
+                var id = $(this).data('id');
+                var checked = $(this).prop('checked');
+
+                if (checked) {
+                    // اگر تیک زده شده، score باید معتبر باشد
+                    var $score = $('#scoreValue_' + id);
+                    if ($score.length && ($score.val() === '' || $score.hasClass('is-invalid'))) {
+                        ok = false;
+                        $score.addClass('is-invalid');
+                    }
+                } else {
+                    // اگر تیک نخورده، rejectReason باید مقدار داشته باشد
+                    var $reject = $('#rejectReason_' + id);
+                    if ($reject.length) {
+                        var val = ($reject.val() || '').toString().trim();
+                        if (val === '') {
+                            ok = false;
+                            $reject.addClass('is-invalid');
+
+                            var $fb = $('#rejectFeedback_' + id);
+                            if ($fb.length === 0) {
+                                $fb = $('<div/>', {
+                                    id: 'rejectFeedback_' + id,
+                                    'class': 'invalid-feedback',
+                                    text: 'لطفاً دلیل رد را وارد یا از لیست انتخاب کنید.'
+                                });
+                                $reject.after($fb);
+                            }
+                            $fb.show();
+                        } else {
+                            $reject.removeClass('is-invalid');
+                            $('#rejectFeedback_' + id).hide();
+                        }
+                    }
+                }
+            });
+
+            // جلوگیری از submit در صورت وجود خطا
+            if (!ok) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // اسکرول به اولین خطا
+                var $first = $('.is-invalid').first();
+                if ($first.length) $('html, body').animate({ scrollTop: $first.offset().top - 100 }, 300);
+
+                alert('لطفاً خطاهای فرم را اصلاح کنید.');
+            }
+        });
+
+    });
+</script>
+اینم repository منه برای StudentFormSubmissionScore
+
+
+using SanjeshP.Mosahebe.Common;
+using SanjeshP.Mosahebe.Data.Repositories.Common;
+using SanjeshP.Mosahebe.Entities.Student;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using SanjeshP.Mosahebe.Entities.StudentForm;
+using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using SanjeshP.Mosahebe.Entities.Exam;
+
+namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
+{
+    public class StudentFormSubmissionScoreRepository : EntityFrameworkRepository<StudentFormSubmissionScore>, IStudentFormSubmissionScoreRepository, IScopedDependency
+    {
+        public StudentFormSubmissionScoreRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+
+        public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Where(s => s.FormItemId == formId && !s.IsDeleted)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<StudentFormSubmissionScore?> GetByStudentFormSubmissionIdAsync(int id, CancellationToken cancellationToken)
+        {
+            return await Table
+                .Where(s => s.Id == id && !s.IsDeleted)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task AddStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken) =>
+            await AddAsync(studentFormSubmission, cancellationToken);
+
+        public async Task UpdateStudentFormSubmissionAsync(StudentFormSubmissionScore studentFormSubmission, CancellationToken cancellationToken) =>
+            await UpdateAsync(studentFormSubmission, cancellationToken);
+
+        public async Task DeleteStudentFormSubmissionAsync(int id, CancellationToken cancellationToken)
+        {
+            var submission = await GetByStudentFormSubmissionIdAsync(id, cancellationToken);
+            if (submission is null)
+                throw new KeyNotFoundException("ارسال فرم مورد نظر یافت نشد");
+
+            submission.IsDeleted = true;
+            await UpdateAsync(submission, cancellationToken);
+        }
+        public async Task<StudentFormSubmissionScore> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
+        {
+            return await Table
+                    .FirstOrDefaultAsync(
+                        x => x.StudentId == studentId
+                          && x.FormItemId == formItemId
+                          && x.IsDeleted == false
+                          && x.IsActive == true,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+        }
+
+        // Rezaei
+        public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAsync(int studentId, CancellationToken cancellationToken)
+        {
+
+            return await TableNoTracking
+            .Include(fss => fss.FormItem)                      // جدول FormItems
+            .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
+                .ThenInclude(d => d.FormItemDefinition)
+            .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+            .Where(fss => fss.StudentId == studentId
+                            && !fss.IsDeleted
+                                  && fss.IsActive)
+            .ToListAsync(cancellationToken);
+
+        }
+
+        // Rezaei
+        public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)
+        {
+            var result = await TableNoTracking
+                   .Include(fss => fss.FormItem)
+                   .Include(fss => fss.StudentFormSubmissionDatas)
+                       .ThenInclude(d => d.FormItemDefinition)
+                   .Include(fss => fss.StudentFormSubmissionDatas)
+                       .ThenInclude(d => d.FormItemCoefficientDefinition)
+                   .Where(fss => fss.StudentId == studentId
+                              && fss.FormItemId == formItemId
+                              && !fss.IsDeleted
+                              && fss.IsActive)
+                   .FirstOrDefaultAsync(cancellationToken)
+                   .ConfigureAwait(false);
+
+            // فیلتر کردن دستی بعد از دریافت از دیتابیس
+            if (result != null)
+            {
+                result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                    .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+            }
+
+            return result;
+
+        }
+
+        public async Task<StudentFormSubmissionScore> GetFormSubmissionDataByStudentAndSubmissionScoresIDAsync(int studentId, int SubmissionId, CancellationToken cancellationToken)
+        {
+            var result = await TableNoTracking
+                 .Include(s => s.FormItem)
+                     .ThenInclude(f => f.FormItemDefinitions)
+                 .Include(s => s.StudentFormSubmissionDatas)
+                     .ThenInclude(d => d.FormItemDefinition)
+                 .Include(s => s.StudentFormSubmissionDatas)
+                     .ThenInclude(d => d.FormItemCoefficientDefinition)
+                 .Where(s => s.StudentId == studentId && s.Id==SubmissionId && s.IsActive && !s.IsDeleted)
+                   .FirstOrDefaultAsync(cancellationToken)
+                   .ConfigureAwait(false);
+
+
+
+
+            // همون منطق اضافه‌کردن فیلدهای خالی و مرتب‌سازی بمونه ✅
+
+            result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                .Where(d => d.IsActive && !d.IsDeleted)
+                .ToList();
+
+            var allDefs = result.FormItem?.FormItemDefinitions?.Where(d => d.IsActive && !d.IsDeleted).ToList() ?? new();
+
+            foreach (var def in allDefs)
+            {
+                if (!result.StudentFormSubmissionDatas.Any(d => d.FormItemDefinitionId == def.Id))
+                {
+                    result.StudentFormSubmissionDatas.Add(new StudentFormSubmissionData
+                    {
+                        FormItemDefinitionId = def.Id,
+                        FormItemDefinition = def,
+                        Value = null,
+                        InputType = def.inputType,
+                        IsActive = true
+                    });
+                }
+            }
+
+            result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
+                    .OrderBy(d =>d.CreatedDate)
+                    .ToList();
+
+
+            return result;
+
+        }
+
+        // Mousavi
+        public async Task<IEnumerable<StudentFormSubmissionScore>> GetAllByStudentIdAsync(int studentId, CancellationToken cancellationToken)
+        {
+            var results = await TableNoTracking
+                .Include(s => s.FormItem)
+                    .ThenInclude(f => f.FormItemCoefficient)
+                .Include(s => s.FormItem)
+                    .ThenInclude(f => f.FormItemDefinitions)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                .Where(s => s.StudentId == studentId && s.IsActive && !s.IsDeleted)
+                .OrderByDescending(s => s.CreatedDate)
+                .ToListAsync(cancellationToken);
+
+            // همون منطق اضافه‌کردن فیلدهای خالی و مرتب‌سازی بمونه ✅
+            foreach (var score in results)
+            {
+                var datas = score.StudentFormSubmissionDatas ?? new List<StudentFormSubmissionData>();
+
+                score.StudentFormSubmissionDatas = score.StudentFormSubmissionDatas
+                    .Where(d => d.IsActive && !d.IsDeleted)
+                    .ToList();
+
+                score.StudentFormSubmissionDatas = datas
+                                                    .Where(d => d.IsActive && !d.IsDeleted)
+                                                    .ToList();
+
+
+                var allDefs = score.FormItem?.FormItemDefinitions?.Where(d => d.IsActive && !d.IsDeleted).ToList() ?? new();
+
+                foreach (var def in allDefs)
+                {
+                    if (!score.StudentFormSubmissionDatas.Any(d => d.FormItemDefinitionId == def.Id))
+                    {
+                        score.StudentFormSubmissionDatas.Add(new StudentFormSubmissionData
+                        {
+                            FormItemDefinitionId = def.Id,
+                            FormItemDefinition = def,
+                            Value = null,
+                            InputType = def.inputType,
+                            IsActive = true
+                        });
+                    }
+                }
+
+                score.StudentFormSubmissionDatas = score.StudentFormSubmissionDatas
+                    .OrderBy(d => d.FormItemDefinition?.CreatedDate)
+                    .ToList();
+            }
+
+            return results;
+        }
+
+        //Mousavi
+        public async Task<StudentFormSubmissionScore> GetDetailsAsync(int id, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(s => s.FormItem)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+        //Mousavi
+        public async Task<StudentFormSubmissionScore> GetDetailsAsyncReadOnly(int id, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(s => s.FormItem)
+                    .ThenInclude(fi => fi.FormItemCoefficient)
+                        .ThenInclude(fic => fic.CoefficientId) // اگر FormItemCoefficient مجموعه Coefficients نگه می‌دارد
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                        .ThenInclude(ficd => ficd.CoefficientId) // اگر FormItemCoefficientDefinition هم Collection Coefficients دارد
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+        //Mousavi
+        //public async Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken)
+        //{
+        //    // از Table (با Tracking) استفاده می‌کنیم تا تغییرات روی همین موجودیت‌ها قابل ذخیره باشد
+        //    return await Table
+        //        .Include(s => s.FormItem)
+        //            .ThenInclude(fi => fi.FormItemCoefficient)
+        //                .ThenInclude(fic => fic.CoefficientId)
+        //        .Include(s => s.StudentFormSubmissionDatas)
+        //            .ThenInclude(d => d.FormItemDefinition)
+        //        .Include(s => s.StudentFormSubmissionDatas)
+        //            .ThenInclude(d => d.FormItemCoefficientDefinition)
+        //                .ThenInclude(ficd => ficd.CoefficientId)
+        //        .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        //}
+        public async Task<StudentFormSubmissionScore> GetDetailsForEditAsync(int id, CancellationToken cancellationToken)
+        {
+            return await Table
+                .Include(s => s.FormItem)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemDefinition)
+                .Include(s => s.StudentFormSubmissionDatas)
+                    .ThenInclude(d => d.FormItemCoefficientDefinition)
+                        .ThenInclude(fd => fd.Coefficients) // در صورت وجود نِیوِیگیشن
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+
+    }
+}

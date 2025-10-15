@@ -48,6 +48,7 @@
             <div class="card scoreItemContainer shadow mb-3" data-id="@form.Id">
                 <div class="card-header card-title bg-light">
                     <strong>@form.FormItem?.Title</strong>
+                    <p class="text-info text-sm">@form.FormItem?.Description</p>
                 </div>
                 <div class="card-body" id="scoreItem_@form.Id">
                     <div class="row">
@@ -86,7 +87,7 @@
                         </div>
                         <div class="col-sm-6">
                             <div class="card shadow">
-                                <div class="card-header bg-info">نتیجه _  @form.FormItem?.FormItemCoefficient?.Title</div>
+                                <div class="card-header bg-info">نتیجه _  @form.FormItem?.FormItemCoefficient?.Title  </div>
                                 <div class="row card-body">
                                     <div class="col-6">
                                         @* Hidden fields ضروری برای مدل‌بایندینگ *@
@@ -117,7 +118,7 @@
                                             <option value="لیست سیاه"></option>
                                         </datalist>
                                     </div>
-                                    @if (form.FormItem?.FormItemCoefficient?.CoefficientId == 3)
+                                    @if (form.FormItem?.FormItemCoefficient?.CoefficientId == 3 || form.FormItem?.FormItemCoefficient?.CoefficientId == 5 || form.FormItem?.FormItemCoefficient?.CoefficientId == 2)
                                     {
                                         <div class="col-6">
                                             <label>امتیاز شما:</label>

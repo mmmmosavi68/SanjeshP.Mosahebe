@@ -1105,8 +1105,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<float>("RangeStart")
                         .HasColumnType("real");
 
-                    b.Property<float>("Value")
-                        .HasColumnType("real");
+                    b.Property<double>("Value")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -1158,8 +1158,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("AllMaxScore")
-                        .HasColumnType("int");
+                    b.Property<double>("AllMaxScore")
+                        .HasColumnType("float");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1185,8 +1185,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("OneMaxScore")
-                        .HasColumnType("int");
+                    b.Property<double>("OneMaxScore")
+                        .HasColumnType("float");
 
                     b.Property<int>("SourceType")
                         .HasColumnType("int");
@@ -1490,8 +1490,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("RejectReason")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Score")
-                        .HasColumnType("int");
+                    b.Property<double?>("Score")
+                        .HasColumnType("float");
 
                     b.Property<int?>("StudentId")
                         .HasColumnType("int");

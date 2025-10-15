@@ -102,7 +102,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 var coef = await _formItemCoefficientRepository.GetByCoefficientIdAsync(form.FormItemCoefficientId, cancellationToken);
                 viewModel.Coefficients = coef.ToList();
                 // اضافه کردن coefficients از _coefficientRepository
-                viewModel.CoefficientList = coefficients.ToList();
+                viewModel.CoefficientList = coefficients.OrderBy(c => c.Name).ThenBy(c => c.RangeStart).ToList();
             }
 
             return View("LoadForm", viewModel);
