@@ -106,7 +106,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             var question = await _repository.GetByQuestionIdAsync(id, cancellationToken);
             if (question == null)
                 return NotFound();
-
+            ViewBag.StationId = question.StationId;
             var model = _mapper.Map<StationQuestionEditViewModel>(question);
             return PartialView("EditQuestion", model);
         }
