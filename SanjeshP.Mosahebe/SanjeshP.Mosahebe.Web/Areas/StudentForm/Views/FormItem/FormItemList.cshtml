@@ -1,0 +1,136 @@
+﻿@model IEnumerable<SanjeshP.Mosahebe.Presentation.ViewModels.FormItemViewModel>
+
+@{
+    ViewData["Title"] = "FormItemList";
+    int i = 1;
+}
+
+<div class="bg-light rounded p-4">
+    <h3>فهرست فرم‌ها</h3>
+
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateFormItem()" value="افزودن فرم جدید" />
+    </div>
+
+    <table class="table-hover table-striped table text-center" id="tbl_form_item">
+        <thead>
+            <tr class="trhead">
+                <th>#</th>
+                <th>نام فرم</th>
+                <th>نوع آیتم</th>
+                <th>توضیحات</th>
+                <th>حداکثر امتیاز تکی</th>
+                <th>حداکثر امتیاز کل</th>
+                <th>زیردسته</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr_@(item.Id)">
+                    <td>@i</td>
+                    <td>@item.Title</td>
+                    <td>@item.CoefficientTitle</td>
+                    <td>
+                        @(item.Description != null && item.Description.Length > 70
+                            ? item.Description.Substring(0, 70) + "..."
+                            : item.Description)
+                    </td>
+                    <td>@item.OneMaxScore</td>
+                    <td>@item.AllMaxScore</td>
+                    <td>@item.CategoryTitle</td>
+                    <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a class="btn btn-sm btn-outline-info" onclick="OpenFormItemDefinition('@item.Id','@item.Title')" title="تعریف آیتم">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-warning" onclick="EditFormItem('@item.Id')" title="ویرایش">
+                                <i class="fa fa-pen"></i>
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-danger" id="@item.Id" data-toggle="DeleteFormItem" title="حذف">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+
+<script>
+    $(function () {
+        $('#tbl_form_item').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            lengthChange: true,
+            info: true,
+            autoWidth: false,
+            pageLength: 10,
+            language: {
+                search: "جستجو:",
+                lengthMenu: "نمایش _MENU_ فرم",
+                info: "نمایش _START_ تا _END_ از _TOTAL_ فرم",
+                infoEmpty: "هیچ داده‌ای وجود ندارد",
+                zeroRecords: "رکوردی یافت نشد"
+            }
+        });
+
+        $('[data-toggle="DeleteFormItem"]').confirmation({
+            title: 'آیا از حذف فرم اطمینان دارید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () {
+                var id = $(this).attr('id');
+                DeleteFormItem(id);
+            }
+        });
+    });
+
+    function CreateFormItem() {
+        openModal('افزودن فرم جدید', '/StudentForm/FormItem/Create', false);
+    }
+
+    function EditFormItem(id) {
+        openModal('ویرایش فرم', '/StudentForm/FormItem/Edit?id=' + id, false);
+    }
+
+    function OpenFormItemDefinition(id,title) {
+        openModal('تعریف آیتم‌های فرم _ ' +title, '/StudentForm/FormItemDefinition/Index?formItemId=' + id, true);
+    }
+
+    function DeleteFormItem(id) {
+        $.ajax({
+            method: "POST",
+            url: "/StudentForm/FormItem/Delete?Id=" + id,
+            success: function (response) {
+                if (response.isSuccess) {
+                    $("#tr_" + id).addClass("bg-danger").hide('slow');
+                    Toast.fire({ icon: 'success', title: response.message });
+                     $("#FormItemList").load("/StudentForm/FormItem/FormItemList", function () {});
+                } else {
+                    Toast.fire({ icon: 'warning', title: response.message });
+                }
+            },
+            error: function () {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'خطا در حذف فرم'
+                });
+            }
+        });
+    }
+</script>

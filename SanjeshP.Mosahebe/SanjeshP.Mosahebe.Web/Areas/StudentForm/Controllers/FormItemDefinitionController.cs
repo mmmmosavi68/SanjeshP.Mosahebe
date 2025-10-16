@@ -8,6 +8,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SanjeshP.Mosahebe.Data.Contracts.Users;
+using Microsoft.Extensions.Logging;
 
 namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 {
@@ -17,17 +18,25 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
     {
         private readonly IFormItemDefinitionRepository _repository;
         private readonly IUserTokenRepository _userTokenRepository;
-        public FormItemDefinitionController(IFormItemDefinitionRepository repository, IUserTokenRepository userTokenRepository)
+        private readonly ILogger<FormItemDefinitionController> _logger;
+
+        public FormItemDefinitionController(IFormItemDefinitionRepository repository, IUserTokenRepository userTokenRepository, ILogger<FormItemDefinitionController> logger)
         {
             _repository = repository;
             _userTokenRepository = userTokenRepository;
+            this._logger = logger;
         }
 
         public async Task<IActionResult> Index(int formItemId, CancellationToken cancellationToken)
         {
+            ViewBag.FormItemId = formItemId;
+            return PartialView("Index");
+        }
+        public async Task<IActionResult> FormItemDefinitionList(int formItemId, CancellationToken cancellationToken)
+        {
             var defs = await _repository.GetByFormItemIdAsync(formItemId, cancellationToken);
             ViewBag.FormItemId = formItemId;
-            return View(defs);
+            return PartialView("FormItemDefinitionList", defs);
         }
 
         [HttpGet]
@@ -65,7 +74,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
             };
 
             await _repository.AddDefinitionAsync(entity, cancellationToken);
-            return RedirectToAction("Index", new { formItemId = model.FormItemId });
+            return Ok();
         }
 
         [HttpGet]
@@ -116,15 +125,30 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
             entity.HostIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
             await _repository.UpdateDefinitionAsync(entity, cancellationToken);
-            return RedirectToAction("Index", new { formItemId = entity.FormItemId });
+            return Ok();
         }
 
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int Id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _repository.DeleteDefinitionAsync(Id, cancellationToken);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                if (id == 0)
+                {
+                    return Json(new { isSuccess = false, message = "آیتم جهت حذف ارسال نشده است یا خطایی رخ داده." });
+                }
+
+                await _repository.DeleteDefinitionAsync(id, cancellationToken);
+
+                return Json(new { isSuccess = true, message = "آیتم با موفقیت حذف شد." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "خطا در حذف آیتم فرم");
+                return Json(new { isSuccess = false, message = "خطا در سرور" });
+            }
         }
+
     }
 }

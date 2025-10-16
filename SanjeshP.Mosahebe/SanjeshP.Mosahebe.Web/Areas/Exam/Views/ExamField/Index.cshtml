@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "فهرست رشته‌های آزمون";
+    var examId = Context.Request.Query["examId"];
+}
+
+<div id="ExamFieldList">
+</div>
+
+<script>
+    $(document).ready(function () {
+        // این کد باعث می‌شود که پنجره‌های مودال قابل جابه‌جایی باشند
+        $('.modal-dialog').draggable({
+            handle: ".modal-header"
+        });
+        // این کد PartialView را بارگذاری می‌کند
+        $("#ExamFieldList").load("/Exam/ExamField/ExamFieldList?examId=" + @examId, function () {});
+    });
+</script>

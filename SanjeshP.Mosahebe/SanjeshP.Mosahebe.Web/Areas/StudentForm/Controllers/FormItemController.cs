@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Data.Contracts.Users;
 using SanjeshP.Mosahebe.Entities.StudentForm;
@@ -18,27 +19,31 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
     [Area("StudentForm")]
     public class FormItemController : Controller
     {
+        private readonly ILogger<FormItemController> _logger;
         private readonly IFormItemRepository _formItemRepository;
         private readonly IFormItemCoefficientRepository _coefficientRepository;
         private readonly IFormItemCategoryRepository _categoryRepository;
         private readonly IUserTokenRepository _userTokenRepository;
 
         public FormItemController(
+            ILogger<FormItemController> logger,
             IFormItemRepository formItemRepository,
             IFormItemCoefficientRepository coefficientRepository,
             IFormItemCategoryRepository categoryRepository,
             IUserTokenRepository userTokenRepository)
         {
+            this._logger = logger;
             _formItemRepository = formItemRepository;
             _coefficientRepository = coefficientRepository;
             _categoryRepository = categoryRepository;
             this._userTokenRepository = userTokenRepository;
         }
 
-
-        // نمایش همه فرم‌ها
-        [AllowAnonymous]
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
+        {
+            return View();
+        }
+        public async Task<IActionResult> FormItemList(CancellationToken cancellationToken)
         {
             //همه FormItemها را می‌گیرد و به ViewModel تبدیل می‌کند
             var entities = await _formItemRepository.GetFormItemsWithIncludesAsync(cancellationToken);
@@ -55,9 +60,8 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
                 CategoryTitle = f.FormItemCategory?.Title
             });
 
-            return View(model);
+            return PartialView("FormItemList", model);
         }
-
         // صفحه ایجاد
         //فقط فرم خالی را نمایش می‌دهد و Dropdown‌ ها را آماده می‌کند
         [HttpGet]
@@ -163,8 +167,25 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            await _formItemRepository.DeleteFormItemAsync(id, cancellationToken);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                if (id == 0)
+                    return Json(new { isSuccess = false, message = "فرم جهت حذف ارسال نشده است یا خطایی رخ داده." });
+
+                var formItem = await _formItemRepository.GetByFormItemIdAsync(id, cancellationToken);
+                if (formItem == null)
+                    return Json(new { isSuccess = false, message = "فرم یافت نشد." });
+
+                formItem.IsDeleted = true; // اگر موجود است soft delete دارید
+                await _formItemRepository.UpdateFormItemAsync(formItem, cancellationToken);
+
+                return Json(new { isSuccess = true, message = "فرم با موفقیت حذف شد." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "خطا در حذف فرم");
+                return Json(new { isSuccess = false, message = "خطا در سرور" });
+            }
         }
     }
 }

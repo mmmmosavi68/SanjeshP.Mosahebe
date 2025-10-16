@@ -43,9 +43,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(Guid examId)
+        public IActionResult Index(int examId)
         {
-            if (examId == Guid.Empty)
+            if (examId == 0)
                 return BadRequest("آزمون معتبر نیست");
 
             try

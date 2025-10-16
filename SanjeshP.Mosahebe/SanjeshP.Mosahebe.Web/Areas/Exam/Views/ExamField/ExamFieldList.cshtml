@@ -1,0 +1,145 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Exam.ViewModels.ExamField
+@model IEnumerable<ExamFieldViewModel>
+
+@{
+    ViewData["Title"] = "ExamFieldList";
+    var examId = ViewBag.ExamId;
+    int i = 1;
+}
+
+<div class="bg-light rounded p-4">
+    <h3>فهرست رشته‌های آزمون</h3>
+
+    <div class="row mb-3">
+        <input type="button" class="btn btn-outline-primary" onclick="CreateExamField(@examId)" value="افزودن رشته جدید" />
+    </div>
+
+    <table class="table-hover table-striped table text-center" id="tbl_exam_field">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input selectAll" id="selectAllField">
+                        <label class="custom-control-label" for="selectAllField"></label>
+                    </div>
+                </th>
+                <th>کد استاندارد</th>
+                <th>عنوان رشته</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr id="tr_field_@(item.Id)">
+                        <td>@i</td>
+                        <td>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="chk_@item.Id">
+                                <label class="custom-control-label" for="chk_@item.Id"></label>
+                            </div>
+                        </td>
+                        <td>@item.StandardCode</td>
+                        <td>@item.Title</td>
+                        <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-warning" onclick="EditExamField('@item.Id')" title="ویرایش رشته">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-danger" data-toggle="DeleteExamField" data-id="@item.Id" title="حذف رشته">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-muted p-3 text-center">هیچ رشته‌ای برای این آزمون ثبت نشده است.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- مودال -->
+<div class="modal fade" id="examFieldModal" tabindex="-1" role="dialog" aria-hidden="true"></div>
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        // فعال‌سازی DataTable
+        $('#tbl_exam_field').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#tbl_exam_field_wrapper .col-md-6:eq(0)');
+
+        // انتخاب همه
+        $('.selectAll').click(function () {
+            var table = $(this).closest('table');
+            $('input:checkbox', table).prop('checked', this.checked);
+        });
+
+        // حذف با تایید
+        $('[data-toggle="DeleteExamField"]').confirmation({
+            title: 'آیا از حذف رشته اطمینان دارید؟',
+            btnCancelClass: 'btn btn-sm btn-primary',
+            btnCancelLabel: 'انصراف',
+            btnOkClass: 'btn btn-sm btn-danger',
+            btnOkLabel: 'حذف',
+            onConfirm: function () {
+                var id = $(this).data('id');
+                DeleteExamField(id, @examId);
+            }
+        });
+    });
+
+    // ساخت رشته جدید
+    function CreateExamField(examId) {
+        openModal('افزودن رشته جدید', '/Exam/ExamField/CreateExamField?examId=' + examId, false);
+    }
+
+    // ویرایش رشته
+    function EditExamField(id) {
+        openModal('ویرایش رشته', '/Exam/ExamField/EditExamField?id=' + id, false);
+    }
+
+    // حذف رشته
+    function DeleteExamField(id, examId) {
+        $.ajax({
+            method: "POST",
+            url: "/Exam/ExamField/DeleteExamField?fieldId=" + id,
+            success: function (response) {
+                if (response.isSuccess) {
+                    $("#tr_field_" + id).addClass("bg-danger").hide('slow', function () {
+                        Toast.fire({ icon: 'success', title: response.message });
+                    });
+                    loadExamFieldList(examId);
+                } else {
+                    Toast.fire({ icon: 'warning', title: response.message });
+                }
+            },
+            error: function () {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'خطا در حذف رشته'
+                });
+            }
+        });
+    }
+</script>
