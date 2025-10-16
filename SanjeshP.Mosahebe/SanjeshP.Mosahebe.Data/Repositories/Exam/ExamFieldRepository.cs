@@ -15,7 +15,13 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Exam
     public class ExamFieldRepository : EntityFrameworkRepository<ExamField>, IExamFieldRepository, IScopedDependency
     {
         public ExamFieldRepository(ApplicationDbContext dbContext) : base(dbContext) { }
-
+        public async Task<IEnumerable<ExamField>> GetAllFieldsByExamIdAsync(CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(f => f.Exam)
+                .OrderBy(f => f.Title)
+                .ToListAsync(cancellationToken);
+        }
         public async Task<IEnumerable<ExamField>> GetAllFieldsByExamIdAsync(int examId, CancellationToken cancellationToken)
         {
             return await TableNoTracking

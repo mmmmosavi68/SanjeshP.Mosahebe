@@ -9,6 +9,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Exam
 {
     public interface IExamFieldRepository
     {
+        Task<IEnumerable<ExamField>> GetAllFieldsByExamIdAsync( CancellationToken cancellationToken);
         Task<IEnumerable<ExamField>> GetAllFieldsByExamIdAsync(int examId, CancellationToken cancellationToken);
         Task<ExamField?> GetByFieldIdAsync(int id, CancellationToken cancellationToken);
         Task AddFieldAsync(ExamField field, CancellationToken cancellationToken);

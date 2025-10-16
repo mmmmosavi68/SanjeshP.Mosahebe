@@ -1,0 +1,40 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.FieldStation
+@model IEnumerable<FieldViewModel>
+
+<table class="table-striped table-hover table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>کد استاندارد</th>
+            <th>عنوان رشته</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int i = 1;
+        }
+        @foreach (var item in Model)
+        {
+            <tr id="fieldtr_@item.Id">
+                <td>@i</td>
+                <td>@item.StandardCode</td>
+                <td>@item.Title</td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="AddField('@item.Id', '@item.Station.Id')">افزودن</button>
+                </td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+<script>
+    function AddField(fieldId, stationId) {
+        $.post('/Interview/FieldStation/AddFieldToStation', { stationId: stationId, fieldId: fieldId }, function() {
+            $("#fieldtr_" + fieldId).remove();
+            iziToast.success({ message: 'رشته به ایستگاه اضافه شد.' });
+            $("#field-station-body").load('/Interview/FieldStation/FieldStationList?stationId=' + stationId);
+        });
+    }
+</script>

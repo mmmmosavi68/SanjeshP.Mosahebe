@@ -1,0 +1,45 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.FieldStation
+@model IEnumerable<FieldStationViewModel>
+
+<div class="row mb-2">
+    <button class="btn btn-primary" onclick="AddFieldToStation('@ViewData["StationId"]')">افزودن رشته به ایستگاه</button>
+</div>
+
+<table class="table-striped table-hover table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>رشته</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int i = 1;
+        }
+        @foreach (var item in Model)
+        {
+            <tr id="tr_@item.Id">
+                <td>@i</td>
+                <td>@item.FieldTitle</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="RemoveFieldFromStation(@item.Id)">حذف</button>
+                </td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+<script>
+    function RemoveFieldFromStation(id) {
+        $.post('/Interview/FieldStation/RemoveFieldFromStation', { id: id }, function() {
+            $("#tr_" + id).remove();
+            iziToast.success({ message: 'رشته از ایستگاه حذف شد.' });
+        });
+    }
+
+    function AddFieldToStation(stationId) {
+        openModal('افزودن رشته به ایستگاه', '/Interview/FieldStation/FieldsNotInStation?stationId=' + stationId, true);
+    }
+</script>

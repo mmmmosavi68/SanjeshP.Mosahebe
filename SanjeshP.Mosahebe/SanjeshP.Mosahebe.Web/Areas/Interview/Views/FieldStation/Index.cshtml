@@ -1,0 +1,13 @@
+﻿@{
+    var stationId = ViewData["StationId"];
+}
+<div class="modal-body" id="field_station_body">
+    <span>در حال بارگذاری...</span>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var stationId = '@stationId';
+        $("#field_station_body").load('/Interview/FieldStation/FieldStationList?stationId=' + stationId);
+    });
+</script>

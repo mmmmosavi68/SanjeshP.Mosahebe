@@ -7,7 +7,7 @@
         <input type="button" class="btn btn-outline-primary" onclick="CreateStation()" value="افزودن ایستگاه جدید" />
     </div>
 
-    <table class="table table-striped text-center" id="tbl_station">
+    <table class="table-striped table text-center" id="tbl_station">
         <thead>
             <tr>
                 <th>#</th>
@@ -26,9 +26,9 @@
                         <td>@s.Name</td>
                         <td>@(s.IsActive ? "فعال" : "غیرفعال")</td>
                         <td>
-                            <a class="btn btn-sm btn-outline-info" onclick="DetailStation('@s.Id')"><i class="fa fa-info"></i></a>
                             <a class="btn btn-sm btn-outline-warning" onclick="EditStation('@s.Id')"><i class="fa fa-edit"></i></a>
-                            <a class="btn btn-sm btn-outline-primary" onclick="StationQuestionList('@s.Id')"><i class="fa fa-list"></i></a>
+                            <a class="btn btn-sm btn-outline-primary" onclick="StationQuestionList('@s.Id','@s.Name')"><i class="fa fa-question"></i></a>
+                            <a class="btn btn-sm btn-outline-dark" onclick="FieldStationList('@s.Id','@s.Name')"><i class="fa fa-layer-group"></i></a>
                             <a class="btn btn-sm btn-outline-danger" data-id="@s.Id" data-toggle="DeleteStation"><i class="fa fa-trash"></i></a>
                         </td>
                     </tr>
@@ -51,10 +51,12 @@
     function DetailStation(id) {
         openModal('جزئیات ایستگاه', '/Interview/Station/DetailStation?id=' + id, false);
     }
-    function StationQuestionList(stationId) {
-        openModal('سوالات ایستگاه', '/Interview/StationQuestion/Index?stationId=' + stationId, true);
+    function StationQuestionList(stationId,name) {
+        openModal('سوالات ایستگاه _ ' + name, '/Interview/StationQuestion/Index?stationId=' + stationId, true);
     }
-
+    function FieldStationList(stationId,name) {
+        openModal('رشته های ایستگاه _ ' + name, '/Interview/FieldStation/Index?stationId=' + stationId, true);
+    }
     // $('[data-toggle="DeleteStation"]').confirmation({
     //     title: 'آیا از حذف مطمئن هستید؟',
     //     onConfirm: function () {
