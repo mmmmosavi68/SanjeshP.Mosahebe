@@ -8,6 +8,6 @@
 <script>
     $(document).ready(function () {
         var stationId = '@stationId';
-        $("#field_station_body").load('/Interview/FieldStation/FieldStationList?stationId=' + stationId);
+        $("#field_station_body").load(window.__env.baseUrl +'/' + window.routes.fieldstation.fieldstation_fieldstationlist+'?stationId=' + stationId,false);
     });
 </script>

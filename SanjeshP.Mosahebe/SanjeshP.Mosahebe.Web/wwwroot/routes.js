@@ -89,5 +89,18 @@
         users_getuseraccessmenuitem: 'Users/GetUserAccessMenuItem',
         users_edituser: 'Users/EditUser',
         users_listPaged:'Users/UsersListPaged'
+    },
+    station: {
+        station_index: 'Interview/Station/Index',
+        station_createstation: 'Interview/Station/CreateStation',
+        station_editstation: 'Interview/Station/EditStation',
+        station_stationlist: 'Interview/Station/StationList'
+    },
+    fieldstation: {
+        fieldstation_index: 'Interview/FieldStation/Index',
+        fieldstation_fieldstationlist: 'Interview/FieldStation/FieldStationList',
+        fieldstation_fieldsnotinstation: 'Interview/FieldStation/FieldsNotInStation',
+        fieldstation_addfieldtostation: 'Interview/FieldStation/AddFieldToStation',
+        fieldstation_removefieldfromstation: 'Interview/FieldStation/RemoveFieldFromStation'
     }
 }

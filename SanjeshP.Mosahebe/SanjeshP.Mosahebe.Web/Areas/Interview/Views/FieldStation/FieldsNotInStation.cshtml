@@ -34,7 +34,7 @@
         $.post('/Interview/FieldStation/AddFieldToStation', { stationId: stationId, fieldId: fieldId }, function() {
             $("#fieldtr_" + fieldId).remove();
             iziToast.success({ message: 'رشته به ایستگاه اضافه شد.' });
-            $("#field-station-body").load('/Interview/FieldStation/FieldStationList?stationId=' + stationId);
+        $("#field_station_body").load(window.__env.baseUrl +'/' + window.routes.fieldstation.fieldstation_fieldstationlist+'?stationId=' + stationId);
         });
     }
 </script>
