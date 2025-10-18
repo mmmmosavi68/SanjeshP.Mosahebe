@@ -24,7 +24,6 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
-    [AllowAnonymous]
     [Area("DocumentVerification")]
     public class EducationDocumentController : Controller
     {

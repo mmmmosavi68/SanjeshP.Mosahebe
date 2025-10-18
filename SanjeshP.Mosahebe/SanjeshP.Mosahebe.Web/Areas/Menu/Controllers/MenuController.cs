@@ -140,9 +140,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Menu.Controllers
                     if (result)
                     {
                         UserAccessMenusStateViewModel userAccessMenusStateViewModel = new UserAccessMenusStateViewModel();
-                        userAccessMenusStateViewModel.selected = true;
-                        userAccessMenusStateViewModel.opened = true;
-                        userAccessMenusStateViewModel.disabled = item.Group_Checkecd;
+                        //userAccessMenusStateViewModel.selected = true;
+                        //userAccessMenusStateViewModel.opened = true;
+                        //userAccessMenusStateViewModel.disabled = item.Group_Checkecd;
                         item.state = userAccessMenusStateViewModel;
                         if (item.Group_Checkecd == true)
                         {
@@ -157,9 +157,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Menu.Controllers
                     else
                     {
                         UserAccessMenusStateViewModel userAccessMenusStateViewModel = new UserAccessMenusStateViewModel();
-                        userAccessMenusStateViewModel.selected = false;
-                        userAccessMenusStateViewModel.opened = false;
-                        userAccessMenusStateViewModel.disabled = item.Group_Checkecd;
+                        //userAccessMenusStateViewModel.selected = false;
+                        //userAccessMenusStateViewModel.opened = false;
+                        //userAccessMenusStateViewModel.disabled = item.Group_Checkecd;
                         item.state = userAccessMenusStateViewModel;
                         if (item.Group_Checkecd == true)
                         {

@@ -5,7 +5,7 @@
     <button class="btn btn-primary" onclick="AddFieldToStation('@ViewData["StationId"]')">افزودن رشته به ایستگاه</button>
 </div>
 
-<table class="table-striped table-hover table">
+<table class="table-striped table-hover table" id="tbl_fieldstation">
     <thead>
         <tr>
             <th>#</th>
@@ -31,7 +31,22 @@
     </tbody>
 </table>
 
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
 <script>
+    $(function () {
+        $('#tbl_fieldstation').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false
+        });
+    });
+
     function RemoveFieldFromStation(id) {
         $.post('/Interview/FieldStation/RemoveFieldFromStation', { id: id }, function() {
             $("#tr_" + id).remove();
@@ -40,6 +55,6 @@
     }
 
     function AddFieldToStation(stationId) {
-        openModal('افزودن رشته به ایستگاه', '/Interview/FieldStation/FieldsNotInStation?stationId=' + stationId, true);
+        openModal('افزودن رشته به ایستگاه', '/Interview/FieldStation/FieldsNotInStation?stationId=' + stationId, false);
     }
 </script>

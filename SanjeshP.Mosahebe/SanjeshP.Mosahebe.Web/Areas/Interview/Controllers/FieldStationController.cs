@@ -16,7 +16,6 @@ using SanjeshP.Mosahebe.Data.Repositories.Interview;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
 {
-    [AllowAnonymous]
     [Area("Interview")]
     public class FieldStationController : Controller
     {

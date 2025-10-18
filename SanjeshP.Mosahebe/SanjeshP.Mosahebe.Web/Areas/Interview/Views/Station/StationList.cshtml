@@ -7,7 +7,7 @@
         <input type="button" class="btn btn-outline-primary" onclick="CreateStation()" value="افزودن ایستگاه جدید" />
     </div>
 
-    <table class="table-striped table text-center" id="tbl_station">
+    <table class="table table-striped table-hover text-center" id="tbl_station">
         <thead>
             <tr>
                 <th>#</th>
@@ -39,24 +39,39 @@
     </table>
 </div>
 
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
 <script>
-    function CreateStation() {
-        openModal('افزودن ایستگاه جدید', '/Interview/Station/CreateStation', false);
-    }
+    $(function () {
+        $('#tbl_station').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false
+        });
+    });
 
-    function EditStation(id) {
-        openModal('ویرایش ایستگاه', '/Interview/Station/EditStation?id=' + id, false);
-    }
+        function CreateStation() {
+            openModal('افزودن ایستگاه جدید', '/Interview/Station/CreateStation', false);
+        }
 
-    function DetailStation(id) {
-        openModal('جزئیات ایستگاه', '/Interview/Station/DetailStation?id=' + id, false);
-    }
-    function StationQuestionList(stationId,name) {
-        openModal('سوالات ایستگاه _ ' + name, '/Interview/StationQuestion/Index?stationId=' + stationId, true);
-    }
-    function FieldStationList(stationId,name) {
-        openModal('رشته های ایستگاه _ ' + name, '/Interview/FieldStation/Index?stationId=' + stationId, true);
-    }
+        function EditStation(id) {
+            openModal('ویرایش ایستگاه', '/Interview/Station/EditStation?id=' + id, false);
+        }
+
+        function DetailStation(id) {
+            openModal('جزئیات ایستگاه', '/Interview/Station/DetailStation?id=' + id, false);
+        }
+        function StationQuestionList(stationId, name) {
+            openModal('سوالات ایستگاه _ ' + name, '/Interview/StationQuestion/Index?stationId=' + stationId, true);
+        }
+        function FieldStationList(stationId, name) {
+            openModal('رشته های ایستگاه _ ' + name, '/Interview/FieldStation/Index?stationId=' + stationId, true);
+        }
     // $('[data-toggle="DeleteStation"]').confirmation({
     //     title: 'آیا از حذف مطمئن هستید؟',
     //     onConfirm: function () {

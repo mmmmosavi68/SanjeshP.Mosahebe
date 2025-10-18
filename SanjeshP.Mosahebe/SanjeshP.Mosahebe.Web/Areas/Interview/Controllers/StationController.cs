@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
 {
-    [AllowAnonymous]
     [Area("Interview")]
     public class StationController : Controller
     {

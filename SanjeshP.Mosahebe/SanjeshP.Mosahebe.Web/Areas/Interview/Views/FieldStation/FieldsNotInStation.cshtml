@@ -1,7 +1,7 @@
 ﻿@using SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.FieldStation
 @model IEnumerable<FieldViewModel>
 
-<table class="table-striped table-hover table">
+<table class="table-striped table-hover table" id="tbl_fieldnotinstation">
     <thead>
         <tr>
             <th>#</th>
@@ -29,7 +29,21 @@
     </tbody>
 </table>
 
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
 <script>
+    $(function () {
+        $('#tbl_fieldnotinstation').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false
+        });
+    });
     function AddField(fieldId, stationId) {
         $.post('/Interview/FieldStation/AddFieldToStation', { stationId: stationId, fieldId: fieldId }, function() {
             $("#fieldtr_" + fieldId).remove();

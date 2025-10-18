@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 
 namespace SanjeshP.Mosahebe.Presentation.Controllers
 {
-    [AllowAnonymous]
     [Area("StudentForm")]
     public class FormItemController : Controller
     {

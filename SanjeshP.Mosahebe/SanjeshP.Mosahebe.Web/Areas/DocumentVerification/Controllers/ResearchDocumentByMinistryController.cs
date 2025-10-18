@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
-    [AllowAnonymous]
     [Area("DocumentVerification")]
     public class ResearchDocumentByMinistryController : Controller
     {

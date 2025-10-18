@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Exam.Controllers
 {
-    [AllowAnonymous]
     [Area("Exam")]
     public class ExamFieldController : Controller
     {

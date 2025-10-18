@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 
 namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 {
-    [AllowAnonymous]
     [Area("StudentForm")]
     public class FormItemDefinitionController : Controller
     {
