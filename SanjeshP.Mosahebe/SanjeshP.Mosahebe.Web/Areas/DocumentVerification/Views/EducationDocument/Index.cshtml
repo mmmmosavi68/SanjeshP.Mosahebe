@@ -1,22 +1,53 @@
-﻿@{
-    ViewData["Title"] = "Index";
+﻿@model IEnumerable<SanjeshP.Mosahebe.Entities.Exam.Exams>
+
+<div class="bg-light rounded p-4" ">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            نام آزمون :
+            <select id="examSelect" class="form-control">
+
+                <option value="">-- یک آزمون انتخاب کنید --</option>
+@foreach (var exam in Model)
+{
+                    <option value="@exam.Id">@exam.Title</option>
 }
+            </select>
+        </div>
 
-
-<div id="StudentList">
+        <div class="col-md-4">
+            نام رشته :
+            <div id="fieldContainer">
+                <select id="fieldSelect" class="form-control">
+                    <option value="">-- ابتدا آزمون را انتخاب کنید --</option>
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div id="StudentList"></div>
 
 @section scripts {
     <script>
         $(document).ready(function () {
-            // این کد باعث می‌شود که پنجره‌های مودال قابل جابه‌جایی باشند
-            $('.modal-dialog').draggable({
-                handle: ".modal-header"
+            $('#examSelect').change(function () {
+                var examId = $(this).val();
+                if (!examId) {
+                    $('#fieldSelect').html('<option value="">-- ابتدا آزمون را انتخاب کنید --</option>');
+                    return;
+                }
+                console.log * ('/DV/EducationDocument/FieldDropdown?examId=' + examId)
+                // درخواست AJAX برای گرفتن رشته‌های آزمون
+                $("#fieldContainer").load('/DV/EducationDocument/FieldDropdown?examId=' + examId);
             });
-            // این کد PartialView را بارگذاری می‌کند
-            $("#StudentList").load("/DV/EducationDocument/StudentsList", function () { });
+
+            // وقتی رشته انتخاب شد، لیست دانشجویان لود شود
+            $(document).on('change', '#fieldSelect', function () {
+                var fieldId = $(this).val();
+                if (fieldId) {
+                    $("#StudentList").load('/DV/EducationDocument/StudentsList?fieldId=' + fieldId);
+                }
+            });
         });
     </script>
 }
-
-

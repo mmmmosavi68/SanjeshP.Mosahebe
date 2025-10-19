@@ -24,6 +24,8 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 using Microsoft.EntityFrameworkCore;
 using SanjeshP.Mosahebe.Data.Repositories.Students;
 using System.Security.Claims;
+using SanjeshP.Mosahebe.Data.Contracts.Exam;
+using SanjeshP.Mosahebe.Data.Repositories.Exam;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
@@ -41,6 +43,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly IFormItemCoefficientDefinitionRepository _formItemCoefficientDefinitionRepository;
         private readonly IStudentFormSubmissionDataRepository _studentFormSubmissionValueRepository;
         private readonly IEducationDocumentScoreRepository _educationDocumentScoreRepository;
+        private readonly IExamFieldRepository _examFieldRepository;
+        private readonly IExamRepository _examRepository;
 
         public EducationDocumentController(IMapper mapper
                                         , IWebHostEnvironment env
@@ -51,7 +55,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , IStudentFormSubmissionScoreRepository studentFormSubmissionRepository
                                         , IFormItemCoefficientDefinitionRepository formItemCoefficientDefinitionRepository
                                         , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository
-                                        , IEducationDocumentScoreRepository educationDocumentScoreRepository)
+                                        , IEducationDocumentScoreRepository educationDocumentScoreRepository
+                                        , IExamFieldRepository examFieldRepository
+                                        , IExamRepository examRepository)
         {
             _mapper = mapper;
             _env = env;
@@ -63,20 +69,30 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             _formItemCoefficientDefinitionRepository = formItemCoefficientDefinitionRepository;
             _studentFormSubmissionValueRepository = studentFormSubmissionValueRepository;
             this._educationDocumentScoreRepository = educationDocumentScoreRepository;
+            this._examFieldRepository = examFieldRepository;
+            this._examRepository = examRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            return View();
+            var exams = await _examRepository.GetAllExamsNoTrackingAsync(cancellationToken); // فرض کنیم متد داریم
+            return View(exams);
+        }
+
+        // لیست رشته‌ها بر اساس آزمون
+        public async Task<IActionResult> FieldDropdown(int examId, CancellationToken cancellationToken)
+        {
+            var fields = await _examFieldRepository.GetAllFieldsByExamIdAsync(examId, cancellationToken);
+            return PartialView("FieldDropdown", fields);
         }
 
         [HttpGet]
-        public async Task<IActionResult> StudentsList(CancellationToken cancellationToken)
+        public async Task<IActionResult> StudentsList(int fieldId, CancellationToken cancellationToken)
         {
             try
             {
                 // دریافت همه دانشجویان فعال
-                var students = await _studentRepository.GetAllStudentsAsync(cancellationToken);
+                var students = await _studentRepository.GetAllStudentsByFieldIdAsync(fieldId, cancellationToken);
 
                 if (students == null || !students.Any())
                     return PartialView("StudentsList", new List<StudentListViewModel>());
@@ -140,11 +156,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             {
                 // گرفتن تمام فرم‌های داوطلب
                 var forms = await _studentFormSubmissionRepository.GetAllByStudentIdAsync(id, cancellationToken);
+
                 if (forms == null || !forms.Any())
                 {
                     ViewBag.Message = "هیچ فرمی برای این داوطلب ثبت نشده است.";
-                    forms = new List<StudentFormSubmissionScore>(); // لیست خالی برای جلوگیری از خطا در foreach
+
+                    var studentFormSubmissionScoreViewModelNull = await FillStudentFormSubmissionScoreViewModel(id, forms, cancellationToken);
+                    return PartialView("Details", studentFormSubmissionScoreViewModelNull);
                 }
+
 
                 // 🧩 فیلتر رکوردهای معتبر و جایگزینی مقادیر Coefficient
                 foreach (var form in forms)
@@ -152,7 +172,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     form.StudentFormSubmissionDatas = form.StudentFormSubmissionDatas?
                         .Where(d => d.IsActive && !d.IsDeleted)
                         .ToList() ?? new();
-
                     // گرفتن آیدی‌هایی که در Value ذخیره شده‌اند
                     var valueIds = form.StudentFormSubmissionDatas
                         .Select(d => int.TryParse(d.Value, out var idValue) ? idValue : (int?)null)
@@ -190,8 +209,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                 // 🧭 مپ کردن به ViewModel
                 var model = _mapper.Map<IEnumerable<SubmissionDataDetailViewModel>>(forms);
+                var studentFormSubmissionScoreViewModel = await FillStudentFormSubmissionScoreViewModel(id,forms,cancellationToken);
 
-                return PartialView("Details", forms);
+
+                return PartialView("Details", studentFormSubmissionScoreViewModel);
             }
             catch (Exception ex)
             {
@@ -541,6 +562,30 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     }
             }
             return 0;
+        }
+
+        private async Task<StudentFormSubmissionScoreViewModel> FillStudentFormSubmissionScoreViewModel(int studentId,IEnumerable<StudentFormSubmissionScore> studentFormSubmissionScores,CancellationToken cancellationToken)
+        {
+            var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
+
+            // رشته‌ها رو از student.StudentFields بخون
+            var fieldTitles = student.StudentFields?
+                .Select(sf => sf.ExamField?.Title)        // یا .Name بسته به مدل
+                .Where(title => !string.IsNullOrEmpty(title))
+                .ToList() ?? new List<string>();
+
+            // رشته‌ها رو با "-" جدا کن
+            var joinedFields = string.Join(" - ", fieldTitles);
+
+            var StudentFormSubmissionScoreViewModel = new StudentFormSubmissionScoreViewModel
+            {
+                StudentName = student.FirstName + " " + student.LastName,
+                NationalCode = student.NationalCode,
+                StudentId = student.Id,
+                FielsTitle = joinedFields,
+                Forms = studentFormSubmissionScores.ToList()
+            };
+            return StudentFormSubmissionScoreViewModel;
         }
     }
 }

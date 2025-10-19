@@ -1,8 +1,10 @@
 ﻿@using SanjeshP.Mosahebe.Entities.StudentForm
-@model IEnumerable<StudentFormSubmissionScore>
+@using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
+@model StudentFormSubmissionScoreViewModel
+
 @{
     Layout = null;
-    var forms = Model?.ToList() ?? new List<StudentFormSubmissionScore>();
+    var forms = Model.Forms?.ToList() ?? new List<StudentFormSubmissionScore>();
 }
 
 
@@ -33,16 +35,37 @@
         }
 </style>
 
-
+        
+<div class="card scoreItemContainer mb-3 border border-2" >
+    <div class="card-header card-title text-light text-center" style="background:radial-gradient(circle, #348780, #363e5f)">
+        <strong class="h3">اطلاعات داوطلب</strong>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="info mb-2 col-6">
+                <span class="h5 text-bold">نام و نام خانوادگی : </span>
+                <span class="h5 text-bold text-dark">@Model.StudentName</span>
+            </div>
+            <div class="info mb-2 col-6">
+                <span class="h5 text-bold">کد ملی : </span>
+                <span class="h5 text-bold text-dark">@Model.NationalCode</span>
+            </div>
+            <div class="info col-12">
+                <span class="h5 text-bold">رشته : </span>
+                <span class="h5 text-bold text-dark">@Model.FielsTitle</span>
+            </div>
+        </div>
+    </div>
+</div>
 <form asp-action="SaveScores" method="post" novalidate>
     <div class="container mt-2 pl-4 pr-4">
         @if (ViewBag.Message != null)
         {
-            <div class="alert alert-info">
+            <div class="alert alert-warning">
                 @ViewBag.Message
             </div>
         }
-        @foreach (var form in Model)
+        @foreach (var form in Model.Forms)
         {
             var datas = form.StudentFormSubmissionDatas?.ToList() ?? new List<StudentFormSubmissionData>();
             <div class="card scoreItemContainer shadow mb-3" data-id="@form.Id">
@@ -51,6 +74,7 @@
                     <p class="text-info text-sm">@form.FormItem?.Description</p>
                 </div>
                 <div class="card-body" id="scoreItem_@form.Id">
+
                     <div class="row">
                         <div class="col-sm-6">
                             @for (int i = 0; i < form.StudentFormSubmissionDatas.Count; i++)
@@ -79,9 +103,9 @@
                                     </span>
 
                                     @* اینجا باید index لیست Forms[i] هم اصلاح شود *@
-                                    <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].Datas[@i].SubmissionDataId" value="@field.Id" />
-                                    <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].Datas[@i].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
-                                    <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].Datas[@i].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
+                                    <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].SubmissionDataId" value="@field.Id" />
+                                    <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
+                                    <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
                                 </div>
                             }
                         </div>
@@ -91,15 +115,15 @@
                                 <div class="row card-body">
                                     <div class="col-6">
                                         @* Hidden fields ضروری برای مدل‌بایندینگ *@
-                                        <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].FormSubmissionScoreId" value="@form.Id" />
-                                        <input type="hidden" name="Forms[@Model.ToList().IndexOf(form)].FormItemId" value="@form.FormItemId" />
+                                        <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].FormSubmissionScoreId" value="@form.Id" />
+                                        <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].FormItemId" value="@form.FormItemId" />
 
                                         @* تیک تایید فرم *@
                                         <input type="checkbox"
                                                id="notRejected_@form.Id"
                                                class="notRejected form-check-input"
                                                data-id="@form.Id"
-                                               name="Forms[@Model.ToList().IndexOf(form)].IsApproved"
+                                               name="Forms[@Model.Forms.ToList().IndexOf(form)].IsApproved"
                                                value="true">
                                         <label for="notRejected_@form.Id" class="form-check-label">مدرک، مورد تایید است.</label>
 
@@ -107,7 +131,7 @@
                                         <input list="rejectedList_@form.Id"
                                                maxlength="1000"
                                                id="rejectReason_@form.Id"
-                                               name="Forms[@Model.ToList().IndexOf(form)].RejectReason"
+                                               name="Forms[@Model.Forms.ToList().IndexOf(form)].RejectReason"
                                                type="text"
                                                class="rejectReason form-control mt-2"
                                                placeholder="علت عدم تایید"
@@ -123,7 +147,7 @@
                                         <div class="col-6">
                                             <label>امتیاز شما:</label>
                                             <input id="scoreValue_@form.Id"
-                                                   name="Forms[@Model.ToList().IndexOf(form)].ScoreValue"
+                                                   name="Forms[@Model.Forms.ToList().IndexOf(form)].ScoreValue"
                                                    type="text"
                                                    class="scoreTextValue form-control"
                                                    placeholder="امتیاز خود را برای این مدرک وارد نمایید."
