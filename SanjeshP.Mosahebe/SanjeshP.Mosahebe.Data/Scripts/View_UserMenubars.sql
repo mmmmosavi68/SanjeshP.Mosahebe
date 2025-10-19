@@ -206,3 +206,162 @@ Go
 --                      dbo.GroupAccessMenus AS AMG ON AMG.MenuId = M.Id
 --WHERE     (M.IsDeleted = 0) AND (M.IsActive = 1)
 --GO
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[Get_StudentsFinalScores_EducationDocument]    Script Date: 10/18/2025 2:12:17 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+Create PROCEDURE [dbo].[Calculator_StudentsFinalScores_EducationDocument]
+    @StudentId INT,
+    @UserId UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -------------------------------------------------------------
+    -- مرحله 1: محاسبه FinalItemScore برای هر آیتم
+    -- فقط رکوردهای فعال و حذف‌نشده
+    -------------------------------------------------------------
+    ;WITH ItemScores AS (
+        SELECT 
+            SFSS.StudentId,
+            FI.FormItemCategoryId,
+            SFSS.FormItemId,
+            FI.Title AS ItemTitle,
+            CASE 
+                WHEN SUM(ISNULL(SFSS.Score, 0)) > FI.AllMaxScore THEN FI.AllMaxScore
+                ELSE SUM(ISNULL(SFSS.Score, 0))
+            END AS FinalItemScore
+        FROM StudentFormSubmissionScores AS SFSS
+        INNER JOIN FormItems AS FI 
+            ON FI.Id = SFSS.FormItemId
+            AND FI.IsActive = 1 AND FI.IsDeleted = 0
+        WHERE SFSS.StudentId = @StudentId
+            AND SFSS.IsActive = 1 AND SFSS.IsDeleted = 0
+        GROUP BY 
+            SFSS.StudentId, 
+            SFSS.FormItemId, 
+            FI.AllMaxScore, 
+            FI.Title, 
+            FI.FormItemCategoryId
+    ),
+    -------------------------------------------------------------
+    -- مرحله 2: رتبه‌بندی آیتم‌ها در هر دسته
+    -------------------------------------------------------------
+    RankedItems AS (
+        SELECT 
+            IS1.StudentId,
+            IS1.FormItemCategoryId,
+            IS1.FormItemId,
+            IS1.ItemTitle,
+            IS1.FinalItemScore,
+            ROW_NUMBER() OVER (
+                PARTITION BY IS1.StudentId, IS1.FormItemCategoryId 
+                ORDER BY IS1.FinalItemScore DESC
+            ) AS rn
+        FROM ItemScores IS1
+    ),
+    -------------------------------------------------------------
+    -- مرحله 3: الحاق مشخصات دسته (فقط دسته‌های فعال)
+    -------------------------------------------------------------
+    SelectedItems AS (
+        SELECT 
+            R.StudentId,
+            R.FormItemCategoryId,
+            R.FormItemId,
+            R.FinalItemScore,
+            R.rn,
+            FIC.MaxCount,
+            FIC.MaxScore
+        FROM RankedItems R
+        INNER JOIN FormItemCategories FIC 
+            ON FIC.Id = R.FormItemCategoryId
+            AND FIC.IsActive = 1 AND FIC.IsDeleted = 0
+    ),
+    -------------------------------------------------------------
+    -- مرحله 4: جمع نمره هر دسته
+    -------------------------------------------------------------
+    CategorySums AS (
+        SELECT
+            SI.StudentId,
+            SI.FormItemCategoryId,
+            SUM(
+                CASE 
+                    WHEN SI.MaxCount = 0 THEN SI.FinalItemScore
+                    WHEN SI.rn <= SI.MaxCount THEN SI.FinalItemScore
+                    ELSE 0
+                END
+            ) AS CategorySum,
+            MAX(SI.MaxScore) AS CategoryMaxScore
+        FROM SelectedItems SI
+        GROUP BY
+            SI.StudentId,
+            SI.FormItemCategoryId
+    ),
+    -------------------------------------------------------------
+    -- مرحله 5: اعمال سقف MaxScore روی جمع دسته
+    -------------------------------------------------------------
+    FinalCategoryScores AS (
+        SELECT
+            CS.StudentId,
+            CS.FormItemCategoryId,
+            CASE 
+                WHEN CS.CategorySum > CS.CategoryMaxScore THEN CS.CategoryMaxScore
+                ELSE CS.CategorySum
+            END AS FinalCategoryScore
+        FROM CategorySums CS
+    )
+    -------------------------------------------------------------
+    -- مرحله 6: جمع نهایی برای هر دانشجو
+    -------------------------------------------------------------
+    SELECT
+        @StudentId AS StudentId,
+        SUM(FCS.FinalCategoryScore) AS FinalTotalScore
+    INTO #TempFinalScore
+    FROM FinalCategoryScores FCS
+    GROUP BY FCS.StudentId;
+
+    -------------------------------------------------------------
+    -- مرحله 7: بروزرسانی یا درج جدول EducationDocumentScores
+    -- فقط رکوردهای فعال و حذف‌نشده
+    -------------------------------------------------------------
+    IF EXISTS (
+        SELECT 1 
+        FROM EducationDocumentScores 
+        WHERE StudentId = @StudentId AND IsActive = 1 AND IsDeleted = 0
+    )
+    BEGIN
+        UPDATE EDS
+        SET FinalTotalScore = TFS.FinalTotalScore
+        FROM EducationDocumentScores EDS
+        INNER JOIN #TempFinalScore TFS ON EDS.StudentId = TFS.StudentId
+        WHERE EDS.IsActive = 1 AND EDS.IsDeleted = 0;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO EducationDocumentScores (
+            StudentId, 
+            FinalTotalScore,
+            CreatedDate,
+            IsActive,
+            IsDeleted,
+            CreatedBy
+        )
+        SELECT 
+            StudentId, 
+            FinalTotalScore,
+            GETDATE(),
+            1,
+            0,
+            @UserId
+        FROM #TempFinalScore;
+    END
+	Select * from EducationDocumentScores
+    -------------------------------------------------------------
+    -- مرحله 8: پاکسازی جدول موقت
+    -------------------------------------------------------------
+    DROP TABLE #TempFinalScore;
+END

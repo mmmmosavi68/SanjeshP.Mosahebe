@@ -21,6 +21,9 @@ using SanjeshP.Mosahebe.Entities.Student;
 using SanjeshP.Mosahebe.Data.Repositories.StudentForm;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
 using SanjeshP.Mosahebe.Entities.StudentForm;
+using Microsoft.EntityFrameworkCore;
+using SanjeshP.Mosahebe.Data.Repositories.Students;
+using System.Security.Claims;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
@@ -37,6 +40,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _formItemCoefficientDefinitionRepository;
         private readonly IStudentFormSubmissionDataRepository _studentFormSubmissionValueRepository;
+        private readonly IEducationDocumentScoreRepository _educationDocumentScoreRepository;
 
         public EducationDocumentController(IMapper mapper
                                         , IWebHostEnvironment env
@@ -46,7 +50,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , ICoefficientRepository coefficientRepository
                                         , IStudentFormSubmissionScoreRepository studentFormSubmissionRepository
                                         , IFormItemCoefficientDefinitionRepository formItemCoefficientDefinitionRepository
-                                        , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository)
+                                        , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository
+                                        , IEducationDocumentScoreRepository educationDocumentScoreRepository)
         {
             _mapper = mapper;
             _env = env;
@@ -57,6 +62,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             _studentFormSubmissionRepository = studentFormSubmissionRepository;
             _formItemCoefficientDefinitionRepository = formItemCoefficientDefinitionRepository;
             _studentFormSubmissionValueRepository = studentFormSubmissionValueRepository;
+            this._educationDocumentScoreRepository = educationDocumentScoreRepository;
         }
 
         public IActionResult Index()
@@ -69,8 +75,20 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         {
             try
             {
+                // دریافت همه دانشجویان فعال
                 var students = await _studentRepository.GetAllStudentsAsync(cancellationToken);
 
+                if (students == null || !students.Any())
+                    return PartialView("StudentsList", new List<StudentListViewModel>());
+
+                // جمع‌آوری شناسه‌های دانشجویان
+                var studentIds = students.Select(s => s.Id).ToList();
+
+                // دریافت نمرات نهایی همه دانشجویان به صورت Dictionary<int,double>
+                var scores = await _educationDocumentScoreRepository
+                    .GetScoresByStudentIdsAsync(studentIds, cancellationToken);
+
+                // نگاشت دانشجویان به ViewModel
                 var result = students.Select(e => new StudentListViewModel
                 {
                     Id = e.Id,
@@ -86,28 +104,33 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     // تبدیل جنسیت عددی به متن
                     Gender = e.Gender == 1 ? "مرد" : "زن",
 
-                    // تبدیل IsPajoheshi به بولین یا متن
+                    // تبدیل IsPajoheshi به بولین
                     IsPajoheshi = e.IsPajoheshi == 1,
 
                     // نام آزمون از navigation property
-                    ExamName = "نام آزمون",//e.Exam?.Name ?? "",
+                    ExamName = e.Exam?.Title ?? "",
 
                     // نوع دوره آزمون به متن
                     ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
 
                     // رشته‌ها به صورت رشته کاما جدا شده
-                    Fields = "رشته ها" //e.StudentFields != null && e.StudentFields.Any()? string.Join(", ", e.StudentFields.Select(f => f.Field.Name)): ""
-                }).ToList();
+                    Fields = e.StudentFields != null && e.StudentFields.Any()
+                                ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
+                                : "",
 
+                    // نمره نهایی از EducationDocumentScore
+                    FinalTotalScore = scores.ContainsKey(e.Id) ? scores[e.Id] : 0
+                }).ToList();
 
                 return PartialView("StudentsList", result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "خطا در دریافت لیست آزمون‌ها");
+                _logger.LogError(ex, "خطا در دریافت لیست دانشجویان");
                 return StatusCode(500, "خطا در سرور");
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
@@ -190,8 +213,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             // بررسی اینکه کاربر لاگین کرده باشد
             if (!User.Identity.IsAuthenticated) return Forbid();
 
+            var currentUserToken = User.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), cancellationToken);
+
             try
             {
+                int? studentId = null;
                 // پیمایش بر روی تمام فرم‌های ارسال شده
                 foreach (var formInput in Forms)
                 {
@@ -208,6 +235,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                         _logger.LogWarning("submissionScore not found id={Id}", formInput.FormSubmissionScoreId);
                         continue;
                     }
+
+                    // دریافت کد داوطلب 
+                    studentId ??= submissionScore.StudentId;
+
 
                     var oneMaxScore = submissionScore.FormItem?.OneMaxScore ?? 0; // حداکثر امتیاز فرم
 
@@ -333,6 +364,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                 // ذخیره تغییرات در دیتابیس
                 await _studentFormSubmissionRepository.SaveChangesAsync(cancellationToken);
 
+
+                if (studentId > 0)
+                {
+                    await _educationDocumentScoreRepository.CalculateAndSaveFinalScoreAsync(studentId.Value, token.UserId, cancellationToken);
+                }
                 // بازگشت به صفحه اصلی یا لیست فرم‌ها
                 return RedirectToAction("Index");
             }

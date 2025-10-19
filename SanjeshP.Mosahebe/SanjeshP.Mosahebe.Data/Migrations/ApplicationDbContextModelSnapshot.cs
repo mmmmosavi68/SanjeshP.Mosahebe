@@ -914,6 +914,42 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.ToTable("LoginSettings");
                 });
 
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.EducationDocumentScore", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("FinalTotalScore")
+                        .HasColumnType("float");
+
+                    b.Property<string>("HostIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EducationDocumentScores");
+                });
+
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.Student", b =>
                 {
                     b.Property<int>("Id")

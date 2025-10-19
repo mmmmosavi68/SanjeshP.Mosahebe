@@ -18,6 +18,7 @@
                 <th>@Html.DisplayNameFor(model => model.First().LastName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().FatherName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
+                <th>@Html.DisplayNameFor(model => model.First().FinalTotalScore)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
@@ -35,6 +36,7 @@
                     <td>@Html.DisplayFor(modelItem => item.LastName)</td>
                     <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
+                    <td>@Html.DisplayFor(modelItem => item.FinalTotalScore)</td>
                     <td>
                         <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
                     </td>

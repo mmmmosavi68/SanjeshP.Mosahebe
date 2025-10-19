@@ -55,5 +55,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         public string Fields { get; set; }  // رشته‌ها به صورت کاما جداشده نمایش داده شوند
 
         public string ProfileImageUrl { get; set; }
+
+        [Display(Name = "‌نمره نهایی")]
+        public double FinalTotalScore { get; set; }
     }
 }
