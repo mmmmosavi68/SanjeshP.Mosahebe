@@ -40,32 +40,43 @@
             overflow: hidden; /* برای کنترل لایه‌ها */
         }
 
-            /* لایه رنگی + تاری روی عکس */
-            .main-sidebar::after {
-                content: "";
-                position: absolute;
-                inset: 0;
-                background: radial-gradient(circle, #34e5c785, #3c3f9c52); /* رنگ نیمه‌شفاف (می‌تونی تغییرش بدی) */
-                backdrop-filter: blur(8px); /* میزان تاری */
-                -webkit-backdrop-filter: blur(8px); /* برای مرورگرهای WebKit */
-                z-index: 0; /* پشت محتوا */
-            }
-
-            /* محتوا بالای لایه‌ها باشه */
-            .main-sidebar > * {
-                position: relative;
-                z-index: 1;
-            }
-
         .main-header {
             background: radial-gradient(circle, #348780, #363e5f);
         }
 
-            .main-header .navbar-nav .nav-link {
-                color: #fff
-            }
+        .main-sidebar::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("/img/12.jpg") center no-repeat;
+            z-index: -2;
+        }
+        /* لایه رنگی + تاری روی عکس */
+        .main-sidebar::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, #34e5c785, #3c3f9c52); /* رنگ نیمه‌شفاف (می‌تونی تغییرش بدی) */
+            background: radial-gradient(circle, #34847f91, #2d3550);
+            backdrop-filter: blur(8px); /* میزان تاری */
+            -webkit-backdrop-filter: blur(8px); /* برای مرورگرهای WebKit */
+            opacity: 0.9;
+            z-index: 0; /* پشت محتوا */
+        }
 
-        
+        /* محتوا بالای لایه‌ها باشه */
+        .main-sidebar > * {
+            position: relative;
+            z-index: 1;
+        }
+
+
+
+        .main-header .navbar-nav .nav-link {
+            color: #fff
+        }
+
+
         {
             direction: rtl !important;
         }
@@ -127,13 +138,15 @@
             text-align: center; /* تنظیم متن به وسط از نظر افقی */
         }
 
-        .page-item.active .page-link{
+        .page-item.active .page-link {
             background-color: #35837f;
             border-color: #38797d;
         }
-        .page-link{
+
+        .page-link {
             color: #475374
         }
+
         .dataTables_filter label, .dataTables_length label {
             display: inline-flex;
             align-items: center;
@@ -338,38 +351,38 @@
             lastmodalid = modalId;
             const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
             const modalTemplate = `
-                                <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                    <div class="${modalDialogClass}">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <div class="align-content-end">
-                                                    <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
-                                                </div>
-                                                    <div class="align-content-start">
-                                                        <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
-                                                        <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
+                                                <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                                                    <div class="${modalDialogClass}">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <div class="align-content-end">
+                                                                    <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
+                                                                </div>
+                                                                    <div class="align-content-start">
+                                                                        <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                                                                        <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
+                                                                    </div>
+                                                            </div>
+                                                            <div class="modal-body" id="body_${modalId}">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-md-12 mb-4 text-center">
+                                                                        <span class="h3">در حال بارگزاری</span>
+                                                                    </div>
+                                                                    <div class="col-md-12 text-center">
+                                                                         <div class="spinner-container">
+                                                        <div class="spinner-border" role="status">
+                                                            <span class="sr-only">Loading...</span>
+                                                        </div>
                                                     </div>
-                                            </div>
-                                            <div class="modal-body" id="body_${modalId}">
-                                                <div class="row align-items-center">
-                                                    <div class="col-md-12 mb-4 text-center">
-                                                        <span class="h3">در حال بارگزاری</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-12 text-center">
-                                                         <div class="spinner-container">
-                                        <div class="spinner-border" role="status">
-                                            <span class="sr-only">Loading...</span>
-                                        </div>
-                                    </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>`;
+                                                </div>`;
             document.getElementById('modalContainer').insertAdjacentHTML('beforeend', modalTemplate);
             $(`#${modalId}`).modal('show');
 
