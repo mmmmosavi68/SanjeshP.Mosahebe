@@ -57,7 +57,7 @@
         }
 
         .wrapper, body, html {
-            font-size: 12px
+            font-size: 15px
         }
 
         .header-bar {
@@ -78,10 +78,12 @@
                 position: absolute;
                 inset: 0;
                 background: linear-gradient(45deg, #002cf0, #ffffff, #647dec, #ffffff, #002cf0);
+                background: radial-gradient(circle, #345187, #7a9f91);
                 animation: gradientFlow 15s ease infinite;
                 opacity: 0.9; /* شفافیت رنگ */
                 z-index: -1;
             }
+
         .content-wrapper {
             background-image: url(/img/5.jpg);
         }
@@ -153,7 +155,8 @@
         }
 
         table thead {
-            background: #7e9a7e;
+            background: radial-gradient(circle, #348780, #485073);
+            color: #fff;
         }
 
         table tbody tr {
@@ -198,8 +201,6 @@
             margin: -1rem auto -1rem -1rem;
         }
 
-
-       
     </style>
 
     @await RenderSectionAsync("style", required: false)
@@ -210,34 +211,46 @@
         <div class="pm-3 container pt-3">
             <div class="row w-100">
 
-                <!-- عنوان صفحه -->
-                <div class="col-12 col-md-4 d-flex flex-column align-items-center justify-content-center mb-md-0 mb-3">
-                    <h2 class="font-weight-bold mb-2">@ViewData["Title"]</h2>
-                </div>
 
                 <!-- تصویر کاربر -->
-                <div class="col-6 col-md-4 d-flex justify-content-center mb-md-0 mb-3">
-                    <img src="~/img/user.jpg" alt="User"
-                         class="rounded-circle img-fluid"
-                         style="max-width: 100px;
-                                height: 100px;
-                                object-fit: cover;
-                                border: 4px solid #fff;
-                                box-shadow: 0 8px 20px rgba(0,0,0,0.4);" />
+                <div class="col-10 d-flex align-items-start justify-content-end text-light text-end" dir="rtl">
+                    <div class="row w-100 ">
+                        <div class="col-3 d-flex justify-content-end">
+                            <img src="~/img/user.jpg" alt="User"
+                                 class="rounded-circle img-fluid"
+                                 style="max-width: 100px;
+                        height: 100px;
+                        object-fit: cover;
+                        border: 4px solid #fff;
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.4);" />
+                        </div>
+                        <div class="col-9 d-flex flex-column justify-content-start text-light text-end">
+                            <div class="info mb-2">
+                                <span>نام و نام خانوادگی: </span>
+                                <span>@User.Identity.Name</span>
+                            </div>
+                            <div class="info mb-2">
+                                <span>کد ملی: </span>
+                                <span>@User.FindFirst("NationalCode")?.Value</span>
+                            </div>
+                            <div class="info">
+                                <span>رشته: </span>
+                                <span>@User.FindFirst("Fields")?.Value</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- عنوان صفحه -->
+            @*     <div class="col-12 col-md-4 d-flex flex-column align-items-center justify-content-center mb-md-0 mb-3">
+                    <h2 class="font-weight-bold mb-2 text-light">@ViewData["Title"]</h2>
+                </div>
+ *@
+
                 <!-- مشخصات کاربر -->
-                <div class="col-6 col-md-4 d-flex flex-column align-items-center justify-content-center">
-                    <div class="info text-center">
-                        <p class="d-block">@User.Identity.Name</p>
-                    </div>
-                    <div class="info text-center">
-                        @User.FindFirst("NationalCode")?.Value
-                    </div>
-                    <div class="info text-center">
-                        @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-                    </div>
+                <div class="col-2 d-flex flex-column align-items-center justify-content-center text-light">
                     <div class="row text-center">
+
                         <form method="post" asp-controller="Account" asp-action="Logout" asp-area="">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-danger btn-block">
@@ -335,38 +348,38 @@
             const modalId = `dynamicModal${modalCount}`;
             const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
             const modalTemplate = `
-                        <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                            <div class="${modalDialogClass}">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <div class="align-content-end">
-                                            <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
-                                        </div>
-                                            <div class="align-content-start">
-                                                <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
-                                                <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
-                                            </div>
-                                    </div>
-                                    <div class="modal-body" id="body_${modalId}">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-12 mb-4 text-center">
-                                                <span class="h3">در حال بارگزاری</span>
-                                            </div>
-                                            <div class="col-md-12 text-center">
-                                                 <div class="spinner-container">
-                                <div class="spinner-border" role="status">
-                                    <span class="sr-only">Loading...</span>
-                                </div>
-                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
+                                                        <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                                                            <div class="${modalDialogClass}">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <div class="align-content-end">
+                                                                            <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
+                                                                        </div>
+                                                                            <div class="align-content-start">
+                                                                                <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                                                                                <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
+                                                                            </div>
+                                                                    </div>
+                                                                    <div class="modal-body" id="body_${modalId}">
+                                                                        <div class="row align-items-center">
+                                                                            <div class="col-md-12 mb-4 text-center">
+                                                                                <span class="h3">در حال بارگزاری</span>
+                                                                            </div>
+                                                                            <div class="col-md-12 text-center">
+                                                                                 <div class="spinner-container">
+                                                                <div class="spinner-border" role="status">
+                                                                    <span class="sr-only">Loading...</span>
+                                                                </div>
+                                                            </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>`;
             document.getElementById('modalContainer').insertAdjacentHTML('beforeend', modalTemplate);
             $(`#${modalId}`).modal('show');
 

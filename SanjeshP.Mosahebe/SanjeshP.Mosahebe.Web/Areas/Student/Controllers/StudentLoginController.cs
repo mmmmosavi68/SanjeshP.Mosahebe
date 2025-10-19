@@ -222,12 +222,22 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         // ================= متد کمکی SignIn =================
         private async Task SignInStudent(SanjeshP.Mosahebe.Entities.Student.Student student)
         {
+            // رشته‌ها رو از student.StudentFields بخون
+            var fieldTitles = student.StudentFields?
+                .Select(sf => sf.ExamField?.Title)        // یا .Name بسته به مدل
+                .Where(title => !string.IsNullOrEmpty(title))
+                .ToList() ?? new List<string>();
+
+            // رشته‌ها رو با "-" جدا کن
+            var joinedFields = string.Join(" - ", fieldTitles);
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, student.FirstName + " " + student.LastName),
                 new Claim(ClaimTypes.NameIdentifier, student.Id.ToString()),
                 new Claim("NationalCode", student.NationalCode),
-                new Claim(ClaimTypes.Role, "Student")
+                new Claim(ClaimTypes.Role, "Student"),
+                new Claim("Fields",joinedFields)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

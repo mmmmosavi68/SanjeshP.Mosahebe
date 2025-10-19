@@ -1,0 +1,179 @@
+یک برنامه دارم
+توش سه نوع کاربر دارم
+دانشجو 
+استاد
+تایید کننده
+
+من برنامه رو نوشتم ولی توی قسمت اصلی که بارگذاری فایل توسط دانشجو هست و روابطش موندم
+برنامه به این شکله که بر اساس آیتم ها داطلب باید یکسری مدارک بازگذاری کنه یا یکسری اطلاعات وارد کنه همه فرم ها یکسان نیست
+مثلا مدرک زبان باید : اسکن مدرک، نوع مدرک که IELTS یا TOEFL وغیره هست و معدل وارد کنه
+یا یک مدل مقاله داریم با نام مقالات علمی ترویجی آیتم هایی که باید پرکنه :
+نام مجله، عنوان مقاله، فایل مقاله، آدرس اینترنتی، تعدا همکار، موقعیت فرد در مقاله
+و فرم های دیگه با آیتم های ورودی مختلف
+
+هر کردوم از آیتم ها ضرایب خودش رو داره
+مثلا اگه مقاله دو تا همکارن و دانشجو نفر اوله یه امتیاز نفر دومه یک امتیاز دیگه
+اگه تعداد همکار ستا هست هم به همین شکل هر رتبه یه امتیازی داره
+
+اگه مدرک زبانش IELTS  نمره از 18 تا 20 یک امتیاز از 15تا 18 یک امتیاز دیگه همین طور برای سایر مدارک مثل TOEFL 
+
+و از این دست امتیاز ها که امتیاز کتاب هست تالی یا ترجمه  و امتیاز معدل مدرک کارشناسی یا ارشد و دکتری و  غییره
+
+حالا من اومدم و یکسری مدل تعریف کردم برات میفرستم
+مدل های ضرایب
+    public class CoefficientsBookPublication : BaseEntity<int>
+    {
+        public string Title { get; set; }         // نوع کتاب (Authored, Translated, Edited)
+        public string PublisherType { get; set; } // ناشر (Local, International)
+        public int Year { get; set; }             // سال انتشار
+        public double Weight { get; set; }        // ضریب امتیاز
+        public string Notes { get; set; }         // توضیحات (اختیاری)
+    }
+    public class CoefficientsEducationGrade : BaseEntity<int>
+    {
+        public string Degree { get; set; }        // مقطع (Bachelor, Master, PhD)
+        public double MinGPA { get; set; }        // حداقل معدل
+        public double MaxGPA { get; set; }        // حداکثر معدل
+        public double Weight { get; set; }        // ضریب/وزن
+        public string Notes { get; set; }         // توضیحات (اختیاری)
+    }
+    public class CoefficientsLanguageCertificate : BaseEntity<int>
+    {
+        public string CertificateName { get; set; }  // نام مدرک (IELTS, TOEFL, GRE)
+        public string Level { get; set; }            // سطح (مثلاً Overall Band یا CEFR)
+        public double MinScore { get; set; }         // حداقل نمره
+        public double MaxScore { get; set; }         // حداکثر نمره
+        public double Weight { get; set; }           // ضریب امتیاز
+        public string Notes { get; set; }            // توضیحات (اختیاری)
+    }
+
+    public class CoefficientsResearchContribution : BaseEntity<int>
+    {
+        public int AuthorCount { get; set; }      // تعداد کل نویسندگان
+        public int AuthorOrder { get; set; }      // جایگاه نویسنده (مثلاً نویسنده اول، دوم، سوم)
+        public double Weight { get; set; }        // ضریب امتیاز
+        public string Notes { get; set; }         // توضیحات (اختیاری)
+    }
+
+مدل های مربوط به بارگذاری فایل
+    // دسته بندی آینم های فرم بر اساس آموزشی و پژوهشی
+    public class FormCourseCategory:BaseEntity<int>
+    {
+        public string Title { get; set; }
+        public int MaxScore { get; set; }
+
+        public ICollection<FormItemCategory> formItemCategories { get; set; }
+    }
+
+    // نمایش دسته بندی آیتم های فرم
+    public class FormItemCategory : BaseEntity<int>
+    {
+        public string Title { get; set; }
+        public int MaxScore { get; set; }
+        public int MaxCount { get; set; }
+
+        public ICollection<FormItem> formItems { get; set; }
+
+        // Foreign Key
+        public int FormCourseCategoryId { get; set; }
+
+        // Navigation Property
+        public FormCourseCategory FormItemCategories { get; set; }
+    }
+    public class FormItem : BaseEntity<int>
+    {
+        public string Title { get; set; }      // عنوان فرم
+        public string Description { get; set; }  // توضیح کوتاه (اختیاری)
+        public int OneMaxScore { get; set; }
+        public int AllMaxScore { get; set; }
+        public FormSourceType SourceType { get; set; }
+
+        // Foreign Key
+        public int FormItemCategoryId { get; set; }
+        // Navigation Property
+        public FormItemCategory formItemCategory { get; set; }
+
+        public ICollection<FormItemDefinition> formItemDefinitions { get; set; }
+        public ICollection<FormItemTypeDefault> formItemTypeDefaults { get; set; }
+
+
+    }
+این مدل برای اینه کاربر بگه برا فرم 1 آیتم هایی که میخواد داینامیک نمایش داده بشه
+    public class FormItemDefinition : BaseEntity<int>
+    {
+        public string Name { get; set; }       // نام فیلد (کلید یکتا در فرم)
+        public string Label { get; set; }      // عنوان قابل نمایش برای کاربر
+        public InputType inputType { get; set; }    // نوع فیلد (متن، عدد، فایل و...)
+        public string InputTypeText { get; set; }
+        public bool IsRequired { get; set; }
+        public string Description { get; set; }
+        public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
+
+        // Foreign Key
+        public int FormItemId { get; set; }
+        // Navigation Property
+        public FormItem formItem { get; set; }
+    }
+یک فرم هم درست کردم برای فیلد هایی که به صورت پیش فرض هست
+    public class FormItemTypeDefault : BaseEntity<int>
+    {
+        public string Name { get; set; }       // نام فیلد (کلید یکتا در فرم)
+        public string Label { get; set; }      // عنوان قابل نمایش برای کاربر
+        public InputType inputType { get; set; }    // نوع فیلد (متن، عدد، فایل و...)
+        public string InputTypeText { get; set; }
+        public bool IsRequired { get; set; }
+        public string Description { get; set; }
+        public string ValidationPattern { get; set; }  // الگوی اعتبارسنجی Regex (اختیاری)
+
+        // Foreign Key
+        public int FormItemId { get; set; }
+        // Navigation Property
+        public FormItem formItem { get; set; }
+    }
+مثلا مدرک زبان رو کاربر خواست براش فرم ایجاد کنه حتما به صورت پیش فرض براش معدل و نوع مدرک رو براش بزاره نوع مدرک هم دراپ دان لیست هست به طور مثال
+
+دوتا جدول هم داره وقتی کاربر باگذاری میکنه اطلاعاتش رو ذخیره میکنه
+    public class StudentFormSubmissionScore : BaseEntity<int>
+    {
+        /// شناسه فرم اصلی (مثلاً فرم اطلاعات زبان، فرم سوابق پژوهشی)
+        public int FormItemId { get; set; }
+        public FormItem FormItem { get; set; }
+
+        /// شناسه دانشجو یا داوطلبی که این فرم را پر کرده
+        public int? StudentId { get; set; }
+
+        /// مجموعه مقادیر پر شده برای این ارسال (هر فیلد یک مقدار)
+        public ICollection<StudentFormSubmissionData> StudentFormSubmissionDatas { get; set; }
+
+        /// نمره محاسبه‌شده برای این فرم (در صورت وجود فرایند محاسبه امتیاز)
+        public int? Score { get; set; }
+
+        /// وضعیت تایید/رد فرم توسط مدیر یا کارشناس
+        public bool? IsApproved { get; set; }
+
+        /// دلیل رد شدن فرم (اگر IsApproved = false)
+        public string RejectReason { get; set; }
+    }
+    public class StudentFormSubmissionData : BaseEntity<int>
+    {
+        /// نوع فیلد (Text, Number, File, Checkbox, Dropdown, ...)
+        public InputType Type { get; set; }
+
+        /// مقدار ذخیره‌شده
+        /// - برای Text/Number → متن یا عدد
+        /// - برای File → آدرس یا نام فایل
+        /// - برای Checkbox → true/false
+        /// - برای Dropdown → مقدار انتخاب شده (Value)
+        public string Value { get; set; }
+
+        /// رفرنس به رکورد اصلی StudentFormSubmission
+        /// هر ارسال یک فرم شامل چندین مقدار (Value) می‌شود.
+        public int FormSubmissionId { get; set; }
+        public StudentFormSubmissionScore FormSubmission { get; set; }
+
+        /// شناسه تعریف فیلد (کدوم فیلد بوده؟ معدل، زبان، کتاب و ...)
+        public int FieldDefinitionId { get; set; }
+        public FormItemDefinition FieldDefinition { get; set; }
+    }
+
+اول بهم بگو چی فهمیدی تا ادامه بدیم
