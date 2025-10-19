@@ -124,14 +124,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserFieldId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ExamId");
-
-                    b.HasIndex("UserFieldId");
 
                     b.ToTable("ExamFields");
                 });
@@ -1673,9 +1668,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserFieldId")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("nvarchar(50)")
@@ -1686,8 +1678,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.HasIndex("CreatorUserId");
 
                     b.HasIndex("EditorUserId");
-
-                    b.HasIndex("UserFieldId");
 
                     b.ToTable("Users");
                 });
@@ -1724,6 +1714,10 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExamFieldID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("UserFields");
                 });
@@ -1989,10 +1983,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("SanjeshP.Mosahebe.Entities.User.UserField", null)
-                        .WithMany("ExamFields")
-                        .HasForeignKey("UserFieldId");
                 });
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Exam.ExamSchedule", b =>
@@ -2232,10 +2222,21 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .WithMany()
                         .HasForeignKey("EditorUserId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
 
-                    b.HasOne("SanjeshP.Mosahebe.Entities.User.UserField", null)
-                        .WithMany("Users")
-                        .HasForeignKey("UserFieldId");
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.User.UserField", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Exam.ExamField", "ExamFields")
+                        .WithMany()
+                        .HasForeignKey("ExamFieldID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SanjeshP.Mosahebe.Entities.User.User", "Users")
+                        .WithMany("UserFields")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.User.UserProfile", b =>

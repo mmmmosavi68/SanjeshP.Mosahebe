@@ -1,0 +1,38 @@
+﻿@model List<SanjeshP.Mosahebe.Entities.Interview.Station>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="bg-light rounded p-4">
+<h3>انتخاب ایستگاه</h3>
+<div class="row mb-3">
+    <div class="col-md-4">
+        <select id="stationSelect" class="form-control">
+            <option value="">-- یک ایستگاه انتخاب کنید --</option>
+            @foreach (var station in Model)
+            {
+                <option value="@station.Id">@station.Name</option>
+            }
+        </select>
+    </div>
+</div>
+<div id="StudentList">
+</div>
+</div>
+@section scripts {
+    <script>
+        $(document).ready(function () {
+
+            // این کد PartialView را بارگذاری می‌کند
+
+            $('#stationSelect').change(function () {
+                var stationId = $(this).val();
+                $("#StudentList").load('/Interview/StudentInterview/StudentsList?stationId=' + stationId);
+            });
+        });
+    </script>
+}
+
+
+

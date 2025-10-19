@@ -1,0 +1,42 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StudentInterview
+@model StudentInterviewQuestionViewModel
+
+<div class="p-3">
+    <h4>مصاحبه داوطلب: @Model.StudentName (@Model.NationalCode)</h4>
+    <h5>ایستگاه: @Model.StationName</h5>
+
+    <form id="interviewForm">
+        <input type="hidden" name="StudentId" value="@Model.StudentId" />
+        <input type="hidden" name="StationId" value="@Model.StationId" />
+
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    <th>سوال</th>
+                    <th>امتیاز</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var q in Model.Questions)
+                {
+                    <tr>
+                        <td>@q.QuestionText</td>
+                        <td>
+                            <select class="form-control" name="Scores[@q.QuestionId]">
+                                <option value="">انتخاب کنید</option>
+                                @for (decimal i = 0; i <= 1; i += 0.25m)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success">ثبت نمرات</button>
+    </form>
+</div>
+
+

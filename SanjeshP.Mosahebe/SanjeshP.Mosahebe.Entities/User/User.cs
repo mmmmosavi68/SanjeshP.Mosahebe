@@ -94,5 +94,8 @@ namespace SanjeshP.Mosahebe.Entities.User
         public virtual ICollection<GroupAccessMenus> MenusGroupAccesses { get; set; } = new List<GroupAccessMenus>();
         public virtual ICollection<UserAccessMenus> MenusAccesses { get; set; } = new List<UserAccessMenus>();
         public virtual ICollection<Group.Group> Groups { get; set; } = new List<Group.Group>();
+
+        public virtual ICollection<UserField> UserFields { get; set; } = new List<UserField>();
+
     }
 }

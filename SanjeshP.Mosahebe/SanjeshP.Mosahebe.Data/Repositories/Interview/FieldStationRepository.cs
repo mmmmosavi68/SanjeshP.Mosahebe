@@ -51,5 +51,14 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
 
             await DeleteAsync(entity, cancellationToken);
         }
+
+        public async Task<IEnumerable<FieldStation>> GetStationsByUserFieldsAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(fs => fs.Station)
+                .Where(fs => !fs.IsDeleted && examFieldIds.Contains(fs.ExamFieldId))
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

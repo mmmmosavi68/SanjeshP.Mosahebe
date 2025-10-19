@@ -85,5 +85,18 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                         .FirstOrDefaultAsync(s => s.PhoneNumber == phoneNumber && !s.IsDeleted && s.IsActive, cancellationToken)
                         .ConfigureAwait(false);
         }
+
+        public async Task<IEnumerable<Student>> GetStudentsByExamFieldIdsAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken)
+        {
+            return await Table
+                        .Include(s => s.StudentFields)
+                            .ThenInclude(sf => sf.ExamField)
+                        .Include(s => s.Exam)
+                        .Where(s => !s.IsDeleted && s.IsActive
+                                    && s.StudentFields.Any(sf => examFieldIds.Contains(sf.ExamFieldId)))
+                        .OrderByDescending(s => s.CreatedDate)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
+        }
     }
 }

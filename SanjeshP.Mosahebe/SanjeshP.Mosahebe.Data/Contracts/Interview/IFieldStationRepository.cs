@@ -16,5 +16,6 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Interview
         Task AddFieldStationAsync(FieldStation entity, CancellationToken cancellationToken);
         Task UpdateFieldStationAsync(FieldStation entity, CancellationToken cancellationToken);
         Task DeleteFieldStationAsync(int id, CancellationToken cancellationToken);
+        Task<IEnumerable<FieldStation>> GetStationsByUserFieldsAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken);
     }
 }

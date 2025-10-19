@@ -18,5 +18,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Students
         Task<Student> GetStudentByNationalCodeCodeRahgiriAsync(string NationalCode, string CodeRahgiri, CancellationToken cancellationToken);
         Task<Student> GetStudentByIdAsync(int id, CancellationToken cancellationToken);
         Task<Student> GetStudentByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken);
+        Task<IEnumerable<Student>> GetStudentsByExamFieldIdsAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken);
+
     }
 }
