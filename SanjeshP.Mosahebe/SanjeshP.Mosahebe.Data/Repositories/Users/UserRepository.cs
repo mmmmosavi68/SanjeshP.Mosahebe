@@ -214,9 +214,9 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
             await UpdateAsync(user, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task UpdateUserAsync(User user, Guid id, CancellationToken cancellationToken)
+        public async Task UpdateUserAsync(User user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await UpdateAsync(user, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DeleteUserAsync(User user, CancellationToken cancellationToken)
@@ -249,5 +249,15 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
         }
 
 
+        public async Task<User> GetByGuidIdTrackedAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await Table   // NOT TableNoTracking
+                .Include(ur => ur.UserRoles).ThenInclude(r => r.Role)
+                .Include(up => up.UserProfiles)
+                .Include(u => u.CreatorUser)
+                .Include(u => u.EditorUser)
+                .Where(u => !u.IsDeleted && u.Id == id)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

@@ -28,6 +28,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using SanjeshP.Mosahebe.Data.Contracts.Interview;
+using SanjeshP.Mosahebe.Entities.Student;
 
 namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
 {
@@ -45,6 +47,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
         private readonly IAccessMenusRepository _accessMenuRepository;
         private readonly IUserRoleRepository _userRoleReository;
         private readonly IMemoryCache _memoryCache;
+        private readonly IStationRepository _stationRepository;
         private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -58,7 +61,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                                 , IUserTokenRepository userTokenRepository
                                 , IAccessMenusRepository accessMenuRepository
                                 , IUserRoleRepository userRoleReository
-                                , IMemoryCache memoryCache)
+                                , IMemoryCache memoryCache
+                                , IStationRepository stationRepository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -71,6 +75,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
             _accessMenuRepository = accessMenuRepository;
             _userRoleReository = userRoleReository;
             _memoryCache = memoryCache;
+            this._stationRepository = stationRepository;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -797,5 +802,63 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
         }
         #endregion پایان
 
+
+        [HttpPost]
+        public async Task<IActionResult> UserFieldList(Guid userid, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> ActiveStation(Guid userid, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var stations = await _stationRepository.GetAllStationsNoTrackingAsync(cancellationToken);
+                var user = await _userRepository.GetByGuidIdAsync(userid, cancellationToken);
+                var result = new StationViewModel
+                {
+                    Stations = stations,
+                    ActiveStation = stations.Where(s => s.Id == user.ActiveStation).Select(s => s.Name).FirstOrDefault(),
+                    UserId = user.Id
+                };
+                return PartialView("ActiveStation", result);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetActiveStation([FromBody] SetStationRequest model, CancellationToken cancellationToken)
+        {
+            if (model == null || model.StationId <= 0)
+                return BadRequest(new { success = false, message = "ایستگاه نامعتبر است." });
+
+            // منطق ذخیره سازی برای کاربر جاری
+            // مثلاً ذخیره در پروفایل کاربر یا session
+            var user = await _userRepository.GetByGuidIdTrackedAsync(model.UserId, cancellationToken);
+            if (user == null) return NotFound();
+
+
+            user.ActiveStation = model.StationId;
+
+
+
+            await _userRepository.UpdateUserAsync(user, cancellationToken);
+
+
+            return Ok(new { success = true, message = "ایستگاه با موفقیت ذخیره شد." });
+        }
     }
 }

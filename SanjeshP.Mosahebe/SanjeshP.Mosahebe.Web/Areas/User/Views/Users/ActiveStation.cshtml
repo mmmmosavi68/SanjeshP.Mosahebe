@@ -1,0 +1,118 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User
+@model StationViewModel
+
+@* توکن ضد-CSRF برای AJAX و فرم‌ها *@
+<form style="display:none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="row mb-4">
+    <div class="info mb-2 col-12">
+        <span class="h5 text-bold">ایستگاه فعال : </span>
+        <span class="h5 text-bold text-dark">@Model.ActiveStation</span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="info mb-2 col-6">
+        <span class="h5 text-bold">انتخاب ایستگاه</span>
+    </div>
+</div>
+
+<select id="stationSelect" class="form-control">
+    <option value="">-- یک ایستگاه انتخاب کنید --</option>
+    @foreach (var station in Model.Stations)
+    {
+        <option value="@station.Id">
+            @(station.Name != null && station.Name.Length > 200 ? station.Name.Substring(0, 200) + "..." : station.Name)
+        </option>
+    }
+</select>
+
+<div class="mt-3">
+    <button id="saveStationBtn" class="btn btn-primary" type="button" disabled>
+        ذخیره
+    </button>
+    <span id="stationMessage" class="ml-3"></span>
+</div>
+
+<script>
+    (function () {
+        var stationSelect = document.getElementById('stationSelect');
+        var saveBtn = document.getElementById('saveStationBtn');
+        var msgEl = document.getElementById('stationMessage');
+        var activeStationEl = document.querySelector('.info .text-dark');
+
+        // UserId از مدل Razor
+        var userId = '@(Model.UserId.ToString())';
+
+        function getAntiForgeryToken() {
+            var input = document.querySelector('input[name="__RequestVerificationToken"]');
+            return input ? input.value : null;
+        }
+
+        function setMessage(text, isError) {
+            msgEl.textContent = text || '';
+            msgEl.style.color = isError ? 'crimson' : 'green';
+        }
+
+        if (stationSelect) {
+            stationSelect.addEventListener('change', function () {
+                saveBtn.disabled = !this.value;
+                setMessage('');
+            });
+        }
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function () {
+                var stationId = stationSelect ? stationSelect.value : null;
+                if (!stationId) return;
+
+                var token = getAntiForgeryToken();
+                var payload = {
+                    stationId: parseInt(stationId, 10),
+                    userId: userId // GUID به صورت رشته ارسال می‌شود
+                };
+
+                saveBtn.disabled = true;
+                var originalText = saveBtn.textContent;
+                saveBtn.textContent = 'در حال ذخیره...';
+                setMessage('');
+
+                fetch('@Url.Action("SetActiveStation", "Users", new { area = "User" })', {
+                    method: 'POST',
+                    headers: Object.assign({
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }, token ? { 'RequestVerificationToken': token } : {}),
+                    body: JSON.stringify(payload),
+                    credentials: 'same-origin'
+                })
+                    .then(function (res) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                        if (!res.ok) {
+                            return res.json().catch(function () { throw new Error('خطا در پاسخ سرور'); })
+                                .then(function (j) { throw new Error(j && j.message ? j.message : 'خطا در ذخیره سازی'); });
+                        }
+                        return res.json().catch(function () { return { success: true, message: 'عملیات با موفقیت انجام شد' }; });
+                    })
+                    .then(function (data) {
+                        if (data && (data.success === false || data.isSuccess === false)) {
+                            setMessage(data.message || 'عملیات ناموفق بود', true);
+                        } else {
+                            setMessage((data && (data.message || data.Message)) || 'ایستگاه با موفقیت ذخیره شد', false);
+                            if (activeStationEl) {
+                                var selectedText = stationSelect.options[stationSelect.selectedIndex].text;
+                                activeStationEl.textContent = selectedText.trim();
+                            }
+                        }
+                    })
+                    .catch(function (err) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                        setMessage(err && err.message ? err.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.', true);
+                    });
+            });
+        }
+    })();
+</script>

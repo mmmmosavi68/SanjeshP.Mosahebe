@@ -28,17 +28,18 @@
 
     .filter-container {
         height: 0;
-        display:none;
+        display: none;
         overflow: hidden;
         transition: all 1s ease-in-out;
     }
 
-    .filter-row{
-        height:0;
+    .filter-row {
+        height: 0;
     }
-    .filter-row .active  {
-        height: auto; /* یا هر مقدار کافی برای فیلترها */
-    }
+
+        .filter-row .active {
+            height: auto; /* یا هر مقدار کافی برای فیلترها */
+        }
 
 </style>
 <div class="bg-light rounded p-4">
@@ -98,7 +99,9 @@
             <tbody>
                 @for (int i = 0; i < Model.Items.Count; i++)
                 {
+
                     var item = Model.Items[i];
+                    var FullName = item.Data.FirstName + " " + item.Data.LastName;
                     <tr id="tr_@(item.Data.UserId)">
                         <td>@(i + 1)</td>
                         <td>
@@ -127,8 +130,10 @@
                             }
                             @if (item.Permissions["UserAccessMenu"])
                             {
-                                <a onclick="UserAccessMenu('@item.Data.UserId')" class="btn btn-sm btn-outline-dark" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
+                                <a onclick="UserAccessMenu('@item.Data.UserId','@FullName')" class="btn btn-sm btn-outline-dark" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
                             }
+                            <a class="btn btn-sm btn-outline-dark" onclick="UserFields('@item.Data.UserId','@FullName')" title="رشته‌های کاربر"><i class="fa fa-sitemap"></i></a>
+                            <a class="btn btn-sm btn-outline-dark" onclick="ActiveStation('@item.Data.UserId','@FullName')" title="ایستگاه فعال"><i class="fa fa-sitemap"></i></a>
                         </td>
                     </tr>
                 }
@@ -185,17 +190,17 @@
 <script>
     // ✅ تابع اصلی بارگذاری کاربران با فیلترها و صفحه‌بندی
     function loadUsers(pageIndex = 1) {
-        listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged,pageIndex);
+        listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged, pageIndex);
     }
 
-        $(".toggle-filter-row").on("click", function () {
-            console.log('asdas')
-            $(".filter-row").toggleClass("d-none"); // نمایش ردیف
-            setTimeout(() => {
-                $(".filter-row").toggleClass("active");
-            }, 10); // اجازه‌ی رندر به مرورگر برای فعال کردن انیمیشن
-        });
-   
+    $(".toggle-filter-row").on("click", function () {
+        console.log('asdas')
+        $(".filter-row").toggleClass("d-none"); // نمایش ردیف
+        setTimeout(() => {
+            $(".filter-row").toggleClass("active");
+        }, 10); // اجازه‌ی رندر به مرورگر برای فعال کردن انیمیشن
+    });
+
 
     $('.selectAll').click(function (e) {
         var table = $(e.target).closest('table');
@@ -216,23 +221,31 @@
     });
 
     function DetailUser(UserID) {
-        openModal('مشخصات کاربر',window.__env.baseUrl + window.routes.users.users_detailuser + '?userid=' + UserID,false);
+        openModal('مشخصات کاربر', window.__env.baseUrl + window.routes.users.users_detailuser + '?userid=' + UserID, false);
 
     };
     function CreateUser() {
-        openModal('افزودن کاربر ', window.__env.baseUrl + window.routes.users.users_createuser ,false);
+        openModal('افزودن کاربر ', window.__env.baseUrl + window.routes.users.users_createuser, false);
     };
     function EditUser(UserID) {
-        openModal('ویرایش کاربراصلاح سطح دسترسی',window.__env.baseUrl + window.routes.users.users_edituser + '?userid=' + UserID,false);
+        openModal('ویرایش کاربراصلاح سطح دسترسی', window.__env.baseUrl + window.routes.users.users_edituser + '?userid=' + UserID, false);
     };
-    function UserAccessMenu(UserID) {
-        openModal(' اصلاح سطح دسترسی',  window.__env.baseUrl + window.routes.users.users_useraccessmenu + '?userid=' + UserID,false);
+    function UserAccessMenu(UserID, FullName) {
+        openModal('اصلاح سطح دسترسی ' + FullName, window.__env.baseUrl + window.routes.users.users_useraccessmenu + '?userid=' + UserID, false);
     };
 
+    function UserFields(UserID, FullName) {
+        openModal('رشته‌های ' + FullName, '/User/Users/UserFields?userid=' + UserID, false);
+    };
+
+    function ActiveStation(UserID, FullName) {
+        openModal('ایستگاه فعال ' + FullName, '/User/Users/ActiveStation?userid=' + UserID, true);
+    };
 
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+
     async function DeleteUser(UserID) {
         $(".skeleton-table").show();
 
