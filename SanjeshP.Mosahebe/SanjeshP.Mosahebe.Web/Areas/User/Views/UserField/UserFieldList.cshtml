@@ -1,0 +1,99 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.UserField
+@model IEnumerable<UserFieldViewModel>
+
+<div class="row mb-2">
+    <button class="btn btn-primary" onclick="AddUserField('@ViewData["UserId"]')">
+        افزودن رشته به کاربر
+    </button>
+</div>
+
+<table class="table table-striped table-hover" id="tbl_userfields">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>رشته</th>
+            <th>کد استاندارد</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var i = 1;
+        }
+        @foreach (var item in Model)
+        {
+            <tr id="tr_@item.Id">
+                <td>@i</td>
+                <td>@item.ExamFieldTitle</td>
+                <td>@(item.StandardCode?.ToString() ?? "-")</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removeFieldFromUser(@item.Id)">
+                        حذف
+                    </button>
+                </td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+
+<script src="~/admin/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+
+<script>
+    $(function () {
+        $('#tbl_userfields').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            language: {
+                "sEmptyTable": "داده‌ای برای نمایش وجود ندارد",
+                "sSearch": "جستجو:",
+                "oPaginate": { "sNext": "بعدی", "sPrevious": "قبلی" }
+            }
+        });
+    });
+
+    // حذف رشته از کاربر
+    function removeFieldFromUser(id) {
+        if (!confirm('آیا مطمئن هستید که می‌خواهید این رشته را حذف کنید؟')) return;
+
+        var url = '@Url.Action("RemoveFieldFromUser", "UserField", new { area = "User" })';
+        var token = $('input[name="__RequestVerificationToken"]').first().val();
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: { id: id },
+            headers: token ? { 'RequestVerificationToken': token } : {},
+            success: function (res) {
+                if (res && (res.success === true || res.isSuccess === true)) {
+                    $("#tr_" + id).fadeOut(300, function () { $(this).remove(); });
+                    iziToast.success({ message: res.message || 'رشته حذف شد.' });
+                } else {
+                    iziToast.error({ message: (res && res.message) ? res.message : 'خطا در حذف رشته.' });
+                }
+            },
+            error: function (xhr) {
+                var msg = 'خطایی رخ داده است.';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.message)
+                        msg = xhr.responseJSON.message;
+                } catch (e) { }
+                iziToast.error({ message: msg });
+            }
+        });
+    }
+
+    // باز کردن مودال افزودن رشته
+    function AddUserField(userId) {
+        var url = '@Url.Action("FieldsNotAssignedToUser", "UserField", new { area = "User" })'
+            + '?userId=' + encodeURIComponent(userId);
+        openModal('افزودن رشته به کاربر', url, false);
+    }
+</script>

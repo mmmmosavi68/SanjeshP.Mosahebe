@@ -1,0 +1,94 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.UserField
+@model IEnumerable<UserFieldViewModel>
+
+<table class="table table-striped table-hover" id="tbl_fieldsnotassigned">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>کد استاندارد</th>
+            <th>عنوان رشته</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int i = 1;
+            var userId = ViewData["UserId"] as Guid? ?? Guid.Empty;
+        }
+        @foreach (var item in Model)
+        {
+            <tr id="fieldtr_@item.Id">
+                <td>@i</td>
+                <td>@item.StandardCode</td>
+                <td>@item.ExamFieldTitle</td>
+                <td>
+                    <button type="button" class="btn btn-success btn-sm" onclick="addFieldToUser('@item.Id', '@userId')">افزودن</button>
+                </td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+    $(function () {
+        $('#tbl_fieldsnotassigned').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            language: {
+                search: "جستجو:",
+                lengthMenu: "نمایش _MENU_ مورد",
+                info: "نمایش _START_ تا _END_ از _TOTAL_ مورد",
+                paginate: { previous: "قبل", next: "بعد" },
+                zeroRecords: "رکوردی یافت نشد"
+            }
+        });
+    });
+
+    function getAntiForgeryToken() {
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        return tokenInput ? tokenInput.value : null;
+    }
+
+    function addFieldToUser(fieldId, userId) {
+
+        const url = '@Url.Action("AddFieldToUser", "UserField", new { area = "User" })';
+        const token = getAntiForgeryToken();
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: { userId: userId, fieldId: fieldId },
+            headers: token ? { 'RequestVerificationToken': token } : {},
+            success: function (res) {
+                if (res && (res.success === true || res.isSuccess === true)) {
+                    $("#fieldtr_" + fieldId).remove();
+                    iziToast.success({ message: res.message || 'رشته با موفقیت اضافه شد.' });
+
+                    // به‌روزرسانی لیست رشته‌های کاربر
+                    const listUrl = '@Url.Action("UserFieldList", "UserField", new { area = "User" })' + '?userId=' + encodeURIComponent(userId);
+                    $("#user_field_body").load(listUrl);
+                } else {
+                    iziToast.error({ message: (res && res.message) ? res.message : 'خطا در افزودن رشته.' });
+                }
+            },
+            error: function (xhr) {
+                let msg = 'خطایی رخ داده است.';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.message)
+                        msg = xhr.responseJSON.message;
+                } catch { }
+                iziToast.error({ message: msg });
+            }
+        });
+    }
+</script>

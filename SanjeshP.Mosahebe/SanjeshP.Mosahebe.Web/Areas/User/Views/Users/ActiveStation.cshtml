@@ -79,39 +79,42 @@
                 saveBtn.textContent = 'در حال ذخیره...';
                 setMessage('');
 
-                fetch('@Url.Action("SetActiveStation", "Users", new { area = "User" })', {
+
+
+                $.ajax({
+                    url: '@Url.Action("SetActiveStation", "Users", new { area = "User" })',
                     method: 'POST',
-                    headers: Object.assign({
-                        'Content-Type': 'application/json;charset=UTF-8'
-                    }, token ? { 'RequestVerificationToken': token } : {}),
-                    body: JSON.stringify(payload),
-                    credentials: 'same-origin'
-                })
-                    .then(function (res) {
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(payload),
+                    headers: token ? { 'RequestVerificationToken': token } : {},
+                    success: function (response) {
                         saveBtn.disabled = false;
                         saveBtn.textContent = originalText;
-                        if (!res.ok) {
-                            return res.json().catch(function () { throw new Error('خطا در پاسخ سرور'); })
-                                .then(function (j) { throw new Error(j && j.message ? j.message : 'خطا در ذخیره سازی'); });
-                        }
-                        return res.json().catch(function () { return { success: true, message: 'عملیات با موفقیت انجام شد' }; });
-                    })
-                    .then(function (data) {
-                        if (data && (data.success === false || data.isSuccess === false)) {
-                            setMessage(data.message || 'عملیات ناموفق بود', true);
-                        } else {
-                            setMessage((data && (data.message || data.Message)) || 'ایستگاه با موفقیت ذخیره شد', false);
+                        if (response.isSuccess || response.success) {
+                            iziToast.success({ message: response.message || 'با موفقیت ذخیره شد', icon: 'fa fa-check', class: 'iziToast-green' });
                             if (activeStationEl) {
                                 var selectedText = stationSelect.options[stationSelect.selectedIndex].text;
                                 activeStationEl.textContent = selectedText.trim();
                             }
+                        } else {
+                            var errors = (response.message || '').split(' | ');
+                            errors.forEach(function (item) {
+                                if (item) iziToast.error({ message: item, icon: 'fa fa-times', class: 'iziToast-color-red' });
+                            });
                         }
-                    })
-                    .catch(function (err) {
+                    },
+                    error: function (xhr) {
                         saveBtn.disabled = false;
                         saveBtn.textContent = originalText;
-                        setMessage(err && err.message ? err.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.', true);
-                    });
+                        var msg = 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.';
+                        try {
+                            var json = JSON.parse(xhr.responseText);
+                            if (json && json.message) msg = json.message;
+                        } catch (_) { }
+                        iziToast.error({ message: msg });
+                    }
+                });
+
             });
         }
     })();

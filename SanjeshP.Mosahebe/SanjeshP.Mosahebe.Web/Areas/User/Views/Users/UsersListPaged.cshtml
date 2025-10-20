@@ -132,8 +132,8 @@
                             {
                                 <a onclick="UserAccessMenu('@item.Data.UserId','@FullName')" class="btn btn-sm btn-outline-dark" title="دسترسی کاربر"><i class="fa fa-sitemap"></i></a>
                             }
-                            <a class="btn btn-sm btn-outline-dark" onclick="UserFields('@item.Data.UserId','@FullName')" title="رشته‌های کاربر"><i class="fa fa-sitemap"></i></a>
-                            <a class="btn btn-sm btn-outline-dark" onclick="ActiveStation('@item.Data.UserId','@FullName')" title="ایستگاه فعال"><i class="fa fa-sitemap"></i></a>
+                            <a class="btn btn-sm btn-outline-success" onclick="UserFields('@item.Data.UserId','@FullName')" title="رشته‌های کاربر"><i class="fa fa-layer-group"></i></a>
+                            <a class="btn btn-sm btn-outline-primary" onclick="ActiveStation('@item.Data.UserId','@FullName')" title="ایستگاه فعال"><i class="fa fa-comments"></i></a>
                         </td>
                     </tr>
                 }
@@ -235,7 +235,7 @@
     };
 
     function UserFields(UserID, FullName) {
-        openModal('رشته‌های ' + FullName, '/User/Users/UserFields?userid=' + UserID, false);
+        openModal('رشته‌های ' + FullName, '/User/UserField/Index?userid=' + UserID, false);
     };
 
     function ActiveStation(UserID, FullName) {

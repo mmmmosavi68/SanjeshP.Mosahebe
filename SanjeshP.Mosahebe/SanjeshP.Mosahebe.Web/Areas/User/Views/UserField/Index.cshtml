@@ -1,0 +1,17 @@
+﻿@{
+    var userId = ViewData["UserId"];
+}
+<div class="modal-body" id="user_field_body">
+    <span>در حال بارگذاری...</span>
+</div>
+
+<script>
+    (function () {
+        var userId = '@userId';
+        // از Url.Action استفاده کن تا مسیر دقیق ساخته شود
+        var url = '@Url.Action("UserFieldList", "UserField", new { area = "User" })' + '?userId=' + encodeURIComponent(userId);
+        $("#user_field_body").load(url);
+    })();
+</script>
+
+
