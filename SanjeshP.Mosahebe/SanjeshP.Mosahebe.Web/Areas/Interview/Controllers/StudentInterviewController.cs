@@ -32,6 +32,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
         private readonly IStationRepository _stationRepository;
         private readonly IFieldStationRepository _fieldStationRepository;
         private readonly IStationQuestionRepository _stationQuestionRepository;
+        private readonly IInterviewScoreRepository _interviewScoreRepository;
 
 
         public StudentInterviewController(
@@ -41,7 +42,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             , IUserTokenRepository userTokenRepository
             , IStationRepository stationRepository
             , IFieldStationRepository fieldStationRepository
-            , IStationQuestionRepository stationQuestionRepository)
+            , IStationQuestionRepository stationQuestionRepository
+            , IInterviewScoreRepository interviewScoreRepository)
         {
             _studentRepository = studentRepository;
             _logger = logger;
@@ -50,6 +52,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             _stationRepository = stationRepository;
             _fieldStationRepository = fieldStationRepository;
             _stationQuestionRepository = stationQuestionRepository;
+            _interviewScoreRepository = interviewScoreRepository;
 
 
         }
@@ -157,6 +160,28 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                 // لاگ دقیق‌تر می‌تونه اضافه بشه در آینده
                 return StatusCode(500, "خطا در سرور");
             }
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveInterviewScores(int studentId, int stationId, Dictionary<int, double> scores, CancellationToken cancellationToken)
+        {
+            //آی دی استادی که لاگین شده
+            var currentUserToken = User.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
+            var userId = token.UserId;
+
+            await _interviewScoreRepository.SaveInterviewScoresAsync(userId, studentId, stationId, scores, cancellationToken);
+            //// اینجا می‌تونی نمرات رو تو جدول StudentStationScores یا مشابه ذخیره کنی
+            //foreach (var item in scores)
+            //{
+            //    var questionId = item.Key;
+            //    var score = item.Value;
+
+            //    // ذخیره‌سازی در DB
+            //}
+
+            //await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return Ok(new { success = true });
         }
 
     }

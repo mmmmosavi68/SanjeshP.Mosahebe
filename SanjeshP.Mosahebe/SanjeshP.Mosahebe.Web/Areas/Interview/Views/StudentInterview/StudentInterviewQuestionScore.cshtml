@@ -24,7 +24,7 @@
                         <td>
                             <select class="form-control" name="Scores[@q.QuestionId]">
                                 <option value="">انتخاب کنید</option>
-                                @for (decimal i = 0; i <= 1; i += 0.25m)
+                                @for (double i = 0; i <= 1; i += 0.25)
                                 {
                                     <option value="@i">@i</option>
                                 }
@@ -38,5 +38,14 @@
         <button type="submit" class="btn btn-success">ثبت نمرات</button>
     </form>
 </div>
+<script>
+    $("#interviewForm").submit(function (e) {
+        e.preventDefault();
+        $.post('/Interview/StudentInterview/SaveInterviewScores', $(this).serialize(), function (res) {
+            alert("نمرات با موفقیت ثبت شد!");
+            closeModal();
+        });
+    });
+</script>
 
 

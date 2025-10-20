@@ -443,12 +443,15 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.ToTable("FieldStations");
                 });
 
-            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Interview.QuestionAnswer", b =>
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Interview.InterviewScore", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<double?>("CalculatedScore")
+                        .HasColumnType("float");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -468,6 +471,12 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
+                    b.Property<double?>("QuestionMaxValue")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("QuestionScore")
+                        .HasColumnType("float");
+
                     b.Property<int>("StationId")
                         .HasColumnType("int");
 
@@ -480,20 +489,13 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Value")
-                        .HasColumnType("decimal(6,2)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
-
-                    b.HasIndex("StationId");
 
                     b.HasIndex("StudentId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuestionAnswers");
+                    b.ToTable("InterviewScores");
                 });
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Interview.Station", b =>
@@ -553,8 +555,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<decimal>("MaxValue")
-                        .HasColumnType("decimal(6,2)");
+                    b.Property<double>("MaxValue")
+                        .HasColumnType("float");
 
                     b.Property<int>("StationId")
                         .HasColumnType("int");
@@ -2033,28 +2035,16 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Interview.QuestionAnswer", b =>
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Interview.InterviewScore", b =>
                 {
-                    b.HasOne("SanjeshP.Mosahebe.Entities.Interview.StationQuestion", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SanjeshP.Mosahebe.Entities.Interview.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", "Student")
-                        .WithMany("QuestionAnswers")
+                        .WithMany("InterviewScores")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SanjeshP.Mosahebe.Entities.User.User", "User")
-                        .WithMany()
+                        .WithMany("InterviewScores")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

@@ -18,7 +18,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StudentInterview
     {
         public int QuestionId { get; set; }
         public string QuestionText { get; set; }
-        public decimal MaxValue { get; set; }
+        public double MaxValue { get; set; }
         public int? SelectedScore { get; set; }
     }
 }

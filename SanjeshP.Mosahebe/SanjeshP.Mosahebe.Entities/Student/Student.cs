@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using SanjeshP.Mosahebe.Entities.Interview;
 
 namespace SanjeshP.Mosahebe.Entities.Student
 {
@@ -47,8 +48,7 @@ namespace SanjeshP.Mosahebe.Entities.Student
 
         // ارتباط چند به چند با رشته‌ها
         public ICollection<StudentField> StudentFields { get; set; } = new List<StudentField>();
-        public ICollection<Interview.QuestionAnswer> QuestionAnswers { get; set; } = new List<Interview.QuestionAnswer>();
-
+        public virtual ICollection<InterviewScore> InterviewScores { get; set; }
 
         //نوع دوره آزمون (آموزشی یا پژوهشی
         public int ExamCourseType { get; set; } 

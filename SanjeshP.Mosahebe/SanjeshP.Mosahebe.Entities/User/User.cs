@@ -1,5 +1,6 @@
 ﻿using SanjeshP.Mosahebe.Entities.Common;
 using SanjeshP.Mosahebe.Entities.Group;
+using SanjeshP.Mosahebe.Entities.Interview;
 using SanjeshP.Mosahebe.Entities.Menu;
 using System;
 using System.Collections.Generic;
@@ -96,6 +97,7 @@ namespace SanjeshP.Mosahebe.Entities.User
         public virtual ICollection<Group.Group> Groups { get; set; } = new List<Group.Group>();
 
         public virtual ICollection<UserField> UserFields { get; set; } = new List<UserField>();
+        public virtual ICollection<InterviewScore> InterviewScores { get; set; }
 
     }
 }

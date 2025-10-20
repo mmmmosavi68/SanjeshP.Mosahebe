@@ -13,7 +13,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StationQuestion
         [Required(ErrorMessage = "حداکثر نمره الزامی است")]
         [Range(0, 10000, ErrorMessage = "حداکثر نمره باید بین {1} تا {2} باشد")]
         [Display(Name = "حداکثر نمره")]
-        public decimal MaxValue { get; set; }
+        public double MaxValue { get; set; }
 
         [Required]
         public int StationId
