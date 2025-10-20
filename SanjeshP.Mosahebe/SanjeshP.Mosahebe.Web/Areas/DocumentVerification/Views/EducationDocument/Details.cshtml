@@ -7,7 +7,6 @@
     var forms = Model.Forms?.ToList() ?? new List<StudentFormSubmissionScore>();
 }
 
-
 <style>
     .scoreItemContainer {
         box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.05);
@@ -26,17 +25,16 @@
     }
 
     .shadow {
-        transition: all 0.6s ease; /* smooth transition برای hover */
+        transition: all 0.6s ease;
     }
 
         .shadow:hover {
             box-shadow: 0px 13px 22px rgb(0 0 0 / 62%) !important;
-            transform: scale(1.03); /* 5% بزرگتر */
+            transform: scale(1.03);
         }
 </style>
 
-        
-<div class="card scoreItemContainer mb-3 border border-2" >
+<div class="card scoreItemContainer mb-3 border border-2">
     <div class="card-header card-title text-light text-center" style="background:radial-gradient(circle, #348780, #363e5f)">
         <strong class="h3">اطلاعات داوطلب</strong>
     </div>
@@ -57,7 +55,9 @@
         </div>
     </div>
 </div>
-<form asp-action="SaveScores" method="post" novalidate>
+
+<form id="saveScoresForm" asp-action="SaveScores" method="post" novalidate>
+    @Html.AntiForgeryToken()
     <div class="container mt-2 pl-4 pr-4">
         @if (ViewBag.Message != null)
         {
@@ -102,7 +102,6 @@
                                         }
                                     </span>
 
-                                    @* اینجا باید index لیست Forms[i] هم اصلاح شود *@
                                     <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].SubmissionDataId" value="@field.Id" />
                                     <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
                                     <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
@@ -114,11 +113,9 @@
                                 <div class="card-header bg-info">نتیجه _  @form.FormItem?.FormItemCoefficient?.Title  </div>
                                 <div class="row card-body">
                                     <div class="col-6">
-                                        @* Hidden fields ضروری برای مدل‌بایندینگ *@
                                         <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].FormSubmissionScoreId" value="@form.Id" />
                                         <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].FormItemId" value="@form.FormItemId" />
 
-                                        @* تیک تایید فرم *@
                                         <input type="checkbox"
                                                id="notRejected_@form.Id"
                                                class="notRejected form-check-input"
@@ -127,7 +124,6 @@
                                                value="true">
                                         <label for="notRejected_@form.Id" class="form-check-label">مدرک، مورد تایید است.</label>
 
-                                        @* دلیل رد فرم *@
                                         <input list="rejectedList_@form.Id"
                                                maxlength="1000"
                                                id="rejectReason_@form.Id"
@@ -172,20 +168,25 @@
             </div> <!-- /.card -->
         }
     </div>
+
     @if (ViewBag.Message == null)
     {
         <div class="container mb-5">
-            <button type="submit" class="btn btn-success">ذخیره نمرات</button>
+            <button type="submit" class="btn btn-success" id="saveScoresBtn">ذخیره نمرات</button>
         </div>
     }
-
 </form>
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
 
 <script>
     $(function () {
 
         // ===========================
-        // Helper: اعتبارسنجی ورودی عددی
+        // توابع اعتبارسنجی و رفتار قبلی بدون تغییر
         // ===========================
         function validateScoreInput($input) {
             if (!$input || $input.length === 0) return true;
@@ -224,9 +225,6 @@
             return true;
         }
 
-        // ===========================
-        // Helper: فعال/غیرفعال کردن score و rejectReason بر اساس checkbox
-        // ===========================
         function toggleScoreByCheckbox(id, checked) {
             var $reject = $('#rejectReason_' + id);
             var $score = $('#scoreValue_' + id);
@@ -250,9 +248,6 @@
             }
         }
 
-        // ===========================
-        // محدود کردن ورودی نمره به عدد با حداکثر دو رقم اعشار
-        // ===========================
         $(document).on('input', '.scoreTextValue', function () {
             var $this = $(this);
             var val = $this.val();
@@ -263,47 +258,38 @@
             validateScoreInput($this);
         });
 
-        // ===========================
-        // مقداردهی اولیه بر اساس وضعیت checkbox
-        // ===========================
         $('.notRejected').each(function () {
             var id = $(this).data('id');
             toggleScoreByCheckbox(id, $(this).prop('checked'));
         });
 
-        // ===========================
-        // تغییر وضعیت هنگام تغییر checkbox
-        // ===========================
         $(document).on('change', '.notRejected', function () {
             var id = $(this).data('id');
             toggleScoreByCheckbox(id, $(this).prop('checked'));
         });
 
         // ===========================
-        // اعتبارسنجی جامع قبل از submit
+        // اعتبارسنجی جامع قبل از ارسال (همانند نسخه قبلی)
+        // این تابع تنها بررسی را انجام می‌دهد و نتیجه بولی برمی‌گرداند
         // ===========================
-        $('form[asp-action="SaveScores"], form').on('submit', function (e) {
+        function validateAll() {
             var ok = true;
 
-            // 1️⃣ اعتبارسنجی score
             $('.scoreTextValue').each(function () {
                 if (!validateScoreInput($(this))) ok = false;
             });
 
-            // 2️⃣ بررسی هر checkbox و rejectReason
             $('.notRejected').each(function () {
                 var id = $(this).data('id');
                 var checked = $(this).prop('checked');
 
                 if (checked) {
-                    // اگر تیک زده شده، score باید معتبر باشد
                     var $score = $('#scoreValue_' + id);
                     if ($score.length && ($score.val() === '' || $score.hasClass('is-invalid'))) {
                         ok = false;
                         $score.addClass('is-invalid');
                     }
                 } else {
-                    // اگر تیک نخورده، rejectReason باید مقدار داشته باشد
                     var $reject = $('#rejectReason_' + id);
                     if ($reject.length) {
                         var val = ($reject.val() || '').toString().trim();
@@ -329,20 +315,66 @@
                 }
             });
 
-            // جلوگیری از submit در صورت وجود خطا
             if (!ok) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // اسکرول به اولین خطا
                 var $first = $('.is-invalid').first();
                 if ($first.length) $('html, body').animate({ scrollTop: $first.offset().top - 100 }, 300);
-
-                alert('لطفاً خطاهای فرم را اصلاح کنید.');
             }
+
+            return ok;
+        }
+
+        // ===========================
+        // AJAX submit: ارسال فرم به صورت AJAX و فقط رفرش StudentList
+        // ===========================
+        $('#saveScoresForm').on('submit', function (e) {
+            e.preventDefault();
+
+            if (!validateAll()) {
+                alert('لطفاً خطاهای فرم را اصلاح کنید.');
+                return;
+            }
+
+            var $form = $(this);
+            var $btn = $('#saveScoresBtn');
+            var oldText = $btn.text();
+            $btn.prop('disabled', true).text('در حال ذخیره...');
+
+            // اگر از antiforgery استفاده می‌کنید، توکن در فرم وجود دارد و serialize آن را شامل می‌شود
+            var data = $form.serialize();
+
+            $.ajax({
+                url: $form.attr('action') || '/DV/EducationDocument/SaveScores',
+                method: 'POST',
+                data: data,
+                success: function (response) {
+                    // اگر کنترلر Ok با JSON برمی‌گرداند می‌توانید چک کنید response.success
+                    // اما ساده‌ترین حالت: اگر موفقیت آمیز باشد، لیست دانشجویان مجدداً لود شود
+
+                    var fieldId = $('#fieldSelect').val();
+                    if (fieldId) {
+                        $('#StudentList').load('/DV/EducationDocument/StudentsList?fieldId=' + encodeURIComponent(fieldId));
+                    } else {
+                        $('#StudentList').html('');
+                    }
+
+                    // اگر فرم داخل مودال باز شده بود، آن را ببندید
+                    // فرض: از openModal استفاده می‌کنید که modal را باز کرده؛ اگر modal bootstrap دارید:
+                    $('.modal').modal('hide');
+                },
+                error: function (xhr) {
+                    // در صورت بازگشت JSON حاوی پیام خطا، می‌توانید آن را نمایش دهید
+                    alert('خطا در ذخیره نمرات. لطفاً دوباره تلاش کنید.');
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).text(oldText);
+                }
+            });
         });
+
+        // ===========================
+        // اگر نیاز به init دیتاتِیبِل یا اسکریپت‌های دیگر پس از لود partial دارید،
+        // آنها را اینجا اضافه کنید یا در Partial مربوطه قرار دهید.
+        // ===========================
 
     });
 </script>
-
-

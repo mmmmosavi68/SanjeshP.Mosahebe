@@ -24,7 +24,9 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr id="tr_@(item.Id)">
+                var rowClass = item.FinalTotalScore != 0 ? "bg-secondary text-white" : "";
+
+                <tr id="tr_@(item.Id)" class="@rowClass">
                     <td>@i</td>
                     <td>
                         <img src="~/img/user.jpg" class="img-thumbnail rounded-circle"
@@ -38,6 +40,14 @@
                     <td>@Html.DisplayFor(modelItem => item.FinalTotalScore)</td>
                     <td>
                         <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
+@*                         @if (item.FinalTotalScore == 0)
+                        {
+                            
+                        }
+                        else
+                        {
+                            <p>بررسی شده</p>
+                        } *@
                     </td>
                 </tr>
                 i++;

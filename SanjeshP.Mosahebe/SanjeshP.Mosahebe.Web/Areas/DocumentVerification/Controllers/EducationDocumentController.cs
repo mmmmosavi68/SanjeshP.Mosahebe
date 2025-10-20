@@ -136,7 +136,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                     // نمره نهایی از EducationDocumentScore
                     FinalTotalScore = scores.ContainsKey(e.Id) ? scores[e.Id] : 0
-                }).ToList();
+                })
+                    // مرتب‌سازی: اول بررسی‌نشده‌ها، بعد بر اساس نام (برای ظاهر طبیعی)
+                .OrderBy(s => s.FinalTotalScore > 0)   // false (0) اول میاد، true (نمره‌دار) بعد
+                .ThenBy(s => s.LastName)
+                .ThenBy(s => s.FirstName)
+                .ToList();
 
                 return PartialView("StudentsList", result);
             }
@@ -222,16 +227,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveScores([FromForm] List<FormDataInputViewModel> Forms, CancellationToken cancellationToken)
         {
-            // بررسی اینکه فرم‌ها خالی نباشند
             if (Forms == null || !Forms.Any())
             {
                 ModelState.AddModelError(string.Empty, "داده‌ای برای ذخیره ارسال نشده است");
                 return BadRequest(ModelState);
             }
 
-            // بررسی اینکه کاربر لاگین کرده باشد
             if (!User.Identity.IsAuthenticated) return Forbid();
 
             var currentUserToken = User.FindFirstValue("Token");
@@ -240,24 +244,20 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             try
             {
                 int? studentId = null;
-                // پیمایش بر روی تمام فرم‌های ارسال شده
                 foreach (var formInput in Forms)
                 {
                     if (cancellationToken.IsCancellationRequested) break; // توقف در صورت کنسل شدن عملیات
                     if (formInput == null) continue;
 
-                    // دریافت رکورد اصلی فرم از دیتابیس
                     var submissionScore = await _studentFormSubmissionRepository
                         .GetDetailsForEditAsync(formInput.FormSubmissionScoreId, cancellationToken);
 
-                    // اگر فرمی وجود نداشت خطای مناسب در سرور ثبت کند
                     if (submissionScore == null)
                     {
                         _logger.LogWarning("submissionScore not found id={Id}", formInput.FormSubmissionScoreId);
                         continue;
                     }
 
-                    // دریافت کد داوطلب 
                     studentId ??= submissionScore.StudentId;
 
 
@@ -382,21 +382,19 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken);
                 }
 
-                // ذخیره تغییرات در دیتابیس
                 await _studentFormSubmissionRepository.SaveChangesAsync(cancellationToken);
-
 
                 if (studentId > 0)
                 {
                     await _educationDocumentScoreRepository.CalculateAndSaveFinalScoreAsync(studentId.Value, token.UserId, cancellationToken);
                 }
-                // بازگشت به صفحه اصلی یا لیست فرم‌ها
-                return RedirectToAction("Index");
+
+                return Ok(new { success = true });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "خطا در ذخیره نمرات فرم‌ها");
-                return StatusCode(500, "خطا در سرور");
+                return StatusCode(500, new { success = false, message = "خطا در سرور" });
             }
         }
 
