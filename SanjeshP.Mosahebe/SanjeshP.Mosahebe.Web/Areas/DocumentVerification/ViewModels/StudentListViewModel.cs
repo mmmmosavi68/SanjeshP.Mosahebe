@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SanjeshP.Mosahebe.Entities.Student;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
 {
@@ -58,5 +60,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
 
         [Display(Name = "‌نمره نهایی")]
         public double FinalTotalScore { get; set; }
+
+        public EducationDocumentScore EducationDocumentScore { get; set; }
     }
 }

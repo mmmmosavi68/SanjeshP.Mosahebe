@@ -24,7 +24,7 @@
         <tbody>
             @foreach (var item in Model)
             {
-                var rowClass = item.FinalTotalScore != 0 ? "bg-secondary text-white" : "";
+                var rowClass = item.EducationDocumentScore?.IsDeleted ==false ? "bg-secondary text-white" : string.Empty;
 
                 <tr id="tr_@(item.Id)" class="@rowClass">
                     <td>@i</td>
@@ -39,15 +39,14 @@
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
                     <td>@Html.DisplayFor(modelItem => item.FinalTotalScore)</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
-@*                         @if (item.FinalTotalScore == 0)
+                        @if (rowClass == string.Empty)
                         {
-                            
+                            <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
                         }
                         else
                         {
                             <p>بررسی شده</p>
-                        } *@
+                        } 
                     </td>
                 </tr>
                 i++;

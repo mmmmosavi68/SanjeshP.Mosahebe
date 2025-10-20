@@ -105,40 +105,47 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     .GetScoresByStudentIdsAsync(studentIds, cancellationToken);
 
                 // نگاشت دانشجویان به ViewModel
-                var result = students.Select(e => new StudentListViewModel
+                var result = students.Select(e =>
                 {
-                    Id = e.Id,
-                    RegId = e.RegId,
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    FatherName = e.FatherName,
-                    NationalCode = e.NationalCode,
-                    CodeRahgiri = e.CodeRahgiri,
-                    PhoneNumber = e.PhoneNumber,
-                    Email = e.Email,
+                    var activeScore = e.EducationDocumentScores?
+                        .Where(ed => ed.IsActive && !ed.IsDeleted)
+                        .OrderByDescending(ed => ed.CreatedDate)   // یا by Id اگر CreatedDate ندارید
+                        .FirstOrDefault();
 
-                    // تبدیل جنسیت عددی به متن
-                    Gender = e.Gender == 1 ? "مرد" : "زن",
+                    return new StudentListViewModel
+                    {
+                        Id = e.Id,
+                        RegId = e.RegId,
+                        FirstName = e.FirstName,
+                        LastName = e.LastName,
+                        FatherName = e.FatherName,
+                        NationalCode = e.NationalCode,
+                        CodeRahgiri = e.CodeRahgiri,
+                        PhoneNumber = e.PhoneNumber,
+                        Email = e.Email,
 
-                    // تبدیل IsPajoheshi به بولین
-                    IsPajoheshi = e.IsPajoheshi == 1,
+                        // تبدیل جنسیت عددی به متن
+                        Gender = e.Gender == 1 ? "مرد" : "زن",
 
-                    // نام آزمون از navigation property
-                    ExamName = e.Exam?.Title ?? "",
+                        // تبدیل IsPajoheshi به بولین
+                        IsPajoheshi = e.IsPajoheshi == 1,
 
-                    // نوع دوره آزمون به متن
-                    ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
+                        // نام آزمون از navigation property
+                        ExamName = e.Exam?.Title ?? "",
 
-                    // رشته‌ها به صورت رشته کاما جدا شده
-                    Fields = e.StudentFields != null && e.StudentFields.Any()
-                                ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
-                                : "",
+                        // نوع دوره آزمون به متن
+                        ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
 
-                    // نمره نهایی از EducationDocumentScore
-                    FinalTotalScore = scores.ContainsKey(e.Id) ? scores[e.Id] : 0
+                        // رشته‌ها به صورت رشته کاما جدا شده
+                        Fields = e.StudentFields != null && e.StudentFields.Any()
+                                    ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
+                                    : "",
+                        EducationDocumentScore = activeScore, // اگر VM فیلد نوع collection لازم نیست
+                        FinalTotalScore = scores.ContainsKey(e.Id) ? scores[e.Id] : (activeScore?.FinalTotalScore ?? 0)
+                    };
                 })
-                    // مرتب‌سازی: اول بررسی‌نشده‌ها، بعد بر اساس نام (برای ظاهر طبیعی)
-                .OrderBy(s => s.FinalTotalScore > 0)   // false (0) اول میاد، true (نمره‌دار) بعد
+                // مرتب سازی: آن‌هایی که activeScore دارند بروند ته لیست
+                .OrderBy(s => (s.EducationDocumentScore != null && !s.EducationDocumentScore.IsDeleted) ? 1 : 0)
                 .ThenBy(s => s.LastName)
                 .ThenBy(s => s.FirstName)
                 .ToList();
@@ -214,7 +221,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                 // 🧭 مپ کردن به ViewModel
                 var model = _mapper.Map<IEnumerable<SubmissionDataDetailViewModel>>(forms);
-                var studentFormSubmissionScoreViewModel = await FillStudentFormSubmissionScoreViewModel(id,forms,cancellationToken);
+                var studentFormSubmissionScoreViewModel = await FillStudentFormSubmissionScoreViewModel(id, forms, cancellationToken);
 
 
                 return PartialView("Details", studentFormSubmissionScoreViewModel);
@@ -562,7 +569,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             return 0;
         }
 
-        private async Task<StudentFormSubmissionScoreViewModel> FillStudentFormSubmissionScoreViewModel(int studentId,IEnumerable<StudentFormSubmissionScore> studentFormSubmissionScores,CancellationToken cancellationToken)
+        private async Task<StudentFormSubmissionScoreViewModel> FillStudentFormSubmissionScoreViewModel(int studentId, IEnumerable<StudentFormSubmissionScore> studentFormSubmissionScores, CancellationToken cancellationToken)
         {
             var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
 

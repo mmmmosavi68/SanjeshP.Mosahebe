@@ -12,5 +12,7 @@ namespace SanjeshP.Mosahebe.Entities.Student
         [ForeignKey(nameof(StudentId))]
         public int StudentId { get; set; }
         public double FinalTotalScore { get; set; }
+
+        public virtual Student Student { get; set; }
     }
 }

@@ -40,9 +40,10 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                     .Include(s => s.Exam)
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
+                    .Include(s => s.EducationDocumentScores)
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
-                    }
+        }
 
         public async Task<IEnumerable<Student>> GetAllStudentsNoTrackingAsync(CancellationToken cancellationToken)
         {
