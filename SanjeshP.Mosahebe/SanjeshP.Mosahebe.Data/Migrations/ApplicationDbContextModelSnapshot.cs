@@ -944,6 +944,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("StudentId")
+                        .IsUnique();
+
                     b.ToTable("EducationDocumentScores");
                 });
 
@@ -2107,6 +2110,15 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.HasOne("SanjeshP.Mosahebe.Entities.User.User", "User")
                         .WithMany("MenusAccesses")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.EducationDocumentScore", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", null)
+                        .WithOne("EducationDocumentScore")
+                        .HasForeignKey("SanjeshP.Mosahebe.Entities.Student.EducationDocumentScore", "StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
