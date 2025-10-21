@@ -2,26 +2,39 @@
 
 @{
     ViewData["Title"] = "Index";
+    var activeStation = ViewBag.ActiveStation ?? 0;
 }
 
 <div class="bg-light rounded p-4">
-<h3>انتخاب ایستگاه</h3>
-<div class="row mb-3">
-    <div class="col-md-4">
-        <select id="stationSelect" class="form-control">
-            <option value="">-- یک ایستگاه انتخاب کنید --</option>
-            @foreach (var station in Model)
-            {
-                <option value="@station.Id">@station.Name</option>
-            }
-        </select>
+    <h3>انتخاب ایستگاه</h3>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select id="stationSelect" class="form-control">
+                <option value="">-- یک ایستگاه انتخاب کنید --</option>
+
+                @foreach (var station in Model)
+                {
+                    <option value="@station.Id">@station.Name</option>
+
+                }
+            </select>
+        </div>
     </div>
-</div>
-<div id="StudentList">
-</div>
+    <div id="StudentList">
+    </div>
 </div>
 @section scripts {
     <script>
+        $(function () {
+            var activeStation = @activeStation;
+
+            // اگر ActiveStation مقدار داشت، لیست رو همین الان لود کن
+            if (activeStation > 0) {
+                $('#stationSelect').val(activeStation);
+
+                $("#StudentList").load('/Interview/StudentInterview/StudentsList?stationId=' + activeStation);
+            }
+        })
         $(document).ready(function () {
 
             // این کد PartialView را بارگذاری می‌کند

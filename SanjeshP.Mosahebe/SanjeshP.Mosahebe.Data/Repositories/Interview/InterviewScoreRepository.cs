@@ -51,7 +51,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
             await UpdateAsync(score, cancellationToken);
         }
 
-        public async Task SaveInterviewScoresAsync(Guid userId,int studentId, int stationId, Dictionary<int, double> scores, CancellationToken cancellationToken)
+        public async Task SaveInterviewScoresAsync(Guid userId, int studentId, int stationId, Dictionary<int, double> scores, CancellationToken cancellationToken)
         {
             foreach (var item in scores)
             {
@@ -102,6 +102,20 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
             }
 
             await DbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<InterviewScore>> GetInterviewScoresAsync(IEnumerable<int> studentIds, int stationId, CancellationToken cancellationToken)
+        {
+            if (studentIds == null || !studentIds.Any())
+                return new List<InterviewScore>();
+
+            //ـمام نمرات مصاحبه ای که حذف نشده اند، در ایستگاه مشخص شده و برای دانشجویان مشخص شده هستند
+            return await TableNoTracking
+                .Where(iscore => !iscore.IsDeleted
+                                 && studentIds.Contains(iscore.StudentId)
+                                 && iscore.StationId == stationId)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

@@ -18,6 +18,7 @@ using SanjeshP.Mosahebe.Entities.StudentForm;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
 using System.Collections.Generic;
 using SanjeshP.Mosahebe.Data.Repositories.Interview;
+using SanjeshP.Mosahebe.Entities.Interview;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
 {
@@ -63,6 +64,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
             var userId = token.UserId;
 
+            ViewBag.ActiveStation = token.User?.ActiveStation;
 
             //آی دی رشته هایی که مرتبط با استاد هست
             var userFields = await _userFieldRepository.GetExamFieldsByUserIdAsync(userId, CancellationToken.None);
@@ -94,8 +96,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                 // 2. گرفتن دانشجوها بر اساس رشته های ایستگاه
                 var filteredStudents = await _studentRepository.GetStudentsByExamFieldIdsAsync(examFieldIds, cancellationToken);
 
+                // 3. گرفتن همه‌ی نمرات مصاحبه مربوط به این ایستگاه و این دانشجوها
+                var studentIds = filteredStudents.Select(s => s.Id).ToList();
+                var interviewScores = await _interviewScoreRepository
+                    .GetInterviewScoresAsync(studentIds, stationId, cancellationToken);
 
-                // 3. تبدیل به ViewModel
+                // 4. تبدیل به ViewModel
                 var result = filteredStudents.Select(e => new StudentListViewModel
                 {
                     Id = e.Id,
@@ -110,7 +116,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                     Gender = e.Gender == 1 ? "مرد" : "زن",
                     Fields = e.StudentFields != null && e.StudentFields.Any()
                         ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
-                        : ""
+                        : "",
+                    interviewScore = interviewScores.FirstOrDefault(x => x.StudentId == e.Id)
                 }).ToList();
 
                 ViewBag.StationId = stationId;

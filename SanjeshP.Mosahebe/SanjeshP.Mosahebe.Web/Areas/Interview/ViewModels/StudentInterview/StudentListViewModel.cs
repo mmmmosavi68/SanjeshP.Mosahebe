@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SanjeshP.Mosahebe.Entities.Interview;
+using SanjeshP.Mosahebe.Entities.Student;
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StudentInterview
@@ -50,5 +52,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StudentInterview
         public string Fields { get; set; }  // رشته‌ها به صورت کاما جداشده نمایش داده شوند
 
         public string ProfileImageUrl { get; set; }
+        public InterviewScore interviewScore { get; set; }
+
     }
 }
