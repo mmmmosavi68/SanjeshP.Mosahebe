@@ -86,11 +86,14 @@
                                     <span>
                                         @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
                                         {
-                                            <a asp-controller="EducationDocument"
+                                            <a class="btn btn-sm btn-outline-dark"
+                                               asp-controller="EducationDocument"
                                                asp-action="DownloadSubmissionFile"
                                                asp-route-submissionDataId="@field.Id"
                                                asp-route-studentId="@form.StudentId"
                                                target="_blank" rel="noopener noreferrer">دانلود فایل</a>
+                                            <a class="btn btn-sm btn-outline-primary" onclick="PreviewSubmissionFile('@form.FormItem.Title','@field.Id',@form.StudentId)" title="اطلاعات آزمون">مشاهده فایل</a>
+
                                         }
                                         else if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox)
                                         {
@@ -183,6 +186,10 @@
 <script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
 
 <script>
+
+    function PreviewSubmissionFile(title,id, StudentId) {
+        openModal('مشاهده فایل ' + title, '/DV/EducationDocument/PreviewSubmissionFile?submissionDataId=' + id + '&studentId=' + StudentId, true);
+    }
     $(function () {
 
         // ===========================

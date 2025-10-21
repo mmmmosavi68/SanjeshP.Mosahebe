@@ -442,7 +442,51 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             var stream = System.IO.File.OpenRead(normalized);
             return File(stream, contentType, fileName);
         }
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> PreviewSubmissionFile(int submissionDataId, int studentId, CancellationToken cancellationToken)
+        {
+            var data = await _studentFormSubmissionValueRepository.GetSubmissionDataByIdAsync(submissionDataId, cancellationToken);
+            if (data == null) return NotFound();
 
+            var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
+            var fileName = Path.GetFileName(data.Value ?? string.Empty);
+            if (string.IsNullOrEmpty(fileName)) return NotFound();
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", student.NationalCode ?? string.Empty);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            var normalized = Path.GetFullPath(filePath);
+            if (!normalized.StartsWith(Path.GetFullPath(uploadsFolder), StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+
+            if (!System.IO.File.Exists(normalized)) return NotFound();
+
+            var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(normalized, out var contentType))
+                contentType = "application/octet-stream";
+
+            // تشخیص نوع فایل
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            bool isImage = ext is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp";
+            bool isPdf = ext == ".pdf";
+
+            //if (!isImage && !isPdf)
+            //    return PartialView("PreviewSubmissionFile", model);
+
+            // مسیر مجازی برای نمایش در مرورگر
+            var relativePath = $"/uploads/{student.NationalCode}/{fileName}";
+
+            var model = new FilePreviewViewModel
+            {
+                FileName = fileName,
+                FileUrl = relativePath,
+                IsPdf = isPdf,
+                IsImage = isImage
+            };
+
+            return PartialView("PreviewSubmissionFile", model);
+        }
         private double CalculateScore(StudentFormSubmissionScore submission, IEnumerable<Coefficient> coeffs)
         {
             var coeffId = submission.FormItem?.FormItemCoefficient?.CoefficientId ?? 0;
