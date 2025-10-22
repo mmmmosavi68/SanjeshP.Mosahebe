@@ -139,6 +139,11 @@ namespace SanjeshP.Mosahebe.Web
                     name: "menu",
                     areaName: "Menu",
                     pattern: "Menu/{controller=Home}/{action=Index}/{id?}");
+                // Report area
+                endpoints.MapAreaControllerRoute(
+                    name: "report",
+                    areaName: "Report",
+                    pattern: "Report/{controller=Home}/{action=Index}/{id?}");
                 // SiteSetting area
                 endpoints.MapAreaControllerRoute(
                     name: "siteSetting",
