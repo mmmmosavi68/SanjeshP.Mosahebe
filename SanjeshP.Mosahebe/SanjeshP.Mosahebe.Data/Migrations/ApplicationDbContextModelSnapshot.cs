@@ -991,6 +991,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("InterviewProcessStatus")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 

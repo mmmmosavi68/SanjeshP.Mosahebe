@@ -1,0 +1,9 @@
+﻿@model IEnumerable<SanjeshP.Mosahebe.Entities.Exam.ExamField>
+
+<select id="fieldSelect" class="form-control">
+    <option value="">-- یک ایستگاه انتخاب کنید --</option>
+    @foreach (var field in Model)
+    {
+        <option value="@field.Id">@field.Title</option>
+    }
+</select>

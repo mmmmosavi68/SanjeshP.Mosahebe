@@ -9,6 +9,13 @@ using SanjeshP.Mosahebe.Entities.Interview;
 
 namespace SanjeshP.Mosahebe.Entities.Student
 {
+    public enum InterviewProcessStatus
+    {
+        NotStarted = 0,   // هنوز شروع نکرده
+        Active = 1,       // فعال شده برای مصاحبه
+        Completed = 2     // مصاحبه تمام شده
+    }
+
     public class Student : BaseEntity<int>
     {
         [Required]
@@ -37,6 +44,8 @@ namespace SanjeshP.Mosahebe.Entities.Student
 
         public int Gender { get; set; }
         public int IsPajoheshi { get; set; }
+
+        public InterviewProcessStatus InterviewProcessStatus { get; set; } = InterviewProcessStatus.NotStarted;
 
         // 1. کلید خارجی به جدول Exams
         [Required]

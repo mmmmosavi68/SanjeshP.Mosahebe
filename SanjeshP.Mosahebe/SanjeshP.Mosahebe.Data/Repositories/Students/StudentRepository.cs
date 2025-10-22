@@ -3,6 +3,7 @@ using SanjeshP.Mosahebe.Common;
 using SanjeshP.Mosahebe.Data.Contracts.Students;
 using SanjeshP.Mosahebe.Data.Contracts.Users;
 using SanjeshP.Mosahebe.Data.Repositories.Common;
+using SanjeshP.Mosahebe.Entities.Exam;
 using SanjeshP.Mosahebe.Entities.Student;
 using SanjeshP.Mosahebe.Entities.User;
 using System;
@@ -110,6 +111,15 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                         .OrderByDescending(s => s.CreatedDate)
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
+        }
+        public async Task AddStudentAsync(Student student, CancellationToken cancellationToken)
+        {
+            await AddAsync(student, cancellationToken);
+        }
+
+        public async Task UpdateStudentAsync(Student student, CancellationToken cancellationToken)
+        {
+            await UpdateAsync(student, cancellationToken);
         }
     }
 }

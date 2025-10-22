@@ -1,0 +1,97 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
+@model IEnumerable<StudentListViewModel>
+
+
+@{
+    ViewData["Title"] = "ExamsList";
+    int i = 1;
+}
+
+<div class="bg-light rounded p-4">
+    <table class="table-hover table-striped table text-center" id="tbl_exam">
+        <thead>
+            <tr class='trhead'>
+                <th>#</th>
+                <th>تصویر</th>
+                <th>@Html.DisplayNameFor(model => model.First().FirstName)</th>
+                <th>@Html.DisplayNameFor(model => model.First().LastName)</th>
+                <th>@Html.DisplayNameFor(model => model.First().FatherName)</th>
+                <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
+                <th>@Html.DisplayNameFor(model => model.First().InterviewProcessStatus)</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                string rowClass = item.InterviewProcessStatus switch
+                {
+                    InterviewProcessStatusView.NotStarted => "",    // هنوز شروع نشده
+                    InterviewProcessStatusView.Active => "bg-warning text-dark",           // فعال
+                    InterviewProcessStatusView.Completed => "bg-success text-white",       // تمام شده
+                    _ => string.Empty
+                };
+
+                <tr id="tr_@(item.Id)" class="@rowClass">
+                    <td>@i</td>
+                    <td>
+                        <img src="~/img/user.jpg" class="img-thumbnail rounded-circle"
+                             style="width:50px; height:50px; object-fit:cover;"
+                             alt="user photo" />
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
+                    <td>
+                        @switch (item.InterviewProcessStatus)
+                        {
+                            case InterviewProcessStatusView.NotStarted:
+                                <span>هنوز شروع نشده</span>
+                                break;
+                            case InterviewProcessStatusView.Active:
+                                <span>فعال برای مصاحبه</span>
+                                break;
+                            case InterviewProcessStatusView.Completed:
+                                <span>مصاحبه تمام شده</span>
+                                break;
+                        }
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اصطلاعات داوطلب"><i class="fa fa-info"></i></a>
+                        <a class="btn btn-sm btn-outline-warning" onclick="Edit('@item.Id')" title="ویرایش داوطلب"><i class="fa fa-edit"></i></a>
+                    </td>
+                </tr>
+                i++;
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+<script src="~/admin/plugins/datatables/jquery.datatables.min.js"></script>
+<script src="~/admin/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="~/admin/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $('#tbl_exam').DataTable({
+            paging: true,
+            searching: true,
+            lengthChange: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        }).buttons().container().appendTo('#tbl_exam_wrapper .col-md-6:eq(0)');
+
+    });
+    function Detail(id) {
+        openModal('جزئیات', '/StudentForm/ManageStudents/DetailStudent?id=' + id, true);
+    }
+
+    function Edit(id) {
+        openModal('جزئیات', '/StudentForm/ManageStudents/EditStudent?id=' + id, true);
+    }
+</script>

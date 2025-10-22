@@ -1,0 +1,30 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
+@model StudentListViewModel
+
+<div>
+    <p><strong>@Html.DisplayNameFor(m => m.FirstName):</strong> @Model.FirstName</p>
+    <p><strong>@Html.DisplayNameFor(m => m.LastName):</strong> @Model.LastName</p>
+    <p><strong>@Html.DisplayNameFor(m => m.FatherName):</strong> @Model.FatherName</p>
+    <p><strong>@Html.DisplayNameFor(m => m.NationalCode):</strong> @Model.NationalCode</p>
+    <p><strong>@Html.DisplayNameFor(m => m.PhoneNumber):</strong> @Model.PhoneNumber</p>
+    <p><strong>@Html.DisplayNameFor(m => m.Email):</strong> @Model.Email</p>
+    <p><strong>@Html.DisplayName("جنسیت"):</strong> @Model.Gender</p>
+    <p><strong>@Html.DisplayName("نوع دوره"):</strong> @Model.ExamCourseType</p>
+    <p>
+        <strong>@Html.DisplayName("وضعیت مصاحبه"):</strong>
+        @{
+            switch (Model.InterviewProcessStatus)
+            {
+                case SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels.InterviewProcessStatusView.NotStarted:
+                    @:هنوز شروع نشده
+                    break;
+                case SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels.InterviewProcessStatusView.Active:
+                    @:فعال برای مصاحبه
+                    break;
+                case SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels.InterviewProcessStatusView.Completed:
+                    @:مصاحبه تمام شده
+                    break;
+            }
+        }
+    </p>
+</div>

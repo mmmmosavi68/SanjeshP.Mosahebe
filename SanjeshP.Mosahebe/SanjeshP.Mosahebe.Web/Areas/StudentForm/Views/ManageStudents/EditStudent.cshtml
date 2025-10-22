@@ -1,0 +1,61 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels.StudentEditViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="edit-student-form" asp-action="EditStudent" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <p><strong>@Html.DisplayNameFor(m => m.FirstName):</strong> @Model.FirstName</p>
+            <p><strong>@Html.DisplayNameFor(m => m.LastName):</strong> @Model.LastName</p>
+            <p><strong>@Html.DisplayNameFor(m => m.FatherName):</strong> @Model.FatherName</p>
+            <p><strong>@Html.DisplayNameFor(m => m.NationalCode):</strong> @Model.NationalCode</p>
+            <p><strong>@Html.DisplayNameFor(m => m.PhoneNumber):</strong> @Model.PhoneNumber</p>
+            <p><strong>@Html.DisplayNameFor(m => m.Email):</strong> @Model.Email</p>
+            <p><strong>@Html.DisplayName("جنسیت"):</strong> @Model.Gender</p>
+            <p><strong>@Html.DisplayName("نوع دوره"):</strong> @Model.ExamCourseType</p>
+
+            <div class="form-group">
+                <label asp-for="InterviewProcessStatus"></label>
+                <select asp-for="InterviewProcessStatus" class="form-control">
+                    <option value="0">هنوز شروع نکرده</option>
+                    <option value="1">فعال برای مصاحبه</option>
+                    <option value="2">مصاحبه تمام شده</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="button" id="save-edit-student" value="ذخیره تغییرات" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+
+<script>
+    $(function () {
+        $('#save-edit-student').click(function () {
+            $.ajax({
+                url: '@Url.Action("EditStudent", "ManageStudents")',
+                type: 'POST',
+                data: $('#edit-student-form').serialize(),
+                success: function (response) {
+                    if (response.isSuccess) {
+                        $('#Modal_AddEdit').modal('hide');
+                        iziToast.success({ message: response.message });
+                        $("#StudentList").load("/StudentForm/ManageStudents/StudentsList", function () { });
+                    } else {
+                        iziToast.error({ message: response.message });
+                    }
+                },
+                error: function () {
+                    iziToast.error({ message: 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.' });
+                }
+            });
+        });
+    });
+</script>
