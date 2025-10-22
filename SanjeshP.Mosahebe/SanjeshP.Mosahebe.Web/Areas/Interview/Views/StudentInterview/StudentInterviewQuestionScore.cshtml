@@ -41,9 +41,59 @@
 <script>
     $("#interviewForm").submit(function (e) {
         e.preventDefault();
-        $.post('/Interview/StudentInterview/SaveInterviewScores', $(this).serialize(), function (res) {
-            alert("نمرات با موفقیت ثبت شد!");
-            closeModal();
+
+        var $form = $(this); // ✅ فرم فعلی
+        var $btn = $form.find("button[type=submit]"); // ✅ دکمه ارسال
+        var oldText = $btn.text();
+
+        // بررسی اینکه همه selectها مقدار داشته باشند
+        let allAnswered = true;
+        $("#interviewForm select[name^='Scores']").each(function () {
+            if ($(this).val() === "") {
+                allAnswered = false;
+                return false; // خروج از حلقه
+            }
+        });
+        //console.log(allAnswered);
+        if (!allAnswered) {
+            alert("لطفاً به همه سؤالات امتیاز بدهید.");
+            return; // ارسال انجام نشود
+        }
+
+        // اگر همه پر بودند، ارسال انجام شود
+        //$.post('/Interview/StudentInterview/SaveInterviewScores', $(this).serialize(), function (res) {
+        //    alert("نمرات با موفقیت ثبت شد!");
+        //    closeModal();
+        //});
+        // اگر از antiforgery استفاده می‌کنید، توکن در فرم وجود دارد و serialize آن را شامل می‌شود
+        var data = $form.serialize();
+
+        $.ajax({
+            url: $form.attr('action') || '/Interview/StudentInterview/SaveInterviewScores',
+            method: 'POST',
+            data: data,
+            success: function (response) {
+                // اگر کنترلر Ok با JSON برمی‌گرداند می‌توانید چک کنید response.success
+                // اما ساده‌ترین حالت: اگر موفقیت آمیز باشد، لیست دانشجویان مجدداً لود شود
+
+                var stationId = $('#stationSelect').val();
+                if (stationId) {
+                    $("#StudentList").load('/Interview/StudentInterview/StudentsList?stationId=' + stationId);
+                } else {
+                    $('#StudentList').html('');
+                }
+
+                // اگر فرم داخل مودال باز شده بود، آن را ببندید
+                // فرض: از openModal استفاده می‌کنید که modal را باز کرده؛ اگر modal bootstrap دارید:
+                $('.modal').modal('hide');
+            },
+            error: function (xhr) {
+                // در صورت بازگشت JSON حاوی پیام خطا، می‌توانید آن را نمایش دهید
+                alert('خطا در ذخیره نمرات. لطفاً دوباره تلاش کنید.');
+            },
+            complete: function () {
+                $btn.prop('disabled', false).text(oldText);
+            }
         });
     });
 </script>

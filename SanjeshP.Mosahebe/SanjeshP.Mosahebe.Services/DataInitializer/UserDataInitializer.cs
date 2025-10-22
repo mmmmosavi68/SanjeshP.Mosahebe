@@ -134,18 +134,18 @@ namespace Services.DataInitializer
             //    }
             //}
 
-            var jsonAccessMenu = File.ReadAllText(path + "AccessMenus.json");
-            var jAccessMenu = JsonConvert.DeserializeObject<List<UserAccessMenus>>(jsonAccessMenu);
-            foreach (var menu in jAccessMenu)
-            {
-                var existMenu = eFAccessMenusRepository.TableNoTracking.Any(p => p.UserId == menu.UserId && p.MenuId == menu.MenuId);
-                if (!existMenu)
-                {
-                    menu.CreatedBy = user.Id;
-                    menu.CreatedDate = DateTime.Now;
-                    eFAccessMenusRepository.Add(menu);
-                }
-            }
+            //var jsonAccessMenu = File.ReadAllText(path + "AccessMenus.json");
+            //var jAccessMenu = JsonConvert.DeserializeObject<List<UserAccessMenus>>(jsonAccessMenu);
+            //foreach (var menu in jAccessMenu)
+            //{
+            //    var existMenu = eFAccessMenusRepository.TableNoTracking.Any(p => p.UserId == menu.UserId && p.MenuId == menu.MenuId);
+            //    if (!existMenu)
+            //    {
+            //        menu.CreatedBy = user.Id;
+            //        menu.CreatedDate = DateTime.Now;
+            //        eFAccessMenusRepository.Add(menu);
+            //    }
+            //}
 
             var jsonRole = File.ReadAllText(path + "Role.json");
             var jRole = JsonConvert.DeserializeObject<List<Role>>(jsonRole);

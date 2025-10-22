@@ -141,17 +141,35 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
             // 1) بررسی و آماده‌سازی فیلدهای Definition
             var fields = await _formItemDefinitionRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+
+            var formItem = await _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
             foreach (var field in fields)
             {
                 string value = null;
                 var key = $"field_{field.Id}";
 
+                var MaxCount = formItem.FormItemCategory?.MaxCount;
+                var FormItemCount = await _submissionScoreRepository.GetByStudentAndFormsAsync(studentId, field.FormItemId, cancellationToken);
+
                 if (field.inputType == InputType.File)
                 {
+
                     var file = Request.Form.Files[key];
-                    if (file != null && file.Length > 0)
+                    if (FormItemCount.Count() >= MaxCount && MaxCount !=0)
                     {
-                        if (file.Length > maxFileSizeBytes)
+                        errors.Add($"شما حداکثر تعداد فرم برای این آیتم را قبلا ثبت کرده اید.");
+                        continue;
+                    }
+                    else if (file != null && file.Length > 0)
+                    {
+                        var UploadedFiles = await _uploadedFileRepository.GetByStudentIdAsync(studentId, cancellationToken);
+                        var exist = UploadedFiles.Any(ss => ss.OriginalFileName == file.FileName && ss.Size == file.Length);
+                        if (exist == true)
+                        {
+                            errors.Add($"قبلا فایلی با این نام و حجم ثبت شده است.");
+                            continue;
+                        }
+                        else if (file.Length > maxFileSizeBytes)
                         {
                             errors.Add($"فایل فیلد '{field.Label}' بزرگتر از حد مجاز ({fileSettings.MaxUploadFileSizeInMB} MB) است");
                             continue;
@@ -196,7 +214,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             }
 
             // 2) بررسی و آماده‌سازی فیلدهای Coefficient
-            var formItem = await _formItemRepository.GetByFormItemIdAsync(model.FormId, cancellationToken);
+
             if (formItem?.FormItemCoefficientId > 0)
             {
                 var formItemCoefficient = await _formItemCoefficientRepository.GetByIdAsync(formItem.FormItemCoefficientId, cancellationToken);
@@ -336,7 +354,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 {
                     // 🧩 فیلتر رکوردهای معتبر
                     form.StudentFormSubmissionDatas = form.StudentFormSubmissionDatas
-                        .Where(d => d.IsActive && !d.IsDeleted)
+                        .Where(d => d.IsActive && !d.IsDeleted && d.InputType != InputType.File)
                         .ToList();
 
                     // 🧮 گرفتن آیدی‌هایی که در Value ذخیره شده‌اند

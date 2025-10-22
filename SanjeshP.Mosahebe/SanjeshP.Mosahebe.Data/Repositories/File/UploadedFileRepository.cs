@@ -53,5 +53,13 @@ namespace SanjeshP.Mosahebe.Data.Repositories.File
             file.IsDeleted = true;
             await UpdateAsync(file, cancellationToken);
         }
+
+        public async Task<IEnumerable<UploadedFile>> GetByStudentIdAndStudentFormSubmissionScoreIdAsync(int studentId, int StudentFormSubmissionScoreId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                 .Where(x => !x.IsDeleted && x.StudentId == studentId && x.StudentFormSubmissionScoreId==StudentFormSubmissionScoreId)
+                 .OrderByDescending(x => x.CreatedDate)
+                 .ToListAsync(cancellationToken);
+        }
     }
 }

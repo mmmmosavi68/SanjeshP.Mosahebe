@@ -94,7 +94,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                 var examFieldIds = fieldStations.Select(fs => fs.ExamFieldId).ToList();
 
                 // 2. گرفتن دانشجوها بر اساس رشته های ایستگاه
-                var filteredStudents = await _studentRepository.GetStudentsByExamFieldIdsAsync(examFieldIds, cancellationToken);
+                var filteredStudents = await _studentRepository.GetStudentsByExamFieldIdInterviewActivesAsync(examFieldIds, cancellationToken);
 
                 // 3. گرفتن همه‌ی نمرات مصاحبه مربوط به این ایستگاه و این دانشجوها
                 var studentIds = filteredStudents.Select(s => s.Id).ToList();

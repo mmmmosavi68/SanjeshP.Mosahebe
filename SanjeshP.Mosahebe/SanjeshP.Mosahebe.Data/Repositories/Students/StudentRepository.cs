@@ -112,6 +112,20 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
         }
+
+        public async Task<IEnumerable<Student>> GetStudentsByExamFieldIdInterviewActivesAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken)
+        {
+            return await Table
+                        .Where(s => s.InterviewProcessStatus == InterviewProcessStatus.Active)
+                        .Include(s => s.StudentFields)
+                            .ThenInclude(sf => sf.ExamField)
+                        .Include(s => s.Exam)
+                        .Where(s => !s.IsDeleted && s.IsActive
+                                    && s.StudentFields.Any(sf => examFieldIds.Contains(sf.ExamFieldId)))
+                        .OrderByDescending(s => s.CreatedDate)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
+        }
         public async Task AddStudentAsync(Student student, CancellationToken cancellationToken)
         {
             await AddAsync(student, cancellationToken);

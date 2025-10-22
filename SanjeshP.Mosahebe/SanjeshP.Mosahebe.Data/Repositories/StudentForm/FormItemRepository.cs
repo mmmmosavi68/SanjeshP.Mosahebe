@@ -27,6 +27,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         {
             return await Table
                 .Where(f => f.Id == id && !f.IsDeleted)
+                .Include(c=>c.FormItemCategory)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 

@@ -20,6 +20,8 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Students
         Task<Student> GetStudentByIdAsync(int id, CancellationToken cancellationToken);
         Task<Student> GetStudentByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken);
         Task<IEnumerable<Student>> GetStudentsByExamFieldIdsAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken);
+        Task<IEnumerable<Student>> GetStudentsByExamFieldIdInterviewActivesAsync(IEnumerable<int> examFieldIds, CancellationToken cancellationToken);
+
         Task AddStudentAsync(Student student, CancellationToken cancellationToken);
         Task UpdateStudentAsync(Student student, CancellationToken cancellationToken);
     }
