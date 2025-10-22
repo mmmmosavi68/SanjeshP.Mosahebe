@@ -1,0 +1,15 @@
+﻿@model SanjeshP.Mosahebe.Web.Areas.Report.ViewModels.Report.ReportDownloadViewModel
+
+
+<div class="bg-light rounded p-4">
+    <h2 class="mb-4">گزارش‌ها</h2>
+    <form asp-action="DownloadExcel" method="post">
+        <div class="form-group mt-4">
+            <label asp-for="SelectedReportId"></label>
+            <select asp-for="SelectedReportId" class="form-control" asp-items="@(new SelectList(Model.Reports, "Id", "Title"))">
+                <option value="">-- گزارش را انتخاب کنید --</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">دانلود Excel</button>
+    </form>
+</div>
