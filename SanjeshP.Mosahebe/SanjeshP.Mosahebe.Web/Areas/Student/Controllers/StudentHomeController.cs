@@ -110,6 +110,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
         // POST: /Student/StudentHome/SubmitForm
         [HttpPost]
+        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> SubmitForm(FormSubmissionViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -284,7 +286,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 FormItemId = model.FormId,
                 StudentId = studentId,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+
             };
             await _submissionScoreRepository.AddStudentFormSubmissionAsync(submission, cancellationToken);
 
@@ -321,7 +325,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                             OriginalFileName = Path.GetFileName(match.File.FileName),
                             ContentType = match.File.ContentType,
                             Size = match.File.Length,
-                            UploadedAt = DateTime.UtcNow
+                            UploadedAt = DateTime.Now
                         };
                         await _uploadedFileRepository.AddUploadedFileAsync(uploaded, cancellationToken);
 
@@ -406,7 +410,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
 
 
-                return PartialView("SubmissionDataList", result);
+                return PartialView("SubmissionDataList", result.OrderBy(f => f.FormTitle));
             }
             catch (Exception ex)
             {

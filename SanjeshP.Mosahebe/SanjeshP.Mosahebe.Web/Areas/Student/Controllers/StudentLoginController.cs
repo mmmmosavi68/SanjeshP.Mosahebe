@@ -248,6 +248,16 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         }
 
         // ================= متد کمکی CaptchaCode =================
+        [HttpPost("Logout")]
+        [ValidateAntiForgeryToken]
+        [Route("Student/Logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync("StudentScheme");
+            //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            _logger.LogInformation("Student logged out.");
+            return RedirectToAction("Login");
+        }
         #region CaptchaCode
         [HttpGet]
         [Route("student/captcha-image")]

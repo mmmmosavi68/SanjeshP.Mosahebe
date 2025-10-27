@@ -46,6 +46,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             foreach (var value in values)
             {
                 value.IsDeleted = true;
+                value.UpdatedDate = DateTime.Now;
+
             }
 
             await UpdateRangeAsync(values, cancellationToken);

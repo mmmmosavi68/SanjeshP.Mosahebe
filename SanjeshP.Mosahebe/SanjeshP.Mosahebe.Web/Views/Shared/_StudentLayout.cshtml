@@ -251,7 +251,7 @@
                 <div class="col-2 d-flex flex-column align-items-center justify-content-center text-light">
                     <div class="row text-center">
 
-                        <form method="post" asp-controller="Account" asp-action="Logout" asp-area="">
+                        <form method="post" asp-controller="StudentLogin" asp-action="Logout" asp-area="Student">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-danger btn-block">
                                 <i class="fas fa-sign-out-alt"></i> خروج

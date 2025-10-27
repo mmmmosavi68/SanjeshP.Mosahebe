@@ -45,6 +45,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                 throw new KeyNotFoundException("ارسال فرم مورد نظر یافت نشد");
 
             submission.IsDeleted = true;
+            submission.UpdatedDate = DateTime.Now;
             await UpdateAsync(submission, cancellationToken);
         }
         public async Task<StudentFormSubmissionScore> GetByStudentAndFormAsync(int studentId, int formItemId, CancellationToken cancellationToken)

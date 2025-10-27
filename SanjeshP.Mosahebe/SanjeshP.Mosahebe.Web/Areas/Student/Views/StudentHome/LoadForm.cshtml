@@ -8,6 +8,8 @@
 <span class="text-danger mb-4">@Model.FormDescription</span>
 </div>
 <form id="formSubmission" method="post" asp-action="SubmitForm" asp-controller="StudentHome" asp-area="Student" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
     <input type="hidden" name="FormId" value="@Model.FormId" />
 
     @foreach (var field in Model.Fields)
@@ -202,6 +204,12 @@
             $("#btnSave").click(function () {
                 var $btn = $(this);
 
+                function getAntiForgeryToken() {
+                    var input = document.querySelector('input[name="__RequestVerificationToken"]');
+                    return input ? input.value : null;
+                }
+                var token = getAntiForgeryToken();
+
                 if (!validateForm()) {
                     $("#formMessage").html('<div class="alert alert-danger">لطفاً خطاهای فرم را برطرف کنید.</div>');
                     return;
@@ -215,6 +223,7 @@
                     url: '@Url.Action("SubmitForm", "StudentHome", new { area = "Student" })',
                     type: 'POST',
                     data: formData,
+                    headers: token ? { 'RequestVerificationToken': token } : {},
                     processData: false,
                     contentType: false,
                     success: function (response) {
