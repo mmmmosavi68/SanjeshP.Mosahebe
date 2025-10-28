@@ -88,7 +88,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (student == null)
             {
                 ModelState.AddModelError("", "کد ملی یا کد رهگیری اشتباه است.");
-                _logger.LogWarning("LoginCodeRahgiri failed for StudentId={StudentId}, NationalCode={NationalCode}, CodeRahgiri={CodeRahgiri}", student.Id, model.NationalCode, model.CodeRahgiri);
+                _logger.LogWarning("LoginCodeRahgiri failed for NationalCode={NationalCode}, CodeRahgiri={CodeRahgiri}", model.NationalCode, model.CodeRahgiri);
                 return PartialView(model);
             }
 
