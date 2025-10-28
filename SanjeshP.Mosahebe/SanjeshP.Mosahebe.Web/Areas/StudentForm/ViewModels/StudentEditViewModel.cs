@@ -40,8 +40,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
         [Display(Name = "آزمون مرتبط")]
         public int ExamId { get; set; }
 
-        [Display(Name = "نوع دوره آزمون")]
-        public int ExamCourseType { get; set; }
+        //[Display(Name = "نوع دوره آزمون")]
+        //public int ExamCourseType { get; set; }
 
         [Display(Name = "وضعیت فرآیند مصاحبه")]
         [Required(ErrorMessage = "وضعیت مصاحبه را انتخاب کنید")]

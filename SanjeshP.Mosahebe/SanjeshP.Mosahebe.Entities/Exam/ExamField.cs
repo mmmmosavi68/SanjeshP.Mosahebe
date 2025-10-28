@@ -17,6 +17,8 @@ namespace SanjeshP.Mosahebe.Entities.Exam
         [MaxLength(200)]
         public string Title { get; set; }
 
+        public bool IsPajoheshi { get; set; }
+
         // 1. کلید خارجی به جدول Exams
         [Required]
         public int ExamId { get; set; }

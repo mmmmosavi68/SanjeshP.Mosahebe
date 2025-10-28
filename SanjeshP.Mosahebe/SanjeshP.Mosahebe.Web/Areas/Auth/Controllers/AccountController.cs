@@ -347,6 +347,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Auth.Controllers
         #region Logout
         [HttpPost("Logout")]
         [ValidateAntiForgeryToken]
+        [Route("Auth/Account/Logout")]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("UserScheme");

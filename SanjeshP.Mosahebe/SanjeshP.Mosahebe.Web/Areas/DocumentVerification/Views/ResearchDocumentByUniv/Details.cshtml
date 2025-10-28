@@ -1,0 +1,218 @@
+﻿@using SanjeshP.Mosahebe.Entities.StudentForm
+@using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
+@model StudentFormSubmissionScoreViewModel
+
+@{
+    Layout = null;
+    var forms = Model.Forms?.ToList() ?? new List<StudentFormSubmissionScore>();
+}
+
+<style>
+    .scoreItemContainer {
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.05);
+    }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+    }
+
+    .shadow {
+        transition: all 0.6s ease;
+    }
+
+        .shadow:hover {
+            box-shadow: 0px 13px 22px rgb(0 0 0 / 62%) !important;
+            transform: scale(1.03);
+        }
+</style>
+
+<div class="card scoreItemContainer mb-3 border border-2">
+    <div class="card-header card-title text-light text-center" style="background:radial-gradient(circle, #348780, #363e5f)">
+        <strong class="h3">اطلاعات داوطلب</strong>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="info mb-2 col-6">
+                <span class="h5 text-bold">نام و نام خانوادگی : </span>
+                <span class="h5 text-bold text-dark">@Model.StudentName</span>
+            </div>
+            <div class="info mb-2 col-6">
+                <span class="h5 text-bold">کد ملی : </span>
+                <span class="h5 text-bold text-dark">@Model.NationalCode</span>
+            </div>
+            <div class="info col-12">
+                <span class="h5 text-bold">رشته : </span>
+                <span class="h5 text-bold text-dark">@Model.FielsTitle</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="saveScoresForm" asp-action="SaveScores" method="post" novalidate>
+    @Html.AntiForgeryToken()
+    <div class="container mt-2 pl-4 pr-4">
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-warning">
+                @ViewBag.Message
+            </div>
+        }
+        @foreach (var form in Model.Forms)
+        {
+            var datas = form.StudentFormSubmissionDatas?.ToList() ?? new List<StudentFormSubmissionData>();
+            <div class="card scoreItemContainer shadow mb-3" data-id="@form.Id">
+                <div class="card-header card-title bg-light">
+                    <strong>@form.FormItem?.Title</strong>
+                    <p class="text-info text-sm">@form.FormItem?.Description</p>
+                </div>
+                <div class="card-body" id="scoreItem_@form.Id">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            @for (int i = 0; i < form.StudentFormSubmissionDatas.Count; i++)
+                            {
+                                var field = form.StudentFormSubmissionDatas.ElementAt(i);
+                                var oneMax = form.FormItem?.OneMaxScore ?? 0;
+                                <div class="mb-2 field-line" data-idx="@i" data-one-max="@oneMax">
+                                    <label class="me-1">@((field.FormItemDefinition?.Label) ?? (field.FormItemCoefficientDefinition?.Label) ?? "بدون عنوان")</label>:
+                                    <span>
+                                        @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
+                                        {
+                                            <a class="btn btn-sm btn-outline-dark"
+                                               asp-controller="EducationDocument"
+                                               asp-action="DownloadSubmissionFile"
+                                               asp-route-submissionDataId="@field.Id"
+                                               asp-route-studentId="@form.StudentId"
+                                               target="_blank" rel="noopener noreferrer">دانلود فایل</a>
+                                            <a class="btn btn-sm btn-outline-primary" onclick="PreviewSubmissionFile('@form.FormItem.Title','@field.Id',@form.StudentId)" title="اطلاعات آزمون">مشاهده فایل</a>
+
+                                        }
+                                        else if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.Checkbox)
+                                        {
+                                            <span>@(field.Value == "true" ? "بله" : "خیر")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@field.Value</span>
+                                        }
+                                    </span>
+
+                                    <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].SubmissionDataId" value="@field.Id" />
+                                    <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].FormItemDefinitionId" value="@field.FormItemDefinitionId" />
+                                    <input type="hidden" name="Forms[@Model.Forms.ToList().IndexOf(form)].Datas[@i].FormItemCoefficientDefinitionId" value="@field.FormItemCoefficientDefinitionId" />
+                                </div>
+                            }
+                        </div>
+                    </div> <!-- /.row -->
+                </div> <!-- /.card-body -->
+            </div> <!-- /.card -->
+        }
+    </div>
+
+    <!-- ناحیه تصمیم نهایی برای داوطلب -->
+    <div class="card mt-4 border">
+        <div class="card-header card-title text-light text-center" style="background:radial-gradient(circle, #348780, #363e5f)">
+            نتیجه نهایی بررسی مدارک پژوهشی داوطلب
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <input type="radio" name="IsApproved" id="approveYes" value="true" class="form-check-input me-1" required />
+                    <label for="approveYes" class="form-check-label h6">تأیید کلی مدارک داوطلب</label>
+                </div>
+                <div class="col-md-6">
+                    <input type="radio" name="IsApproved" id="approveNo" value="false" class="form-check-input me-1" required />
+                    <label for="approveNo" class="form-check-label h6 text-danger">عدم تأیید کلی مدارک داوطلب</label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="RejectReason" class="form-label">دلیل عدم تأیید (در صورت رد)</label>
+                <textarea class="form-control" name="RejectReason" id="RejectReason" rows="3" placeholder="توضیح دلیل رد..." disabled></textarea>
+                <div class="invalid-feedback">لطفاً دلیل عدم تأیید را بنویسید.</div>
+            </div>
+
+            <input type="hidden" name="StudentId" value="@Model.StudentId" />
+
+            <div class="text-end">
+                <button type="button" class="btn btn-primary px-4" id="btnSaveApproval">
+                    <i class="fa fa-save me-1"></i> ثبت نهایی نتیجه
+                </button>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+<script>
+    $(document).ready(function () {
+        const rejectReason = $("#RejectReason");
+        const btnSave = $("#btnSaveApproval");
+
+        // فعال/غیرفعال کردن textarea
+        $("input[name='IsApproved']").on("change", function () {
+            if ($("#approveNo").is(":checked")) {
+                rejectReason.prop("disabled", false).prop("required", true).focus();
+            } else {
+                rejectReason.prop("disabled", true).prop("required", false).val('');
+                rejectReason.removeClass("is-invalid");
+            }
+        });
+
+        // ثبت AJAX
+        btnSave.on("click", function () {
+            const isApproved = $("input[name='IsApproved']:checked").val();
+            const reason = rejectReason.val().trim();
+            const studentId = $("input[name='StudentId']").val();
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (!isApproved) {
+                Toast.fire({ icon: 'warning', title: "لطفاً تأیید یا عدم تأیید را انتخاب کنید." });
+                return;
+            }
+
+            if (isApproved === "false" && reason === "") {
+                rejectReason.addClass("is-invalid").focus();
+                Toast.fire({ icon: 'error', title: "لطفاً دلیل عدم تأیید را بنویسید." });
+                return;
+            } else {
+                rejectReason.removeClass("is-invalid");
+            }
+
+            btnSave.prop("disabled", true).text("در حال ذخیره...");
+
+            $.ajax({
+                url: '/DV/ResearchDocumentByUniv/SaveDocumentReview',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: token,
+                    studentId: studentId,
+                    isApproved: isApproved,
+                    rejectReason: reason
+                },
+                success: function (response) {
+                    if (response.isSuccess) {
+                        Toast.fire({ icon: 'success', title: response.message });
+                    } else {
+                        Toast.fire({ icon: 'warning', title: response.message || "ذخیره انجام نشد." });
+                    }
+                },
+                error: function () {
+                    Toast.fire({ icon: 'error', title: "خطا در ارتباط با سرور." });
+                },
+                complete: function () {
+                    btnSave.prop("disabled", false).text("ثبت نهایی نتیجه");
+                }
+            });
+        });
+    });
+
+</script>

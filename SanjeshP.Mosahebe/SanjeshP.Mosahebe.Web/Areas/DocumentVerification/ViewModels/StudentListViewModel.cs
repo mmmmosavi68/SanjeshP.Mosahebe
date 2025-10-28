@@ -50,11 +50,14 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         [Display(Name = "نام آزمون")]
         public string ExamName { get; set; }
 
-        [Display(Name = "نوع دوره آزمون")]
-        public string ExamCourseType { get; set; }
+        //[Display(Name = "نوع دوره آزمون")]
+        //public string ExamCourseType { get; set; }
 
         [Display(Name = "رشته‌ها")]
         public string Fields { get; set; }  // رشته‌ها به صورت کاما جداشده نمایش داده شوند
+
+        [Display(Name = "نتیجه بررسی")]
+        public bool IsApproved { get; set; }
 
         public string ProfileImageUrl { get; set; }
 

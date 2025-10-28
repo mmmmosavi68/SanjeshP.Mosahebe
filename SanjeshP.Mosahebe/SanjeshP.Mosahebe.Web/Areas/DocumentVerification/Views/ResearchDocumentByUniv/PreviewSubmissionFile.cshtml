@@ -1,0 +1,41 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
+@model FilePreviewViewModel
+@{
+    ViewData["Title"] = "مشاهده فایل";
+}
+
+@if (Model.IsImage)
+{
+    <!-- 🖼 نمایش تصویر -->
+    <img src="@Model.FileUrl"
+         alt="Image Preview"
+         class="img-fluid rounded border border-6 rounded border-dark p-4"
+         style="max-height: 80vh; object-fit: contain;" />
+}
+else if (Model.IsPdf)
+{
+    <!-- 📄 نمایش PDF -->
+    <iframe src="@Model.FileUrl"
+            width="100%"
+            height="800px"
+            class="rounded border border-6 rounded border-dark p-4"
+            allowfullscreen></iframe>
+}
+else
+{
+    <div class="alert alert-warning mt-3">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div class="row text-center">
+            <div class="info mb-2 col-12">
+                <span class="h5 text-bold">
+                    این نوع فایل قابل نمایش نیست. برای مشاهده فایل رو دکمه دانلود فایل کلیک نمایید.
+                </span>
+                <p>فایل تصویر و فایل PDF قابلیت نمایش دارند.</p>
+            </div>
+        </div>
+
+    </div>
+}
+<a href="@Model.FileUrl" download class="btn btn-success mt-4">
+    <i class="fa-solid fa-download"></i> دانلود فایل
+</a>

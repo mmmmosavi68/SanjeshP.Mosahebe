@@ -89,13 +89,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
                         Gender = e.Gender == 1 ? "مرد" : "زن",
 
                         // تبدیل IsPajoheshi به بولین
-                        IsPajoheshi = e.IsPajoheshi == 1,
+                        IsPajoheshi = e.IsPajoheshi,
 
                         // نام آزمون از navigation property
                         ExamName = e.Exam?.Title ?? "",
 
                         // نوع دوره آزمون به متن
-                        ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
+                        //ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
 
                         InterviewProcessStatus = (InterviewProcessStatusView)e.InterviewProcessStatus,
                         // رشته‌ها به صورت رشته کاما جدا شده
@@ -167,9 +167,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
                     PhoneNumber = model.PhoneNumber,
                     Email = model.Email,
                     //Gender = model.Gender  ? 1 : 2,
-                    IsPajoheshi = model.IsPajoheshi ? 1 : 0,
+                    IsPajoheshi = model.IsPajoheshi ? true : false,
                     ExamId = model.ExamId,
-                    ExamCourseType = model.ExamCourseType,
+                    //ExamCourseType = model.ExamCourseType,
                     InterviewProcessStatus = InterviewProcessStatus.NotStarted,
                     CreatedBy = token.UserId,
                     CreatedDate = DateTime.Now,

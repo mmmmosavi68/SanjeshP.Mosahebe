@@ -86,6 +86,7 @@ namespace SanjeshP.Mosahebe.Entities.User
         public Guid? EditorUserId { get; set; }
 
         public int ActiveStation { get; set; }
+        public bool IsPajoheshi { get; set; }
 
         public virtual User EditorUser { get; set; }
         public virtual User CreatorUser { get; set; }

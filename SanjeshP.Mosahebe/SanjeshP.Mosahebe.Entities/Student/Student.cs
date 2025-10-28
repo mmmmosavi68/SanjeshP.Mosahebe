@@ -43,7 +43,12 @@ namespace SanjeshP.Mosahebe.Entities.Student
         public string Email { get; set; }
 
         public int Gender { get; set; }
-        public int IsPajoheshi { get; set; }
+        public bool IsPajoheshi { get; set; }
+
+        public bool? IsApproved { get; set; }
+
+        /// دلیل رد شدن فرم (اگر IsApproved = false)
+        public string RejectReason { get; set; }
 
         public InterviewProcessStatus InterviewProcessStatus { get; set; } = InterviewProcessStatus.NotStarted;
 
@@ -60,7 +65,7 @@ namespace SanjeshP.Mosahebe.Entities.Student
         public virtual ICollection<InterviewScore> InterviewScores { get; set; }
         public virtual ICollection<EducationDocumentScore> EducationDocumentScores { get; set; }
         //نوع دوره آزمون (آموزشی یا پژوهشی
-        public int ExamCourseType { get; set; } 
+        //public int ExamCourseType { get; set; } 
 
     }
 }

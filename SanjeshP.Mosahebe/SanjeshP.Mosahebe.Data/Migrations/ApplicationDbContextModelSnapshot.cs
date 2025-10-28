@@ -113,6 +113,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsPajoheshi")
+                        .HasColumnType("bit");
+
                     b.Property<int>("StandardCode")
                         .HasColumnType("int");
 
@@ -1033,6 +1036,44 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.ToTable("EducationDocumentScores");
                 });
 
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.ResearchDocumentScore", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("FinalTotalScore")
+                        .HasColumnType("float");
+
+                    b.Property<string>("HostIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("ResearchDocumentScores");
+                });
+
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.Student", b =>
                 {
                     b.Property<int>("Id")
@@ -1053,9 +1094,6 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(250)")
                         .HasMaxLength(250);
-
-                    b.Property<int>("ExamCourseType")
-                        .HasColumnType("int");
 
                     b.Property<int>("ExamId")
                         .HasColumnType("int");
@@ -1081,11 +1119,14 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsApproved")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("IsPajoheshi")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsPajoheshi")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -1102,6 +1143,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
                     b.Property<int>("RegId")
                         .HasColumnType("int");
+
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -1723,6 +1767,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsPajoheshi")
+                        .HasColumnType("bit");
+
                     b.Property<DateTimeOffset>("LastLoginDate")
                         .HasColumnType("datetimeoffset");
 
@@ -2204,6 +2251,15 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                 {
                     b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", "Student")
                         .WithMany("EducationDocumentScores")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.ResearchDocumentScore", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", "Student")
+                        .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

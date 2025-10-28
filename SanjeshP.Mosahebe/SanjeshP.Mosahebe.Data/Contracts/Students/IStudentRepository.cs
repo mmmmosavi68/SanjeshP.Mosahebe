@@ -15,6 +15,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Students
         Task<IEnumerable<Student>> GetAllStudentsNoTrackingAsync(CancellationToken cancellationToken);
         Task<IEnumerable<Student>> GetAllStudentsAsync(CancellationToken cancellationToken);
         Task<IEnumerable<Student>> GetAllStudentsByFieldIdAsync(int fieldIf, CancellationToken cancellationToken);
+        Task<IEnumerable<Student>> GetAllStudentsPajoheshiByFieldIdAsync(int fieldIf, CancellationToken cancellationToken);
         Task<Student> GetStudentByNationalCodeAsync(string NationalCode, CancellationToken cancellationToken);
         Task<Student> GetStudentByNationalCodeCodeRahgiriAsync(string NationalCode, string CodeRahgiri, CancellationToken cancellationToken);
         Task<Student> GetStudentByIdAsync(int id, CancellationToken cancellationToken);

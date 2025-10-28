@@ -128,13 +128,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                         Gender = e.Gender == 1 ? "مرد" : "زن",
 
                         // تبدیل IsPajoheshi به بولین
-                        IsPajoheshi = e.IsPajoheshi == 1,
+                        IsPajoheshi = e.IsPajoheshi,
 
                         // نام آزمون از navigation property
                         ExamName = e.Exam?.Title ?? "",
 
                         // نوع دوره آزمون به متن
-                        ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
+                        //ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
 
                         // رشته‌ها به صورت رشته کاما جدا شده
                         Fields = e.StudentFields != null && e.StudentFields.Any()
@@ -386,6 +386,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     }
 
                     submissionScore.UpdatedDate = DateTime.UtcNow; // تاریخ بروزرسانی
+                    submissionScore.CreatedBy = token.UserId;
                     await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken);
                 }
 

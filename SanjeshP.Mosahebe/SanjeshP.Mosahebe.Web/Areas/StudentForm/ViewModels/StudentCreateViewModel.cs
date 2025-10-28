@@ -53,9 +53,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
         [Required(ErrorMessage = "انتخاب آزمون الزامی است")]
         public int ExamId { get; set; }
 
-        [Display(Name = "نوع دوره آزمون")]
-        [Required(ErrorMessage = "نوع دوره آزمون الزامی است")]
-        public int ExamCourseType { get; set; } // مثلاً 1 = آموزشی، 2 = پژوهشی
+        //[Display(Name = "نوع دوره آزمون")]
+        //[Required(ErrorMessage = "نوع دوره آزمون الزامی است")]
+        //public int ExamCourseType { get; set; } // مثلاً 1 = آموزشی، 2 = پژوهشی
 
         [Display(Name = "وضعیت فرآیند مصاحبه")]
         public InterviewProcessStatus InterviewProcessStatus { get; set; } = InterviewProcessStatus.NotStarted;

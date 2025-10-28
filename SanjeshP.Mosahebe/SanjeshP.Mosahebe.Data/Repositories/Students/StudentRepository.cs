@@ -45,6 +45,18 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
         }
+        public async Task<IEnumerable<Student>> GetAllStudentsPajoheshiByFieldIdAsync(int fieldId, CancellationToken cancellationToken)
+        {
+            return await Table
+                    .Where(s => !s.IsDeleted && s.IsActive && s.IsPajoheshi == true &&
+                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId))
+                    .Include(s => s.Exam)
+                    .Include(s => s.StudentFields)
+                        .ThenInclude(sf => sf.ExamField)
+                    .Include(s => s.EducationDocumentScores)
+                    .OrderByDescending(s => s.CreatedDate)
+                    .ToListAsync(cancellationToken);
+        }
 
         public async Task<IEnumerable<Student>> GetAllStudentsNoTrackingAsync(CancellationToken cancellationToken)
         {

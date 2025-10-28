@@ -62,8 +62,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
         [Display(Name = "نام آزمون")]
         public string ExamName { get; set; }
 
-        [Display(Name = "نوع دوره آزمون")]
-        public string ExamCourseType { get; set; }
+        //[Display(Name = "نوع دوره آزمون")]
+        //public string ExamCourseType { get; set; }
 
         [Display(Name = "رشته‌ها")]
         public string Fields { get; set; }  // رشته‌ها به صورت کاما جداشده نمایش داده شوند
