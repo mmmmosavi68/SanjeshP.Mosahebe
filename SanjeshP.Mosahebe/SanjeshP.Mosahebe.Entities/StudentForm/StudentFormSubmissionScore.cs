@@ -1,6 +1,7 @@
 ﻿using SanjeshP.Mosahebe.Entities.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace SanjeshP.Mosahebe.Entities.StudentForm
@@ -19,6 +20,7 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public ICollection<StudentFormSubmissionData> StudentFormSubmissionDatas { get; set; }
 
         /// نمره محاسبه‌شده برای این فرم (در صورت وجود فرایند محاسبه امتیاز)
+        [Column(TypeName = "decimal(6,3)")]
         public double? Score { get; set; }
 
         /// وضعیت تایید/رد فرم توسط مدیر یا کارشناس

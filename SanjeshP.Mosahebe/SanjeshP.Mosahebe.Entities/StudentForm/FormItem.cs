@@ -1,5 +1,6 @@
 ﻿using SanjeshP.Mosahebe.Entities.Common;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SanjeshP.Mosahebe.Entities.StudentForm
 {
@@ -16,7 +17,9 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
     {
         public string Title { get; set; }      // عنوان فرم
         public string Description { get; set; }  // توضیح کوتاه (اختیاری)
+        [Column(TypeName = "decimal(6,3)")]
         public double OneMaxScore { get; set; }
+        [Column(TypeName = "decimal(6,3)")]
         public double AllMaxScore { get; set; }
         public FormSourceType SourceType { get; set; }
 

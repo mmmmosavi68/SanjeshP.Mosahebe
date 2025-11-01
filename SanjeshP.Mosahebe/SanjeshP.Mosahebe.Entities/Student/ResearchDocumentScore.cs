@@ -21,6 +21,7 @@ namespace SanjeshP.Mosahebe.Entities.Student
         [ForeignKey(nameof(StudentId))]
         public int StudentId { get; set; }
         [Display(Name = "نمره نهایی")]
+        [Column(TypeName = "decimal(6,3)")]
         public double FinalTotalScore { get; set; }
         /// وضعیت تایید/رد فرم توسط مدیر یا کارشناس
         [Display(Name = "وضعیت")]

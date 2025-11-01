@@ -453,8 +453,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<double?>("CalculatedScore")
-                        .HasColumnType("float");
+                    b.Property<decimal?>("CalculatedScore")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -474,11 +474,11 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
-                    b.Property<double?>("QuestionMaxValue")
-                        .HasColumnType("float");
+                    b.Property<decimal?>("QuestionMaxValue")
+                        .HasColumnType("decimal(6,3)");
 
-                    b.Property<double?>("QuestionScore")
-                        .HasColumnType("float");
+                    b.Property<decimal?>("QuestionScore")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<int>("StationId")
                         .HasColumnType("int");
@@ -558,8 +558,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<double>("MaxValue")
-                        .HasColumnType("float");
+                    b.Property<decimal>("MaxValue")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<int>("StationId")
                         .HasColumnType("int");
@@ -1011,8 +1011,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("FinalTotalScore")
-                        .HasColumnType("float");
+                    b.Property<decimal>("FinalTotalScore")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
@@ -1049,8 +1049,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("FinalTotalScore")
-                        .HasColumnType("float");
+                    b.Property<decimal>("FinalTotalScore")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<string>("HostIp")
                         .HasColumnType("nvarchar(max)");
@@ -1278,8 +1278,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<float>("RangeStart")
                         .HasColumnType("real");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Value")
+                        .HasColumnType("decimal(6,3)");
 
                     b.HasKey("Id");
 
@@ -1331,8 +1331,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<double>("AllMaxScore")
-                        .HasColumnType("float");
+                    b.Property<decimal>("AllMaxScore")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1358,8 +1358,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<double>("OneMaxScore")
-                        .HasColumnType("float");
+                    b.Property<decimal>("OneMaxScore")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<int>("SourceType")
                         .HasColumnType("int");
@@ -1663,8 +1663,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<string>("RejectReason")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double?>("Score")
-                        .HasColumnType("float");
+                    b.Property<decimal?>("Score")
+                        .HasColumnType("decimal(6,3)");
 
                     b.Property<int?>("StudentId")
                         .HasColumnType("int");

@@ -11,6 +11,7 @@ namespace SanjeshP.Mosahebe.Entities.Student
     {
         [ForeignKey(nameof(StudentId))]
         public int StudentId { get; set; }
+        [Column(TypeName = "decimal(6,3)")]
         public double FinalTotalScore { get; set; }
 
         public virtual Student Student { get; set; }

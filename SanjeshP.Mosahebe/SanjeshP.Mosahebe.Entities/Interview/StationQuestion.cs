@@ -14,9 +14,9 @@ namespace SanjeshP.Mosahebe.Entities.Interview
         [MaxLength(500)]
         public string Text { get; set; }
 
+        //[Range(0, 10000)]
         [Required]
-        //[Column(TypeName = "decimal(6,2)")]
-        [Range(0, 10000)]
+        [Column(TypeName = "decimal(6,3)")]
         public double MaxValue { get; set; } // دقت بهتر برای محاسبه نمره
 
         public int StationId { get; set; }
