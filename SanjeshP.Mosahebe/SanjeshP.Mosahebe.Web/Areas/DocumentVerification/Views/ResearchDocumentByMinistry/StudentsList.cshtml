@@ -17,14 +17,16 @@
                 <th>@Html.DisplayNameFor(model => model.First().LastName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().FatherName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
-                <th>@Html.DisplayNameFor(model => model.First().FinalTotalScore)</th>
+                <th>@Html.DisplayNameFor(model => model.First().IsApproved)</th>
+                <th>@Html.DisplayNameFor(model => model.First().RejectReason)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
-                var rowClass = item.EducationDocumentScore?.IsDeleted == false ? "bg-secondary text-white" : string.Empty;
+                var rowClass = item.IsApproved == false ? "bg-secondary text-white" : item.IsApproved == true ? "bg-success text-white" : string.Empty;
+                var colorClass = item.IsApproved == false ? "btn btn-outline-light" : item.IsApproved == true ? "btn btn-outline-light " : "btn btn-outline-dark";
 
                 <tr id="tr_@(item.Id)" class="@rowClass">
                     <td>@i</td>
@@ -37,21 +39,21 @@
                     <td>@Html.DisplayFor(modelItem => item.LastName)</td>
                     <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
-                    <td>@Html.DisplayFor(modelItem => item.FinalTotalScore)</td>
                     <td>
-                        @if (rowClass == string.Empty)
-                        {
-                            <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
-                        }
-                        else
-                        {
-                            <p>بررسی شده</p>
-                        }
+                        @(item.IsApproved == true
+                            ? "تأیید"
+                            : item.IsApproved == false
+                            ? "عدم تأیید"
+                            : "بررسی نشده")
+                    </td>
+
+                    <td>@Html.DisplayFor(modelItem => item.RejectReason)</td>
+                    <td>
+                        <a class="@colorClass" onclick="Detail('@item.Id')" title="اطلاعات داوطلب"><i class="fa fa-info"></i></a>
                     </td>
                 </tr>
                 i++;
             }
-        </tbody>
     </table>
 </div>
 

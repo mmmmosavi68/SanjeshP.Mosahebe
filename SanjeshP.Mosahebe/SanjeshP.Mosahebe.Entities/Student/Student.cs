@@ -64,6 +64,7 @@ namespace SanjeshP.Mosahebe.Entities.Student
         public ICollection<StudentField> StudentFields { get; set; } = new List<StudentField>();
         public virtual ICollection<InterviewScore> InterviewScores { get; set; }
         public virtual ICollection<EducationDocumentScore> EducationDocumentScores { get; set; }
+        public virtual ResearchDocumentScore ResearchDocumentScore { get; set; }
         //نوع دوره آزمون (آموزشی یا پژوهشی
         //public int ExamCourseType { get; set; } 
 

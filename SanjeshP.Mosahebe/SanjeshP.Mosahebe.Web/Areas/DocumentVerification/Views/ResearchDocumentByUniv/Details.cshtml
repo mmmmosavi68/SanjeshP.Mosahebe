@@ -117,90 +117,136 @@
         }
     </div>
 
-    <!-- ناحیه تصمیم نهایی برای داوطلب -->
-    <div class="card mt-4 border">
+    <div class="card mt-3">
         <div class="card-header card-title text-light text-center" style="background:radial-gradient(circle, #348780, #363e5f)">
-            نتیجه نهایی بررسی مدارک پژوهشی داوطلب
+            وارد کردن وضعیت داوطلب
         </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <input type="radio" name="IsApproved" id="approveYes" value="true" class="form-check-input me-1" required />
-                    <label for="approveYes" class="form-check-label h6">تأیید کلی مدارک داوطلب</label>
-                </div>
-                <div class="col-md-6">
-                    <input type="radio" name="IsApproved" id="approveNo" value="false" class="form-check-input me-1" required />
-                    <label for="approveNo" class="form-check-label h6 text-danger">عدم تأیید کلی مدارک داوطلب</label>
+
+        <p class="alert alert-light fw-bold text-center h5">
+            وضعیت داوطلب را مشخص کنید، سپس در صورت لزوم نمره یا دلیل عدم تأیید را وارد نمایید.
+        </p>
+
+
+
+        <div class="row mb-3 text-center pl-4 pr-4">
+            <div class="col-md-4 p-2">
+                <input type="radio" name="Status" id="statusAbsent" value="0" class="form-check-input me-1" />
+                <label for="statusAbsent" class="form-check-label h6 text-secondary">وضعیت غایب</label>
+            </div>
+            <div class="col-md-4">
+                <input type="radio" name="Status" id="statusRejected" value="1" class="form-check-input me-1" />
+                <label for="statusRejected" class="form-check-label h6 text-danger">وضعیت عدم تأیید</label>
+                <!-- دلیل رد -->
+                <div id="rejectSection" class="mb-3">
+                    <label for="RejectReason" class="form-label">دلیل عدم تأیید</label>
+                    <textarea class="form-control" name="RejectReason" id="RejectReason" rows="1" placeholder="توضیح دلیل رد..." disabled></textarea>
+                    <div class="invalid-feedback">دلیل رد را وارد کنید.</div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <input type="radio" name="Status" id="statusApproved" value="2" class="form-check-input me-1" />
+                <label for="statusApproved" class="form-check-label h6 text-success">وضعیت تأیید</label>
 
-            <div class="mb-3">
-                <label for="RejectReason" class="form-label">دلیل عدم تأیید (در صورت رد)</label>
-                <textarea class="form-control" name="RejectReason" id="RejectReason" rows="3" placeholder="توضیح دلیل رد..." disabled></textarea>
-                <div class="invalid-feedback">لطفاً دلیل عدم تأیید را بنویسید.</div>
-            </div>
+                <!-- نمره نهایی -->
+                <div id="scoreSection" class="mb-3">
 
-            <input type="hidden" name="StudentId" value="@Model.StudentId" />
-
-            <div class="text-end">
-                <button type="button" class="btn btn-primary px-4" id="btnSaveApproval">
-                    <i class="fa fa-save me-1"></i> ثبت نهایی نتیجه
-                </button>
+                    <label for="FinalTotalScore" class="form-label">نمره نهایی (0 تا 100)</label>
+                    <input type="number" step="0.01" min="0" max="100" class="form-control" id="FinalTotalScore" name="FinalTotalScore" placeholder="مثال: 85.25" disabled />
+                    <div class="invalid-feedback">لطفاً عددی بین 0 تا 100 وارد کنید.</div>
+                    <p class="alert alert-danger fw-bold text-center h4 mt-4">
+                        منظور از نمره نهایی مجموع نمره مصاحبه و بررسی مدارک می‌باشد.
+                    </p>
+                </div>
             </div>
         </div>
+
+        <input type="hidden" name="StudentId" id="StudentId" value="@Model.StudentId" />
+
+        <div class="d-flex justify-content-center m-3">
+            <button type="button" class="btn btn-success" id="btnSaveScore">
+                <i class="fa fa-save me-1"></i> ذخیره اطلاعات
+            </button>
+        </div>
+
     </div>
-
 </form>
 
 <script>
     $(document).ready(function () {
-        const rejectReason = $("#RejectReason");
-        const btnSave = $("#btnSaveApproval");
 
-        // فعال/غیرفعال کردن textarea
-        $("input[name='IsApproved']").on("change", function () {
-            if ($("#approveNo").is(":checked")) {
-                rejectReason.prop("disabled", false).prop("required", true).focus();
-            } else {
-                rejectReason.prop("disabled", true).prop("required", false).val('');
-                rejectReason.removeClass("is-invalid");
+        const scoreSection = $("#scoreSection");
+        const rejectSection = $("#rejectSection");
+        const scoreInput = $("#FinalTotalScore");
+        const reasonInput = $("#RejectReason");
+        const btnSave = $("#btnSaveScore");
+
+        // وقتی فرم باز می‌شود: همه‌چیز غیرفعال است
+        scoreInput.prop("disabled", true).val('');
+        reasonInput.prop("disabled", true).val('');
+
+        $("input[name='Status']").on("change", function () {
+            const value = parseInt($(this).val());
+
+            if (value === 0) { // absent
+                scoreInput.prop("disabled", true).val('');
+                reasonInput.prop("disabled", true).val('');
+            } else if (value === 1) { // rejected
+                scoreInput.prop("disabled", true).val('');
+                reasonInput.prop("disabled", false);
+            } else if (value === 2) { // approved
+                scoreInput.prop("disabled", false);
+                reasonInput.prop("disabled", true).val('');
             }
         });
 
-        // ثبت AJAX
+
+        // ذخیره اطلاعات
         btnSave.on("click", function () {
-            const isApproved = $("input[name='IsApproved']:checked").val();
-            const reason = rejectReason.val().trim();
-            const studentId = $("input[name='StudentId']").val();
+            let status = parseInt($("input[name='Status']:checked").val());
+            let score = parseFloat(scoreInput.val());
+            const reason = reasonInput.val().trim();
+            const studentId = $("#StudentId").val();
             const token = $('input[name="__RequestVerificationToken"]').val();
 
-            if (!isApproved) {
-                Toast.fire({ icon: 'warning', title: "لطفاً تأیید یا عدم تأیید را انتخاب کنید." });
+            if (isNaN(status)) {
+                Toast.fire({ icon: 'warning', title: "لطفاً وضعیت داوطلب را انتخاب کنید." });
                 return;
             }
 
-            if (isApproved === "false" && reason === "") {
-                rejectReason.addClass("is-invalid").focus();
-                Toast.fire({ icon: 'error', title: "لطفاً دلیل عدم تأیید را بنویسید." });
+            if (status !== 2) score = 0; // فقط در صورت تایید نمره اعمال شود
+
+            if (status === 2 && (isNaN(score) || score < 0 || score > 100)) {
+                scoreInput.addClass("is-invalid").focus();
+                Toast.fire({ icon: 'error', title: "نمره باید عددی بین 0 تا 100 باشد." });
                 return;
-            } else {
-                rejectReason.removeClass("is-invalid");
+            }
+
+            if (status === 1 && reason === "") {
+                reasonInput.addClass("is-invalid").focus();
+                Toast.fire({ icon: 'error', title: "دلیل عدم تأیید را وارد کنید." });
+                return;
             }
 
             btnSave.prop("disabled", true).text("در حال ذخیره...");
 
             $.ajax({
-                url: '/DV/ResearchDocumentByUniv/SaveDocumentReview',
+                url: '/DV/ResearchDocumentByUniv/SaveResearchDocumentScore',
                 type: 'POST',
                 data: {
                     __RequestVerificationToken: token,
-                    studentId: studentId,
-                    isApproved: isApproved,
-                    rejectReason: reason
+                    StudentId: studentId,
+                    Status: status,
+                    FinalScore: score,
+                    RejectReason: reason
                 },
                 success: function (response) {
                     if (response.isSuccess) {
-                        Toast.fire({ icon: 'success', title: response.message });
+                        Toast.fire({ icon: 'success', title: response.message || "ذخیره شد." });
+                        // رفرش لیست داوطلبان پشت صفحه
+                        const fieldId = $('#fieldSelect').val();
+                        if (fieldId) {
+                            $('#StudentList').load('/DV/ResearchDocumentByUniv/StudentsList?fieldId=' + encodeURIComponent(fieldId));
+                        }
                     } else {
                         Toast.fire({ icon: 'warning', title: response.message || "ذخیره انجام نشد." });
                     }
@@ -209,10 +255,11 @@
                     Toast.fire({ icon: 'error', title: "خطا در ارتباط با سرور." });
                 },
                 complete: function () {
-                    btnSave.prop("disabled", false).text("ثبت نهایی نتیجه");
+                    btnSave.prop("disabled", false).text("ذخیره اطلاعات");
                 }
             });
         });
+
     });
 
 </script>

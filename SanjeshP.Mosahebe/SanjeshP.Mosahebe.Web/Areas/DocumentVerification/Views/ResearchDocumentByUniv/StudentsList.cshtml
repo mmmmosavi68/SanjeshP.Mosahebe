@@ -1,4 +1,5 @@
-﻿@using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
+﻿@using SanjeshP.Mosahebe.Entities.Student
+@using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
 @model IEnumerable<StudentListViewModel>
 
 
@@ -6,7 +7,11 @@
     ViewData["Title"] = "ExamsList";
     int i = 1;
 }
-
+<style>
+    .backcolor {
+        background-color: #
+    }
+</style>
 <div class="bg-light rounded p-4">
     <table class="table-hover table-striped table text-center" id="tbl_exam">
         <thead>
@@ -17,15 +22,23 @@
                 <th>@Html.DisplayNameFor(model => model.First().LastName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().FatherName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
-                <th>@Html.DisplayNameFor(model => model.First().FinalTotalScore)</th>
+                <th>@Html.DisplayNameFor(model => model.First().ResearchDocumentScore.IsApproved)</th>
+                <th>@Html.DisplayNameFor(model => model.First().ResearchDocumentScore.RejectReason)</th>
+                <th>@Html.DisplayNameFor(model => model.First().ResearchDocumentScore.FinalTotalScore)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
-                var rowClass = item.EducationDocumentScore?.IsDeleted == false ? "bg-secondary text-white" : string.Empty;
-
+                var rowClass = item.ResearchDocumentScore?.IsApproved == StudentStatus.Rejected ? "bg-secondary text-white" 
+                : item.ResearchDocumentScore?.IsApproved == StudentStatus.Approved ? "bg-success text-white"
+                : item.ResearchDocumentScore?.IsApproved == StudentStatus.Absent ? "bg-danger text-white"
+                : string.Empty;
+                var colorClass = item.ResearchDocumentScore?.IsApproved == StudentStatus.Rejected ? "btn btn-outline-light"
+                : item.ResearchDocumentScore?.IsApproved == StudentStatus.Approved ? "btn btn-outline-light"
+                : item.ResearchDocumentScore?.IsApproved == StudentStatus.Absent ? "btn btn-outline-light"
+                : "btn btn-outline-dark";
                 <tr id="tr_@(item.Id)" class="@rowClass">
                     <td>@i</td>
                     <td>
@@ -37,16 +50,11 @@
                     <td>@Html.DisplayFor(modelItem => item.LastName)</td>
                     <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
-                    <td>@Html.DisplayFor(modelItem => item.FinalTotalScore)</td>
+                    <td>@Html.DisplayFor(modelItem => item.ResearchDocumentScore.IsApproved)</td>
+                    <td>@Html.DisplayFor(modelItem => item.ResearchDocumentScore.RejectReason)</td>
+                    <td>@Html.DisplayFor(modelItem => item.ResearchDocumentScore.FinalTotalScore)</td>
                     <td>
-                        @if (rowClass == string.Empty)
-                        {
-                            <a class="btn btn-sm btn-outline-info" onclick="Detail('@item.Id')" title="اطلاعات آزمون"><i class="fa fa-info"></i></a>
-                        }
-                        else
-                        {
-                            <p>بررسی شده</p>
-                        }
+                        <a class="@colorClass" onclick="Detail('@item.Id')" title="اطلاعات داوطلب"><i class="fa fa-info"></i></a>
                     </td>
                 </tr>
                 i++;

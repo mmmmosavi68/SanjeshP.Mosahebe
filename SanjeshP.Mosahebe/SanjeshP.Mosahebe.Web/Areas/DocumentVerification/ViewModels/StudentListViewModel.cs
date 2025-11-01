@@ -47,6 +47,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         [Display(Name = "پژوهشی")]
         public bool IsPajoheshi { get; set; }
 
+
+
+
         [Display(Name = "نام آزمون")]
         public string ExamName { get; set; }
 
@@ -57,7 +60,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         public string Fields { get; set; }  // رشته‌ها به صورت کاما جداشده نمایش داده شوند
 
         [Display(Name = "نتیجه بررسی")]
-        public bool IsApproved { get; set; }
+        public bool? IsApproved { get; set; }
+
+        /// دلیل رد شدن فرم (اگر IsApproved = false)
+        [Display(Name = "توضیحات")]
+        public string RejectReason { get; set; }
 
         public string ProfileImageUrl { get; set; }
 
@@ -65,5 +72,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         public double FinalTotalScore { get; set; }
 
         public EducationDocumentScore EducationDocumentScore { get; set; }
+        public ResearchDocumentScore ResearchDocumentScore { get; set; }
     }
 }

@@ -51,6 +51,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                     .Where(s => !s.IsDeleted && s.IsActive && s.IsPajoheshi == true &&
                                 s.StudentFields.Any(sf => sf.ExamFieldId == fieldId))
                     .Include(s => s.Exam)
+                    .Include(s => s.ResearchDocumentScore)
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
                     .Include(s => s.EducationDocumentScores)

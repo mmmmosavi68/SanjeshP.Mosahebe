@@ -87,7 +87,7 @@
                                         @if (field.InputType == SanjeshP.Mosahebe.Entities.StudentForm.InputType.File)
                                         {
                                             <a class="btn btn-sm btn-outline-dark"
-                                               asp-controller="EducationDocument"
+                                               asp-controller="ResearchDocumentByMinistry"
                                                asp-action="DownloadSubmissionFile"
                                                asp-route-submissionDataId="@field.Id"
                                                asp-route-studentId="@form.StudentId"
@@ -117,31 +117,13 @@
         }
     </div>
 
-    <div class="card mt-3">
+    <!-- ناحیه تصمیم نهایی برای داوطلب -->
+    <div class="card mt-4 border">
         <div class="card-header card-title text-light text-center" style="background:radial-gradient(circle, #348780, #363e5f)">
-            وارد کردن نمره نهایی
+            نتیجه نهایی بررسی مدارک پژوهشی داوطلب
         </div>
         <div class="card-body">
-            <div class="mb-3">
-                <div class="alert alert-danger fw-bold h3">در این قسمت مجموع نمرات بررسی مدارک و مصاحبه داوطلب را وارد نمایید.</div>
-                <div class="col-md-4">
-                    وضعیت داوطلب :
-                    <select id="examSelect" class="form-control">
-                        <option value="0">-- یک وضعیت انتخاب کنید --</option>
-                        <option value="1">غایب</option>
-                        <option value="2">عدم تایید</option>
-                        <option value="3">تایید</option>
-                    </select>
-                </div>
-
-
-                <label for="FinalTotalScore" class="form-label">نمره نهایی (بررسی مدارک و مصاحبه داوطلب از 0 تا 100)</label>
-                <input type="number" step="0.01" min="0" class="form-control" id="FinalTotalScore" name="FinalTotalScore" placeholder="مثال: 15.5" required />
-                <div class="invalid-feedback">لطفاً نمره معتبر وارد کنید (عدد صحیح یا اعشاری بین 0 تا 100).</div>
-            </div>
-
-
-@*             <div class="row mb-3">
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <input type="radio" name="IsApproved" id="approveYes" value="true" class="form-check-input me-1" required />
                     <label for="approveYes" class="form-check-label h6">تأیید کلی مدارک داوطلب</label>
@@ -156,15 +138,13 @@
                 <label for="RejectReason" class="form-label">دلیل عدم تأیید (در صورت رد)</label>
                 <textarea class="form-control" name="RejectReason" id="RejectReason" rows="3" placeholder="توضیح دلیل رد..." disabled></textarea>
                 <div class="invalid-feedback">لطفاً دلیل عدم تأیید را بنویسید.</div>
-            </div> *@
+            </div>
 
-
-            <input type="hidden" name="StudentId" id="StudentId" value="@Model.StudentId" />
-
+            <input type="hidden" name="StudentId" value="@Model.StudentId" />
 
             <div class="text-end">
-                <button type="button" class="btn btn-success" id="btnSaveScore">
-                    <i class="fa fa-save me-1"></i> ذخیره نمره
+                <button type="button" class="btn btn-primary px-4" id="btnSaveApproval">
+                    <i class="fa fa-save me-1"></i> ثبت نهایی نتیجه
                 </button>
             </div>
         </div>
@@ -174,35 +154,58 @@
 
 <script>
     $(document).ready(function () {
-        const scoreInput = $("#FinalTotalScore");
-        const btnSave = $("#btnSaveScore");
+        const rejectReason = $("#RejectReason");
+        const btnSave = $("#btnSaveApproval");
 
+        // فعال/غیرفعال کردن textarea
+        $("input[name='IsApproved']").on("change", function () {
+            if ($("#approveNo").is(":checked")) {
+                rejectReason.prop("disabled", false).prop("required", true).focus();
+            } else {
+                rejectReason.prop("disabled", true).prop("required", false).val('');
+                rejectReason.removeClass("is-invalid");
+            }
+        });
+
+        // ثبت AJAX
         btnSave.on("click", function () {
-            const score = parseFloat(scoreInput.val());
+            const isApproved = $("input[name='IsApproved']:checked").val();
+            const reason = rejectReason.val().trim();
             const studentId = $("input[name='StudentId']").val();
             const token = $('input[name="__RequestVerificationToken"]').val();
 
-            if (isNaN(score) || score < 0 || score > 100) {
-                scoreInput.addClass("is-invalid").focus();
-                Toast.fire({ icon: 'error', title: "لطفاً نمره معتبر وارد کنید (عدد صحیح یا اعشاری بین 0 تا 100)." });
+            if (!isApproved) {
+                Toast.fire({ icon: 'warning', title: "لطفاً تأیید یا عدم تأیید را انتخاب کنید." });
+                return;
+            }
+
+            if (isApproved === "false" && reason === "") {
+                rejectReason.addClass("is-invalid").focus();
+                Toast.fire({ icon: 'error', title: "لطفاً دلیل عدم تأیید را بنویسید." });
                 return;
             } else {
-                scoreInput.removeClass("is-invalid");
+                rejectReason.removeClass("is-invalid");
             }
 
             btnSave.prop("disabled", true).text("در حال ذخیره...");
 
             $.ajax({
-                url: '/DV/ResearchDocumentByMinistry/SaveResearchDocumentScore',
+                url: '/DV/ResearchDocumentByMinistry/SaveDocumentReview',
                 type: 'POST',
                 data: {
                     __RequestVerificationToken: token,
-                    StudentId: studentId,
-                    FinalScore: score
+                    studentId: studentId,
+                    isApproved: isApproved,
+                    rejectReason: reason
                 },
                 success: function (response) {
                     if (response.isSuccess) {
                         Toast.fire({ icon: 'success', title: response.message });
+                        // رفرش لیست داوطلبان پشت صفحه
+                        const fieldId = $('#fieldSelect').val();
+                        if (fieldId) {
+                            $("#StudentList").load('/DV/ResearchDocumentByMinistry/StudentsList?fieldId=' + encodeURIComponent(fieldId));
+                        }
                     } else {
                         Toast.fire({ icon: 'warning', title: response.message || "ذخیره انجام نشد." });
                     }
@@ -211,9 +214,10 @@
                     Toast.fire({ icon: 'error', title: "خطا در ارتباط با سرور." });
                 },
                 complete: function () {
-                    btnSave.prop("disabled", false).text("ذخیره نمره");
+                    btnSave.prop("disabled", false).text("ثبت نهایی نتیجه");
                 }
             });
         });
     });
+
 </script>

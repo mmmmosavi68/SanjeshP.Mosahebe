@@ -1058,8 +1058,14 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("IsApproved")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
@@ -1069,7 +1075,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("StudentId")
+                        .IsUnique();
 
                     b.ToTable("ResearchDocumentScores");
                 });
@@ -2259,8 +2266,8 @@ namespace SanjeshP.Mosahebe.Data.Migrations
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.ResearchDocumentScore", b =>
                 {
                     b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
+                        .WithOne("ResearchDocumentScore")
+                        .HasForeignKey("SanjeshP.Mosahebe.Entities.Student.ResearchDocumentScore", "StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

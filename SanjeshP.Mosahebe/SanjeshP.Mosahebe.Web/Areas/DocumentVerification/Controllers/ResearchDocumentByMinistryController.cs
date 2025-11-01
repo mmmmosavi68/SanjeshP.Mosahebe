@@ -3,23 +3,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SanjeshP.Mosahebe.Common;
 using SanjeshP.Mosahebe.Data.Contracts.Exam;
 using SanjeshP.Mosahebe.Data.Contracts.StudentForm;
 using SanjeshP.Mosahebe.Data.Contracts.Students;
 using SanjeshP.Mosahebe.Data.Contracts.Users;
-using SanjeshP.Mosahebe.Entities.StudentForm;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels;
 using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels;
-using System.Collections.Generic;
+using SanjeshP.Mosahebe.Entities.StudentForm;
 using System.IO;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using SanjeshP.Mosahebe.Entities.Student;
 using System.Security.Claims;
+using SanjeshP.Mosahebe.Data.Repositories.StudentForm;
+using SanjeshP.Mosahebe.Common;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
@@ -39,8 +38,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly IEducationDocumentScoreRepository _educationDocumentScoreRepository;
         private readonly IExamFieldRepository _examFieldRepository;
         private readonly IExamRepository _examRepository;
-        private readonly IResearchDocumentScoreRepository _researchDocumentScoreRepository;
-        private readonly IUserFieldRepository _userFieldRepository;
 
         public ResearchDocumentByMinistryController(IMapper mapper
                                         , IWebHostEnvironment env
@@ -53,9 +50,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository
                                         , IEducationDocumentScoreRepository educationDocumentScoreRepository
                                         , IExamFieldRepository examFieldRepository
-                                        , IExamRepository examRepository
-                                        , IResearchDocumentScoreRepository researchDocumentScoreRepository
-                                        , IUserFieldRepository userFieldRepository)
+                                        , IExamRepository examRepository)
         {
             _mapper = mapper;
             _env = env;
@@ -69,8 +64,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             _educationDocumentScoreRepository = educationDocumentScoreRepository;
             _examFieldRepository = examFieldRepository;
             _examRepository = examRepository;
-            _researchDocumentScoreRepository = researchDocumentScoreRepository;
-            _userFieldRepository = userFieldRepository;
         }
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
@@ -81,21 +74,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         // لیست رشته‌ها بر اساس آزمون
         public async Task<IActionResult> FieldDropdown(int examId, CancellationToken cancellationToken)
         {
-            var curentUserToken = User.Identity.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
-
-            // رشته‌هایی که کاربر به آنها دسترسی دارد
-            var userFields = await _userFieldRepository.GetByUserIdAsync(token.UserId, cancellationToken);
-
-            // تمام رشته‌های آزمون
             var fields = await _examFieldRepository.GetAllFieldsByExamIdAsync(examId, cancellationToken);
-
-            // فیلتر بر اساس دسترسی کاربر و فقط پژوهشی
-            var accessibleFields = fields
-                .Where(f => f.IsPajoheshi && userFields.Any(uf => uf.ExamFieldID == f.Id))
-                .ToList();
-
-            return PartialView("FieldDropdown", accessibleFields);
+            return PartialView("FieldDropdown", fields.Where(f => f.IsPajoheshi == true));
         }
 
 
@@ -112,7 +92,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
 
                 // نگاشت دانشجویان به ViewModel
-                var result = students.Where(s => s.IsApproved == true).Select(e =>
+                var result = students.Select(e =>
                 {
                     return new StudentListViewModel
                     {
@@ -139,7 +119,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                         Fields = e.StudentFields != null && e.StudentFields.Any()
                                     ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
                                     : "",
-                        IsApproved = e.IsApproved ?? false,
+                        IsApproved = e.IsApproved,
+                        RejectReason= e.RejectReason,
                     };
                 })
                 .OrderBy(s => s.IsApproved)
@@ -278,43 +259,39 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveResearchDocumentScore(int studentId, double finalScore, CancellationToken cancellationToken)
+        public async Task<IActionResult> SaveDocumentReview(int studentId, bool isApproved, string rejectReason, CancellationToken cancellationToken)
         {
             if (studentId == 0)
-                return BadRequest("شناسه دانشجو معتبر نیست.");
+                return Json(new { isSuccess = false, message = "شناسه داوطلب معتبر نیست." });
 
-            // دریافت UserId فعلی (در صورت نیاز)
-            var userId = User.FindFirstValue("Token"); // یا هر فیلدی که استفاده می‌کنی
-            var curentUserToken = User.Identity.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
-            // بررسی رکورد موجود
-            var record = await _researchDocumentScoreRepository.GetResearchDocumentScoreByStudentIdUserId(studentId, token.UserId, cancellationToken);
+            if (!User.Identity.IsAuthenticated)
+                return Json(new { isSuccess = false, message = "دسترسی غیرمجاز." });
 
-            if (record != null)
+            try
             {
-                // ویرایش رکورد موجود
-                record.FinalTotalScore = finalScore;
-                record.CreatedBy = token.UserId;
-                record.UpdatedDate = DateTime.UtcNow; // اگر BaseEntity این فیلد را دارد
-                _researchDocumentScoreRepository.Update(record);
+                var curentUserToken = User.Identity.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
+                var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
+
+                student.IsApproved = isApproved;
+                student.RejectReason = isApproved ? null : rejectReason;
+                student.CreatedBy = token.UserId;
+                student.CreatedDate = DateTime.Now;
+
+
+                await _studentRepository.UpdateStudentAsync(student, cancellationToken);
+                await _studentRepository.SaveChangesAsync(cancellationToken);
+
+                return Json(new { isSuccess = true, message = "نتیجه بررسی مدارک داوطلب با موفقیت ذخیره شد." });
             }
-            else
+            catch (Exception ex)
             {
-                // ایجاد رکورد جدید
-                record = new ResearchDocumentScore
-                {
-                    StudentId = studentId,
-                    FinalTotalScore = finalScore,
-                    CreatedBy = token.UserId,
-                    CreatedDate = DateTime.UtcNow // اگر BaseEntity این فیلد را دارد
-                };
-                await _researchDocumentScoreRepository.AddAsync(record, cancellationToken);
+                _logger.LogError(ex, "خطا در ذخیره نتیجه بررسی مدارک داوطلب {studentId}", studentId);
+                return Json(new { isSuccess = false, message = "خطا در سرور. لطفاً مجدداً تلاش کنید." });
             }
-
-            await _researchDocumentScoreRepository.SaveChangesAsync(cancellationToken);
-
-            return Json(new { isSuccess = true, message = "امتیاز با موفقیت ذخیره شد." });
         }
+
+
 
         [HttpGet]
         [Authorize]
