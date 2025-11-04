@@ -426,7 +426,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Auth.Controllers
 
             var otp = await _userOtpRepository.GetValidOtpAsync(userId, code, cancellationToken);
 
-            if (otp == null)
+            if (otp == null || otp.IsUsed == true || otp.ExpireAt <= DateTime.Now || otp.IsDeleted == true)
             {
                 ModelState.AddModelError("", "کد وارد شده نامعتبر یا منقضی است.");
                 return View();

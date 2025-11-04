@@ -1,0 +1,10 @@
+web
+IP : 172.21.63.135
+user:  softir
+pass:  b#zQ@%6I5
+
+-----------
+db
+IP : 172.21.61.134
+user:  softir
+pass:  G2t!#L2%6I5

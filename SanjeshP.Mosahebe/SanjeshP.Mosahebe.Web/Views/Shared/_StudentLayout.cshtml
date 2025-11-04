@@ -216,7 +216,13 @@
                 <div class="col-10 d-flex align-items-start justify-content-end text-light text-end" dir="rtl">
                     <div class="row w-100 ">
                         <div class="col-3 d-flex justify-content-end">
-                            <img src="~/img/user.jpg" alt="User"
+                            @{
+                                var nationalCode = User.FindFirst("NationalCode")?.Value;
+                                var userPhotoPath = Url.Content($"~/uploads/{nationalCode}/{nationalCode}.jpg");
+                                var defaultPhoto = Url.Content("~/img/user.jpg");
+                            }
+                            <img src="@userPhotoPath"
+                                 onerror="this.onerror=null;this.src='@defaultPhoto';" alt="User"
                                  class="rounded-circle img-fluid"
                                  style="max-width: 100px;
                         height: 100px;
@@ -242,10 +248,10 @@
                 </div>
 
                 <!-- عنوان صفحه -->
-            @*     <div class="col-12 col-md-4 d-flex flex-column align-items-center justify-content-center mb-md-0 mb-3">
-                    <h2 class="font-weight-bold mb-2 text-light">@ViewData["Title"]</h2>
+                @*     <div class="col-12 col-md-4 d-flex flex-column align-items-center justify-content-center mb-md-0 mb-3">
+                <h2 class="font-weight-bold mb-2 text-light">@ViewData["Title"]</h2>
                 </div>
- *@
+                *@
 
                 <!-- مشخصات کاربر -->
                 <div class="col-2 d-flex flex-column align-items-center justify-content-center text-light">
@@ -348,38 +354,38 @@
             const modalId = `dynamicModal${modalCount}`;
             const modalDialogClass = isLarge ? 'modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' : 'modal-dialog modal-dialog-centered modal-dialog-scrollable';
             const modalTemplate = `
-                                                        <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                            <div class="${modalDialogClass}">
-                                                                <div class="modal-content">
-                                                                    <div class="modal-header">
-                                                                        <div class="align-content-end">
-                                                                            <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
-                                                                        </div>
-                                                                            <div class="align-content-start">
-                                                                                <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
-                                                                                <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
+                                                                <div class="modal fade rtl-modal" id="${modalId}" tabindex="-1" role="dialog" aria-labelledby="${modalId}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                                                                    <div class="${modalDialogClass}">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <div class="align-content-end">
+                                                                                    <h5 class="modal-title" id="lbl_${modalId}">${title}</h5>
+                                                                                </div>
+                                                                                    <div class="align-content-start">
+                                                                                        <button type="button" class="close float-left" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                                                                                        <button type="button" class="btn-full-screen float-right" id="btn_expand_${modalId}"><i class="fas fa-expand-arrows-alt" data-original-title="" title=""></i></button>
+                                                                                    </div>
                                                                             </div>
-                                                                    </div>
-                                                                    <div class="modal-body" id="body_${modalId}">
-                                                                        <div class="row align-items-center">
-                                                                            <div class="col-md-12 mb-4 text-center">
-                                                                                <span class="h3">در حال بارگزاری</span>
-                                                                            </div>
-                                                                            <div class="col-md-12 text-center">
-                                                                                 <div class="spinner-container">
-                                                                <div class="spinner-border" role="status">
-                                                                    <span class="sr-only">Loading...</span>
-                                                                </div>
-                                                            </div>
-                                                                            </div>
+                                                                            <div class="modal-body" id="body_${modalId}">
+                                                                                <div class="row align-items-center">
+                                                                                    <div class="col-md-12 mb-4 text-center">
+                                                                                        <span class="h3">در حال بارگزاری</span>
+                                                                                    </div>
+                                                                                    <div class="col-md-12 text-center">
+                                                                                         <div class="spinner-container">
+                                                                        <div class="spinner-border" role="status">
+                                                                            <span class="sr-only">Loading...</span>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="modal-footer">
-                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>`;
+                                                                </div>`;
             document.getElementById('modalContainer').insertAdjacentHTML('beforeend', modalTemplate);
             $(`#${modalId}`).modal('show');
 

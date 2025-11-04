@@ -134,7 +134,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             // 2. شمارش درخواست‌های ۲۴ ساعت گذشته
             //var otpCountToday = otps.Count(o => o.CreatedDate >= DateTime.UtcNow.AddHours(-24));
 
-            var otpCountToday = await _studentOtpRepository.CountOtpByStudentSinceAsync(student.Id, DateTime.UtcNow.AddHours(-24), cancellationToken);
+            var otpCountToday = await _studentOtpRepository.CountOtpByStudentSinceAsync(student.Id, DateTime.Now.AddHours(-24), cancellationToken);
 
             // 3. بررسی سقف ۱۰ بار
             if (otpCountToday >= _siteSetting.authenticationStudentSettings.MaxSmsPerDay)
@@ -155,7 +155,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 StudentId = student.Id,
                 Code = otpCode,
                 HostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 ExpiresAt = DateTime.Now.AddSeconds(120),
                 SentTo = student.PhoneNumber,
                 IsUsed = false
@@ -200,11 +200,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             }
 
             var otp = await _studentOtpRepository.GetValidOtpAsync(student.Id, model.TwoFactorCode, cancellationToken);
-            if (otp == null || otp.IsUsed || otp.ExpiresAt < DateTime.UtcNow)
+            if (otp == null || otp.IsUsed == true || otp.ExpiresAt <= DateTime.Now || otp.IsDeleted == true)
+
             {
                 ModelState.AddModelError("", "کد وارد شده صحیح نیست یا منقضی شده است.");
                 ViewBag.NationalCode = nationalCode;
-                _logger.LogWarning("OTP validation failed for StudentId={StudentId}, Code={Code}",student.Id, model.TwoFactorCode);
+                _logger.LogWarning("OTP validation failed for StudentId={StudentId}, Code={Code}", student.Id, model.TwoFactorCode);
                 return PartialView(model);
             }
 

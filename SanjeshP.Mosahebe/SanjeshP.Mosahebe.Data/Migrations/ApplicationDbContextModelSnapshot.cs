@@ -1358,6 +1358,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("MaxCount")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("OneMaxScore")
                         .HasColumnType("decimal(6,3)");
 
@@ -1408,6 +1411,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("MaxScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")

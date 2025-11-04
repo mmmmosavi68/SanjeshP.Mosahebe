@@ -22,6 +22,7 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         [Column(TypeName = "decimal(6,3)")]
         public double AllMaxScore { get; set; }
         public FormSourceType SourceType { get; set; }
+        public int MaxCount { get; set; }
 
         // Foreign Key
         public int FormItemCategoryId { get; set; }

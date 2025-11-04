@@ -72,7 +72,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
             var forms = await _formItemRepository.GetFormItemsWithIncludesAsync(cancellationToken);
-            return View(forms);
+            return View(forms.OrderBy(f => f.FormItemCategory.Order));
         }
 
         // GET: /Student/StudentHome/LoadForm?formId=1
@@ -150,16 +150,24 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 string value = null;
                 var key = $"field_{field.Id}";
 
-                var MaxCount = formItem.FormItemCategory?.MaxCount;
+                var MaxCountCategory = formItem.FormItemCategory?.MaxCount;
+                var MaxCountFormItem = formItem.MaxCount;
+
                 var FormItemCount = await _submissionScoreRepository.GetByStudentAndFormsAsync(studentId, field.FormItemId, cancellationToken);
 
                 if (field.inputType == InputType.File)
                 {
-
+                    var ddd = FormItemCount.Where(f => f.FormItem.FormItemCategory.Id == formItem.FormItemCategory.Id).Count();
+                    var ggg = FormItemCount.Where(f => f.FormItemId == field.FormItemId).Count();
                     var file = Request.Form.Files[key];
-                    if (FormItemCount.Count() >= MaxCount && MaxCount !=0)
+                    if (FormItemCount.Where(f => f.FormItem.FormItemCategory.Id == formItem.FormItemCategory.Id).Count() >= MaxCountCategory && MaxCountCategory != 0)
                     {
-                        errors.Add($"شما حداکثر تعداد فرم برای این آیتم را قبلا ثبت کرده اید.");
+                        errors.Add($"شما حداکثر تعداد فرم برای این دسته بندی را قبلا ثبت کرده اید.");
+                        continue;
+                    }
+                    else if (FormItemCount.Where(f => f.FormItemId == field.FormItemId).Count() >= MaxCountFormItem && MaxCountFormItem != 0)
+                    {
+                        errors.Add($"شما حداکثر تعداد را برای این فرم قبلا ثبت کرده اید.");
                         continue;
                     }
                     else if (file != null && file.Length > 0)
@@ -398,6 +406,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                     SubmissionId = f.Id,
                     FormItemId = f.FormItemId,
                     FormTitle = f.FormItem.Title,
+                    Order = f.FormItem.FormItemCategory.Order,
                     CreateDatePersian = DateConvertor.ToShamsiDateTime(f.CreatedDate), // فرض بر این که این پراپرتی توی entity هست یا خودت تبدیلش می‌کنی
                     SubmissionValues = f.StudentFormSubmissionDatas.Select(d =>
                     {
@@ -410,7 +419,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
 
 
-                return PartialView("SubmissionDataList", result.OrderBy(f => f.FormTitle));
+                return PartialView("SubmissionDataList", result.OrderBy(f => f.Order));
             }
             catch (Exception ex)
             {

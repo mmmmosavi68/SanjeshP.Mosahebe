@@ -11,6 +11,7 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
         public string Title { get; set; }
         public int MaxScore { get; set; }
         public int MaxCount { get; set; }
+        public int Order { get; set; }
 
         public ICollection<FormItem> FormItem { get; set; }
 

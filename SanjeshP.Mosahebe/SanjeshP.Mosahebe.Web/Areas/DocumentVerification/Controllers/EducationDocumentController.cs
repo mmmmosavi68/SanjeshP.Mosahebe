@@ -385,7 +385,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                         submissionScore.RejectReason = formInput.RejectReason?.Trim(); // ذخیره دلیل رد
                     }
 
-                    submissionScore.UpdatedDate = DateTime.UtcNow; // تاریخ بروزرسانی
+                    submissionScore.UpdatedDate = DateTime.Now; // تاریخ بروزرسانی
                     submissionScore.CreatedBy = token.UserId;
                     await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken);
                 }

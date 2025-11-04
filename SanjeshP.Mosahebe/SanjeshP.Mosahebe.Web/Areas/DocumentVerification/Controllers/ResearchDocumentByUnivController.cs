@@ -319,7 +319,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                 record.IsApproved = Status;
                 record.CreatedBy = token.UserId;
                 record.HostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-                record.UpdatedDate = DateTime.UtcNow; // اگر BaseEntity این فیلد را دارد
+                record.UpdatedDate = DateTime.Now; // اگر BaseEntity این فیلد را دارد
                 _researchDocumentScoreRepository.Update(record);
             }
             else
@@ -333,7 +333,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                     IsApproved = Status,
                     CreatedBy = token.UserId,
                     HostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
-                    CreatedDate = DateTime.UtcNow // اگر BaseEntity این فیلد را دارد
+                    CreatedDate = DateTime.Now // اگر BaseEntity این فیلد را دارد
                 };
                 await _researchDocumentScoreRepository.AddAsync(record, cancellationToken);
             }

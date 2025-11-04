@@ -2,6 +2,7 @@
     ViewData["Title"] = "SubmissionDataList";
 }
 
+@using SanjeshP.Mosahebe.Convertor
 @using SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
 @model IEnumerable<AllSubmissionDataViewModel>
 
@@ -10,6 +11,7 @@
 }
 
 <div class="bg-light rounded p-4">
+    <p class="h4 fw-bold text-danger col-12 text-center">شما تا تاریخ <span class="text-primary text-decoration-underline">@DateConvertor.ToShamsiDateTime(@DateTime.Now)</span> تعداد <span class="text-primary text-decoration-underline">@Model.Count()</span> مدرک بارگذاری کرده اید.</p>
     <table class="table-hover table-striped table text-center" id="tbl_data">
         <thead>
             <tr class='trhead'>

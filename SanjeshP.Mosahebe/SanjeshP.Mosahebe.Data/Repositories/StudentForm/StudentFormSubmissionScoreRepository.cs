@@ -16,7 +16,12 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 {
     public class StudentFormSubmissionScoreRepository : EntityFrameworkRepository<StudentFormSubmissionScore>, IStudentFormSubmissionScoreRepository, IScopedDependency
     {
-        public StudentFormSubmissionScoreRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+        private readonly IFormItemRepository _formItemRepository;
+
+        public StudentFormSubmissionScoreRepository(ApplicationDbContext dbContext, IFormItemRepository formItemRepository) : base(dbContext)
+        {
+            _formItemRepository = formItemRepository;
+        }
 
         public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentFormIdAsync(int formId, CancellationToken cancellationToken)
         {
@@ -66,6 +71,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
 
             return await TableNoTracking
             .Include(fss => fss.FormItem)                      // جدول FormItems
+                .ThenInclude(f => f.FormItemCategory)
             .Include(fss => fss.StudentFormSubmissionDatas)    // جدول StudentFormSubmissionData
                 .ThenInclude(d => d.FormItemDefinition)
             .Include(s => s.StudentFormSubmissionDatas)
@@ -114,7 +120,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                      .ThenInclude(d => d.FormItemDefinition)
                  .Include(s => s.StudentFormSubmissionDatas)
                      .ThenInclude(d => d.FormItemCoefficientDefinition)
-                 .Where(s => s.StudentId == studentId && s.Id==SubmissionId && s.IsActive && !s.IsDeleted)
+                 .Where(s => s.StudentId == studentId && s.Id == SubmissionId && s.IsActive && !s.IsDeleted)
                    .FirstOrDefaultAsync(cancellationToken)
                    .ConfigureAwait(false);
 
@@ -145,7 +151,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             }
 
             result.StudentFormSubmissionDatas = result.StudentFormSubmissionDatas
-                    .OrderBy(d =>d.CreatedDate)
+                    .OrderBy(d => d.CreatedDate)
                     .ToList();
 
 
@@ -159,6 +165,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
             var results = await TableNoTracking
                 .Include(s => s.FormItem)
                     .ThenInclude(f => f.FormItemCoefficient)
+                 .Include(s => s.FormItem)
+                    .ThenInclude(f => f.FormItemCategory)
                 .Include(s => s.FormItem)
                     .ThenInclude(f => f.FormItemDefinitions)
                 .Include(s => s.StudentFormSubmissionDatas)
@@ -205,7 +213,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                     .ToList();
             }
 
-            return results;
+            return results.OrderBy(f => f.FormItem.FormItemCategory.Order);
         }
 
         //Mousavi
@@ -250,7 +258,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         {
             return await Table
                 .Include(s => s.FormItem)
-                    .ThenInclude(s=>s.FormItemCoefficient)
+                    .ThenInclude(s => s.FormItemCoefficient)
                 .Include(s => s.StudentFormSubmissionDatas)
                     .ThenInclude(d => d.FormItemDefinition)
                 .Include(s => s.StudentFormSubmissionDatas)
@@ -262,8 +270,9 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<IEnumerable<StudentFormSubmissionScore>> GetByStudentAndFormsAsync(int studentId, int formItemId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
+                .Include(f=>f.FormItem)
+                    .ThenInclude(f=>f.FormItemCategory)
                     .Where(x => x.StudentId == studentId
-                          && x.FormItemId == formItemId
                           && x.IsDeleted == false
                           && x.IsActive == true)
                     .ToListAsync()
