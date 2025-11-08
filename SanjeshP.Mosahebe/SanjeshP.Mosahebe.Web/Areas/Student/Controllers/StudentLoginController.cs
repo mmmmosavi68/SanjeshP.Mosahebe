@@ -206,6 +206,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 ModelState.AddModelError("", "کد وارد شده صحیح نیست یا منقضی شده است.");
                 ViewBag.NationalCode = nationalCode;
                 _logger.LogWarning("OTP validation failed for StudentId={StudentId}, Code={Code}", student.Id, model.TwoFactorCode);
+                ModelState.AddModelError("", "کد وارد شده صحیح نیست یا منقضی شده است.");
                 return PartialView(model);
             }
 

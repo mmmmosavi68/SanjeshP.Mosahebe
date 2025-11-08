@@ -2,8 +2,24 @@
 @model StudentInterviewQuestionViewModel
 
 <div class="p-3">
-    <h4>مصاحبه داوطلب: @Model.StudentName (@Model.NationalCode)</h4>
-    <h5>ایستگاه: @Model.StationName</h5>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="mb-0">مصاحبه داوطلب: @Model.StudentName (@Model.NationalCode)</h4>
+            <h5 class="text-muted">ایستگاه: @Model.StationName</h5>
+        </div>
+
+        @{
+            var nationalCode = Model.NationalCode;
+            var userPhotoPath = Url.Content($"~/uploads/{nationalCode}/{nationalCode}.jpg");
+            var defaultPhoto = Url.Content("~/img/user.jpg");
+        }
+
+        <img src="@userPhotoPath"
+             onerror="this.onerror=null;this.src='@defaultPhoto';"
+             class="img-thumbnail"
+             style="width:100px;height:100px;object-fit:cover;margin-right:10px;"
+             alt="user photo" />
+    </div>
 
     <form id="interviewForm">
         <input type="hidden" name="StudentId" value="@Model.StudentId" />

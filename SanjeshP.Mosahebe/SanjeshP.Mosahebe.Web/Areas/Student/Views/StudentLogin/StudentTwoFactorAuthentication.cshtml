@@ -8,7 +8,12 @@
 
     <div class="form-group">
         <div class="input-group neu-input">
-            <input asp-for="TwoFactorCode" placeholder=" " />
+            <input asp-for="TwoFactorCode"
+                   placeholder=" " 
+                   maxlength="6"
+                   pattern="[0-9]{1,6}"
+                   inputmode="numeric"
+                   title="کد باید حداکثر ۶ رقم عددی باشد" />
             <label for="TwoFactorCode">کد یکبار مصرف را وارد نمایید</label>
             <div class="input-icon">
                 <i class="fa fa-envelope"></i>
