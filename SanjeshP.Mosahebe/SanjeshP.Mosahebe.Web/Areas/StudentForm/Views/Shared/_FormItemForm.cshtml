@@ -23,6 +23,11 @@
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
     <div class="form-group">
+        <label>توضیحات اختصاصی اساتید</label>
+        <textarea asp-for="PrivateDescription" class="form-control"></textarea>
+        <span asp-validation-for="PrivateDescription" class="text-danger"></span>
+    </div>
+    <div class="form-group">
         <label>حداکثر امتیاز تکی</label>
         <input asp-for="OneMaxScore" class="form-control" type="text" />
         <span asp-validation-for="OneMaxScore" class="text-danger"></span>

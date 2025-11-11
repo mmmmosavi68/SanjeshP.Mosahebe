@@ -94,6 +94,7 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
             {
                 Title = model.Title,
                 Description = model.Description,
+                PrivateDescription = model.PrivateDescription,
                 OneMaxScore = model.OneMaxScore,
                 AllMaxScore = model.AllMaxScore,
                 IsActive = model.IsActive,
@@ -120,6 +121,7 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
                 Id = entity.Id,
                 Title = entity.Title,
                 Description = entity.Description,
+                PrivateDescription= entity.PrivateDescription,
                 OneMaxScore = entity.OneMaxScore,
                 AllMaxScore = entity.AllMaxScore,
                 IsActive= entity.IsActive,
@@ -149,6 +151,7 @@ namespace SanjeshP.Mosahebe.Presentation.Controllers
 
             entity.Title = model.Title;
             entity.Description = model.Description;
+            entity.PrivateDescription= model.PrivateDescription;
             entity.OneMaxScore = model.OneMaxScore;
             entity.AllMaxScore = model.AllMaxScore;
             entity.IsActive=model.IsActive;

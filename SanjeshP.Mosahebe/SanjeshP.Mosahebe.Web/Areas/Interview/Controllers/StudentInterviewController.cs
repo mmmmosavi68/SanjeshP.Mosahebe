@@ -77,7 +77,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             var stations = fieldStations
                 .Select(fs => fs.Station)
                 .Where(s => s != null)
-                .GroupBy(s => s.Id)   
+                .GroupBy(s => s.Id)
                 .Select(g => g.First())
                 .ToList();
 
@@ -101,6 +101,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                 var interviewScores = await _interviewScoreRepository
                     .GetInterviewScoresAsync(studentIds, stationId, cancellationToken);
 
+                var currentUserToken = User.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
+                var userId = token.UserId;
+
                 // 4. تبدیل به ViewModel
                 var result = filteredStudents.Select(e => new StudentListViewModel
                 {
@@ -117,7 +121,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                     Fields = e.StudentFields != null && e.StudentFields.Any()
                         ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
                         : "",
-                    interviewScore = interviewScores.FirstOrDefault(x => x.StudentId == e.Id)
+                    interviewScore = interviewScores.FirstOrDefault(x => x.StudentId == e.Id && x.UserId == userId)
                 }).ToList();
 
                 ViewBag.StationId = stationId;

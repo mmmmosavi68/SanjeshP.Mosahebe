@@ -104,6 +104,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SanjeshP.Mosahebe.Services\SanjeshP.Mosahebe.Services.csproj" />
     <ProjectReference Include="..\SanjeshP.Mosahebe.WebFramework\SanjeshP.Mosahebe.WebFramework.csproj" />
   </ItemGroup>
 

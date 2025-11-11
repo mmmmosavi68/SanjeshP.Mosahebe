@@ -8,6 +8,7 @@ namespace SanjeshP.Mosahebe.Presentation.ViewModels
         public int Id { get; set; }   // برای Edit و Delete
         public string Title { get; set; }
         public string Description { get; set; }
+        public string PrivateDescription { get; set; }
         public double OneMaxScore { get; set; }
         public double AllMaxScore { get; set; }
         public bool IsActive { get; set; }

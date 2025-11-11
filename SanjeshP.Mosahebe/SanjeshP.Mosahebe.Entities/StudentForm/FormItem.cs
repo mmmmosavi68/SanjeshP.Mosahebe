@@ -17,6 +17,7 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
     {
         public string Title { get; set; }      // عنوان فرم
         public string Description { get; set; }  // توضیح کوتاه (اختیاری)
+        public string PrivateDescription { get; set; }
         [Column(TypeName = "decimal(6,3)")]
         public double OneMaxScore { get; set; }
         [Column(TypeName = "decimal(6,3)")]

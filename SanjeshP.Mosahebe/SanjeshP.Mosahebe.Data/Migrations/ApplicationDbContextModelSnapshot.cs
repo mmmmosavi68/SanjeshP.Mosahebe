@@ -1364,6 +1364,9 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<decimal>("OneMaxScore")
                         .HasColumnType("decimal(6,3)");
 
+                    b.Property<string>("PrivateDescription")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SourceType")
                         .HasColumnType("int");
 
