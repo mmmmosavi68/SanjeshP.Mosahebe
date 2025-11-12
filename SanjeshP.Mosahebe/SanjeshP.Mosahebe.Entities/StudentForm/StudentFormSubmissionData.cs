@@ -21,8 +21,8 @@ namespace SanjeshP.Mosahebe.Entities.StudentForm
 
         /// رفرنس به رکورد اصلی StudentFormSubmission
         /// هر ارسال یک فرم شامل چندین مقدار (Value) می‌شود.
-        public int StudentFormSubmissionScoreId { get; set; }
-        public StudentFormSubmissionScore StudentFormSubmissionScore  { get; set; }
+        public int StudentFormSubmissionId { get; set; }
+        public StudentFormSubmission StudentFormSubmission  { get; set; }
 
         /// شناسه تعریف فیلد (کدوم فیلد بوده؟ معدل، زبان، کتاب و ...)
         public int? FormItemDefinitionId { get; set; }

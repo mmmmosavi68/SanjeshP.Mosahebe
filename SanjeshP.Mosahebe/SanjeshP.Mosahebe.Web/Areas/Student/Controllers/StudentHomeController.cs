@@ -32,7 +32,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         private readonly IFormItemDefinitionRepository _formItemDefinitionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _coefficientDefinitionRepository;
         private readonly IFormItemCoefficientRepository _formItemCoefficientRepository;
-        private readonly IStudentFormSubmissionScoreRepository _submissionScoreRepository;
+        private readonly IStudentFormSubmissionRepository _submissionScoreRepository;
         private readonly IStudentFormSubmissionDataRepository _submissionDataRepository;
         private readonly ICoefficientRepository _coefficientRepository;
         private readonly IWebHostEnvironment _env;
@@ -46,7 +46,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             IFormItemDefinitionRepository formItemDefinitionRepository,
             IFormItemCoefficientDefinitionRepository coefficientDefinitionRepository,
             IFormItemCoefficientRepository formItemCoefficientRepository,
-            IStudentFormSubmissionScoreRepository submissionScoreRepository,
+            IStudentFormSubmissionRepository submissionScoreRepository,
             IStudentFormSubmissionDataRepository submissionDataRepository,
             IStudentRepository studentRepository,
             ICoefficientRepository coefficientRepository,
@@ -290,7 +290,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 return BadRequest(new { success = false, errors });
 
             // همه چی اوکی است؛ رکورد Submission را ایجاد می‌کنیم
-            var submission = new StudentFormSubmissionScore
+            var submission = new StudentFormSubmission
             {
                 FormItemId = model.FormId,
                 StudentId = studentId,
@@ -304,7 +304,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             // توجه: فرض بر این است که AddStudentFormSubmissionValueAsync پس از ذخیره، entity.Id را مقداردهی می‌کند (EF Core رفتار پیش‌فرض بعد از SaveChanges)
             foreach (var data in preparedData)
             {
-                data.StudentFormSubmissionScoreId = submission.Id;
+                data.StudentFormSubmissionId = submission.Id;
                 await _submissionDataRepository.AddStudentFormSubmissionValueAsync(data, cancellationToken);
 
                 // اگر این data مربوط به فایلی است، پیدا کردن فایل متناظر در preparedFiles بر اساس storedFileName و definition id
@@ -327,7 +327,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                         var uploaded = new UploadedFile
                         {
                             StudentId = studentId,
-                            StudentFormSubmissionScoreId = submission.Id,
+                            StudentFormSubmissionId = submission.Id,
                             StudentFormSubmissionDataId = data.Id,
                             StoredFileName = match.StoredFileName,
                             OriginalFileName = Path.GetFileName(match.File.FileName),
@@ -433,7 +433,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-                var datadetail = await _submissionScoreRepository.GetFormSubmissionDataByStudentAndSubmissionScoresIDAsync(studentId, id, cancellationToken);
+                var datadetail = await _submissionScoreRepository.GetFormSubmissionDataByStudentAndSubmissionsIDAsync(studentId, id, cancellationToken);
                 if (datadetail == null)
                 {
                     return NotFound();
@@ -513,7 +513,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             // بررسی دسترسی به فایل (اجباری)
             //var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
             // مثال: اگر بخواهید مطمئن شوید فایل متعلق به کاربر است:
-            // var parent = data.StudentFormSubmissionScore; // اگر Include کرده‌اید
+            // var parent = data.StudentFormSubmission; // اگر Include کرده‌اید
             // if (parent == null || parent.StudentId != currentUserStudentId) return Forbid();
 
             // امن‌سازی مقدار Value: اغلب data.Value فقط نام فایل است، نه مسیر کامل

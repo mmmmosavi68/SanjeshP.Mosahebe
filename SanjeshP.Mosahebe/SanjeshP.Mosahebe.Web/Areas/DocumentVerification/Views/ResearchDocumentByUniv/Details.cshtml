@@ -1,10 +1,10 @@
 ﻿@using SanjeshP.Mosahebe.Entities.StudentForm
 @using SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
-@model StudentFormSubmissionScoreViewModel
+@model StudentFormSubmissionViewModel
 
 @{
     Layout = null;
-    var forms = Model.Forms?.ToList() ?? new List<StudentFormSubmissionScore>();
+    var forms = Model.Forms?.ToList() ?? new List<StudentFormSubmission>();
 }
 
 <style>

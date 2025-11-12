@@ -27,10 +27,10 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                          .Select(ed => ed.FinalTotalScore)
                          .FirstOrDefaultAsync(cancellationToken);
         }
-        public async Task<Dictionary<int, double>> GetScoresByStudentIdsAsync(List<int> studentIds, CancellationToken cancellationToken)
+        public async Task<Dictionary<int, double>> GetScoresByStudentIdsAsync(List<int> studentIds, Guid UserId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                .Where(ed => studentIds.Contains(ed.StudentId) && ed.IsActive && !ed.IsDeleted)
+                .Where(ed => studentIds.Contains(ed.StudentId) && ed.CreatedBy == UserId && (ed.IsActive && !ed.IsDeleted))
                 .ToDictionaryAsync(ed => ed.StudentId, ed => ed.FinalTotalScore, cancellationToken);
         }
         public async Task SaveOrUpdateFinalScoreAsync(int studentId, double finalScore, CancellationToken cancellationToken)

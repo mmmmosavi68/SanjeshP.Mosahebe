@@ -39,12 +39,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IStudentRepository _studentRepository;
         private readonly ICoefficientRepository _coefficientRepository;
-        private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionRepository;
+        private readonly IStudentFormSubmissionRepository _studentFormSubmissionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _formItemCoefficientDefinitionRepository;
         private readonly IStudentFormSubmissionDataRepository _studentFormSubmissionValueRepository;
         private readonly IEducationDocumentScoreRepository _educationDocumentScoreRepository;
         private readonly IExamFieldRepository _examFieldRepository;
         private readonly IExamRepository _examRepository;
+        private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionScoreRepository;
 
         public EducationDocumentController(IMapper mapper
                                         , IWebHostEnvironment env
@@ -52,12 +53,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , IUserTokenRepository userTokenRepository
                                         , IStudentRepository studentRepository
                                         , ICoefficientRepository coefficientRepository
-                                        , IStudentFormSubmissionScoreRepository studentFormSubmissionRepository
+                                        , IStudentFormSubmissionRepository studentFormSubmissionRepository
                                         , IFormItemCoefficientDefinitionRepository formItemCoefficientDefinitionRepository
                                         , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository
                                         , IEducationDocumentScoreRepository educationDocumentScoreRepository
                                         , IExamFieldRepository examFieldRepository
-                                        , IExamRepository examRepository)
+                                        , IExamRepository examRepository
+                                        , IStudentFormSubmissionScoreRepository studentFormSubmissionScoreRepository)
         {
             _mapper = mapper;
             _env = env;
@@ -71,6 +73,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             this._educationDocumentScoreRepository = educationDocumentScoreRepository;
             this._examFieldRepository = examFieldRepository;
             this._examRepository = examRepository;
+            this._studentFormSubmissionScoreRepository = studentFormSubmissionScoreRepository;
         }
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -91,8 +94,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         {
             try
             {
+                var currentUserToken = User.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), cancellationToken);
                 // دریافت همه دانشجویان فعال
-                var students = await _studentRepository.GetAllStudentsByFieldIdAsync(fieldId, cancellationToken);
+                var students = await _studentRepository.GetAllStudentsByFieldIdUserIdAsync(fieldId, token.UserId, cancellationToken);
 
                 if (students == null || !students.Any())
                     return PartialView("StudentsList", new List<StudentListViewModel>());
@@ -102,13 +107,14 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                 // دریافت نمرات نهایی همه دانشجویان به صورت Dictionary<int,double>
                 var scores = await _educationDocumentScoreRepository
-                    .GetScoresByStudentIdsAsync(studentIds, cancellationToken);
+                    .GetScoresByStudentIdsAsync(studentIds, token.UserId, cancellationToken);
+
 
                 // نگاشت دانشجویان به ViewModel
                 var result = students.Select(e =>
                 {
                     var activeScore = e.EducationDocumentScores?
-                        .Where(ed => ed.IsActive && !ed.IsDeleted)
+                        .Where(ed => ed.IsActive && !ed.IsDeleted && ed.CreatedBy == token.UserId)
                         .OrderByDescending(ed => ed.CreatedDate)   // یا by Id اگر CreatedDate ندارید
                         .FirstOrDefault();
 
@@ -173,8 +179,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                 {
                     ViewBag.Message = "هیچ فرمی برای این داوطلب ثبت نشده است.";
 
-                    var studentFormSubmissionScoreViewModelNull = await FillStudentFormSubmissionScoreViewModel(id, forms, cancellationToken);
-                    return PartialView("Details", studentFormSubmissionScoreViewModelNull);
+                    var studentFormSubmissionViewModelNull = await FillStudentFormSubmissionViewModel(id, forms, cancellationToken);
+                    return PartialView("Details", studentFormSubmissionViewModelNull);
                 }
 
 
@@ -221,10 +227,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                 // 🧭 مپ کردن به ViewModel
                 var model = _mapper.Map<IEnumerable<SubmissionDataDetailViewModel>>(forms);
-                var studentFormSubmissionScoreViewModel = await FillStudentFormSubmissionScoreViewModel(id, forms, cancellationToken);
+                var studentFormSubmissionViewModel = await FillStudentFormSubmissionViewModel(id, forms, cancellationToken);
 
 
-                return PartialView("Details", studentFormSubmissionScoreViewModel);
+                return PartialView("Details", studentFormSubmissionViewModel);
             }
             catch (Exception ex)
             {
@@ -270,11 +276,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                     var oneMaxScore = submissionScore.FormItem?.OneMaxScore ?? 0; // حداکثر امتیاز فرم
 
+                    StudentFormSubmissionScore scoreToSave = new StudentFormSubmissionScore();
+
                     // اگر فرم تایید شده باشد
                     if (formInput.IsApproved == true)
                     {
-                        submissionScore.IsApproved = true; // علامت تایید
-                        submissionScore.RejectReason = null; // هیچ دلیل ردی وجود ندارد
+                        scoreToSave.IsApproved = true; // علامت تایید
+                        scoreToSave.RejectReason = null; // هیچ دلیل ردی وجود ندارد
 
                         var coefficientId = submissionScore.FormItem?.FormItemCoefficient?.CoefficientId ?? 0;
                         var coeffs = await _coefficientRepository.GetByCoefficientIdAsync(coefficientId, cancellationToken);
@@ -282,11 +290,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                         // حالت ۱: فرم‌های بدون ورودی دستی (مثل معدل، کتاب، زبان و ...)
                         if (coefficientId == 0)
                         {
-                            submissionScore.Score = oneMaxScore;
+                            scoreToSave.CalculatedScore = oneMaxScore;
                         }
                         else if (coefficientId == 1 || coefficientId == 4)
                         {
-                            submissionScore.Score = CalculateScore(submissionScore, coeffs);
+                            scoreToSave.CalculatedScore = CalculateScore(submissionScore, coeffs);
                         }
                         else if (coefficientId == 2)
                         {
@@ -300,19 +308,19 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                 switch (coefficientValue)
                                 {
                                     case 2: // ضریب
-                                        submissionScore.Score = score / 5;
+                                        scoreToSave.CalculatedScore = score / 5;
                                         break;
                                     case 1: // ضریب
-                                        submissionScore.Score = score / 10;
+                                        scoreToSave.CalculatedScore = score / 10;
                                         break;
                                     case 0.5: // ضریب
-                                        submissionScore.Score = score / 20;
+                                        scoreToSave.CalculatedScore = score / 20;
                                         break;
                                 }
                             }
                             else
                             {
-                                submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
+                                scoreToSave.CalculatedScore = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
                             }
                         }
                         else if (coefficientId == 3)
@@ -327,11 +335,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                 if (score < 0) score = 0;
                                 if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
 
-                                submissionScore.Score = score * coefficientValue;
+                                scoreToSave.CalculatedScore = score * coefficientValue;
                             }
                             else
                             {
-                                submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
+                                scoreToSave.CalculatedScore = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
                             }
                         }
                         else if (coefficientId == 5)  // محاسبه نمراتی که میخواند توی بازه 1 تا 10 استاد نمره بدهد
@@ -341,11 +349,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                 // بررسی حداقل و حداکثر
                                 if (score < 0) score = 0;
                                 if (oneMaxScore > 0 && score > oneMaxScore) score = oneMaxScore;
-                                submissionScore.Score = score / 5;
+                                scoreToSave.CalculatedScore = score / 5;
                             }
                             else
                             {
-                                submissionScore.Score = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
+                                scoreToSave.CalculatedScore = 0; // اگر نمره نامعتبر باشد، صفر در نظر گرفته می‌شود
                             }
                         }
                         else if (coefficientId == 6)
@@ -355,12 +363,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                             if (coefficientValue != 0)
                             {
-                                submissionScore.Score = coefficientValue;
+                                scoreToSave.CalculatedScore = coefficientValue;
 
                             }
                             else
                             {
-                                submissionScore.Score = 0;
+                                scoreToSave.CalculatedScore = 0;
                             }
 
                         }
@@ -369,28 +377,50 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                             var coefficientValue = CalculateScore(submissionScore, coeffs);
                             if (coefficientValue != 0)
                             {
-                                submissionScore.Score = coefficientValue * oneMaxScore;
+                                scoreToSave.CalculatedScore = coefficientValue * oneMaxScore;
 
                             }
                             else
                             {
-                                submissionScore.Score = 0;
+                                scoreToSave.CalculatedScore = 0;
                             }
                         }
                     }
                     else // اگر فرم تایید نشده باشد
                     {
-                        submissionScore.IsApproved = false;
-                        submissionScore.Score = 0; // نمره صفر برای فرم رد شده
-                        submissionScore.RejectReason = formInput.RejectReason?.Trim(); // ذخیره دلیل رد
+                        scoreToSave.IsApproved = false;
+                        scoreToSave.CalculatedScore = 0; // نمره صفر برای فرم رد شده
+                        scoreToSave.RejectReason = formInput.RejectReason?.Trim(); // ذخیره دلیل رد
                     }
 
-                    submissionScore.UpdatedDate = DateTime.Now; // تاریخ بروزرسانی
-                    submissionScore.CreatedBy = token.UserId;
-                    await _studentFormSubmissionRepository.UpdateAsync(submissionScore, cancellationToken);
+                    // بررسی وجود رکورد قبلی
+                    var existingScore = await _studentFormSubmissionScoreRepository
+                        .GetExistingScoreAsync(submissionScore.StudentId, submissionScore.Id, token.UserId, cancellationToken);
+                    if (existingScore != null)
+                    {
+                        // رکورد قبلی وجود دارد → Update
+                        existingScore.IsApproved = scoreToSave.IsApproved;
+                        existingScore.CalculatedScore = scoreToSave.CalculatedScore;
+                        existingScore.RejectReason = scoreToSave.RejectReason;
+                        existingScore.UpdatedDate = DateTime.Now;
+                        existingScore.UserId = token.UserId;
+                        existingScore.HostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+                        await _studentFormSubmissionScoreRepository.UpdateStudentFormSubmissionScoreAsync(existingScore, cancellationToken);
+                    }
+                    else
+                    {
+                        // رکورد جدید اضافه می‌شود
+                        scoreToSave.StudentFormSubmissionId = submissionScore.Id;
+                        scoreToSave.StudentId = submissionScore.StudentId;
+                        scoreToSave.UpdatedDate = DateTime.Now; // تاریخ بروزرسانی
+                        scoreToSave.CreatedBy = token.UserId;
+                        scoreToSave.UserId = token.UserId;
+                        scoreToSave.HostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+                        await _studentFormSubmissionScoreRepository.AddStudentFormSubmissionScoreAsync(scoreToSave, cancellationToken);
+                    }
                 }
 
-                await _studentFormSubmissionRepository.SaveChangesAsync(cancellationToken);
+                await _studentFormSubmissionScoreRepository.SaveChangesAsync(cancellationToken);
 
                 if (studentId > 0)
                 {
@@ -417,7 +447,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             // بررسی دسترسی به فایل (اجباری)
             var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
             // مثال: اگر بخواهید مطمئن شوید فایل متعلق به کاربر است:
-            // var parent = data.StudentFormSubmissionScore; // اگر Include کرده‌اید
+            // var parent = data.StudentFormSubmission; // اگر Include کرده‌اید
             // if (parent == null || parent.StudentId != currentUserStudentId) return Forbid();
 
             // امن‌سازی مقدار Value: اغلب data.Value فقط نام فایل است، نه مسیر کامل
@@ -488,7 +518,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
             return PartialView("PreviewSubmissionFile", model);
         }
-        private double CalculateScore(StudentFormSubmissionScore submission, IEnumerable<Coefficient> coeffs)
+        private double CalculateScore(StudentFormSubmission submission, IEnumerable<Coefficient> coeffs)
         {
             var coeffId = submission.FormItem?.FormItemCoefficient?.CoefficientId ?? 0;
 
@@ -614,7 +644,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             return 0;
         }
 
-        private async Task<StudentFormSubmissionScoreViewModel> FillStudentFormSubmissionScoreViewModel(int studentId, IEnumerable<StudentFormSubmissionScore> studentFormSubmissionScores, CancellationToken cancellationToken)
+        private async Task<StudentFormSubmissionViewModel> FillStudentFormSubmissionViewModel(int studentId, IEnumerable<StudentFormSubmission> studentFormSubmissions, CancellationToken cancellationToken)
         {
             var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
 
@@ -627,15 +657,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             // رشته‌ها رو با "-" جدا کن
             var joinedFields = string.Join(" - ", fieldTitles);
 
-            var StudentFormSubmissionScoreViewModel = new StudentFormSubmissionScoreViewModel
+            var StudentFormSubmissionViewModel = new StudentFormSubmissionViewModel
             {
                 StudentName = student.FirstName + " " + student.LastName,
                 NationalCode = student.NationalCode,
                 StudentId = student.Id,
                 FielsTitle = joinedFields,
-                Forms = studentFormSubmissionScores.ToList()
+                Forms = studentFormSubmissions.ToList()
             };
-            return StudentFormSubmissionScoreViewModel;
+            return StudentFormSubmissionViewModel;
         }
     }
 }

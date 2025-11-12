@@ -32,7 +32,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IStudentRepository _studentRepository;
         private readonly ICoefficientRepository _coefficientRepository;
-        private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionRepository;
+        private readonly IStudentFormSubmissionRepository _studentFormSubmissionRepository;
         private readonly IFormItemCoefficientDefinitionRepository _formItemCoefficientDefinitionRepository;
         private readonly IStudentFormSubmissionDataRepository _studentFormSubmissionValueRepository;
         private readonly IEducationDocumentScoreRepository _educationDocumentScoreRepository;
@@ -45,7 +45,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , IUserTokenRepository userTokenRepository
                                         , IStudentRepository studentRepository
                                         , ICoefficientRepository coefficientRepository
-                                        , IStudentFormSubmissionScoreRepository studentFormSubmissionRepository
+                                        , IStudentFormSubmissionRepository studentFormSubmissionRepository
                                         , IFormItemCoefficientDefinitionRepository formItemCoefficientDefinitionRepository
                                         , IStudentFormSubmissionDataRepository studentFormSubmissionValueRepository
                                         , IEducationDocumentScoreRepository educationDocumentScoreRepository
@@ -151,8 +151,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                 {
                     ViewBag.Message = "هیچ فرمی برای این داوطلب ثبت نشده است.";
 
-                    var studentFormSubmissionScoreViewModelNull = await FillStudentFormSubmissionScoreViewModel(id, forms, cancellationToken);
-                    return PartialView("Details", studentFormSubmissionScoreViewModelNull);
+                    var studentFormSubmissionViewModelNull = await FillStudentFormSubmissionViewModel(id, forms, cancellationToken);
+                    return PartialView("Details", studentFormSubmissionViewModelNull);
                 }
 
 
@@ -199,10 +199,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                 // 🧭 مپ کردن به ViewModel
                 var model = _mapper.Map<IEnumerable<SubmissionDataDetailViewModel>>(forms);
-                var studentFormSubmissionScoreViewModel = await FillStudentFormSubmissionScoreViewModel(id, forms, cancellationToken);
+                var studentFormSubmissionViewModel = await FillStudentFormSubmissionViewModel(id, forms, cancellationToken);
 
 
-                return PartialView("Details", studentFormSubmissionScoreViewModel);
+                return PartialView("Details", studentFormSubmissionViewModel);
             }
             catch (Exception ex)
             {
@@ -304,7 +304,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             // بررسی دسترسی به فایل (اجباری)
             var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
             // مثال: اگر بخواهید مطمئن شوید فایل متعلق به کاربر است:
-            // var parent = data.StudentFormSubmissionScore; // اگر Include کرده‌اید
+            // var parent = data.StudentFormSubmission; // اگر Include کرده‌اید
             // if (parent == null || parent.StudentId != currentUserStudentId) return Forbid();
 
             // امن‌سازی مقدار Value: اغلب data.Value فقط نام فایل است، نه مسیر کامل
@@ -331,7 +331,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             return File(stream, contentType, fileName);
         }
 
-        private async Task<StudentFormSubmissionScoreViewModel> FillStudentFormSubmissionScoreViewModel(int studentId, IEnumerable<StudentFormSubmissionScore> studentFormSubmissionScores, CancellationToken cancellationToken)
+        private async Task<StudentFormSubmissionViewModel> FillStudentFormSubmissionViewModel(int studentId, IEnumerable<StudentFormSubmission> studentFormSubmissions, CancellationToken cancellationToken)
         {
             var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
 
@@ -344,15 +344,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             // رشته‌ها رو با "-" جدا کن
             var joinedFields = string.Join(" - ", fieldTitles);
 
-            var StudentFormSubmissionScoreViewModel = new StudentFormSubmissionScoreViewModel
+            var StudentFormSubmissionViewModel = new StudentFormSubmissionViewModel
             {
                 StudentName = student.FirstName + " " + student.LastName,
                 NationalCode = student.NationalCode,
                 StudentId = student.Id,
                 FielsTitle = joinedFields,
-                Forms = studentFormSubmissionScores.ToList()
+                Forms = studentFormSubmissions.ToList()
             };
-            return StudentFormSubmissionScoreViewModel;
+            return StudentFormSubmissionViewModel;
         }
     }
 }

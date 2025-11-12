@@ -1,7 +1,7 @@
 ﻿@using SanjeshP.Mosahebe.Web.Areas.Interview.ViewModels.StudentInterview
 @model StudentInterviewQuestionViewModel
 
-<div class="p-3">
+<div class="p-3  table-responsive">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
             <h4 class="mb-0">مصاحبه داوطلب: @Model.StudentName (@Model.NationalCode)</h4>
@@ -22,7 +22,7 @@
              onclick="openImageModal(this.src)" />
     </div>
 
-    <form id="interviewForm">
+    <form id="interviewForm" class=" table-responsive">
         <input type="hidden" name="StudentId" value="@Model.StudentId" />
         <input type="hidden" name="StationId" value="@Model.StationId" />
 

@@ -12,7 +12,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.File
     {
         Task<UploadedFile?> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<UploadedFile>> GetByStudentIdAsync(int studentId, CancellationToken cancellationToken);
-        Task<IEnumerable<UploadedFile>> GetByStudentIdAndStudentFormSubmissionScoreIdAsync(int studentId,int StudentFormSubmissionDataId, CancellationToken cancellationToken);
+        Task<IEnumerable<UploadedFile>> GetByStudentIdAndStudentFormSubmissionIdAsync(int studentId,int StudentFormSubmissionDataId, CancellationToken cancellationToken);
         Task<IEnumerable<UploadedFile>> GetBySubmissionIdAsync(int submissionId, CancellationToken cancellationToken);
         Task AddUploadedFileAsync(UploadedFile uploadedFile, CancellationToken cancellationToken);
         Task DeleteUploadedFileAsync(int id, CancellationToken cancellationToken);

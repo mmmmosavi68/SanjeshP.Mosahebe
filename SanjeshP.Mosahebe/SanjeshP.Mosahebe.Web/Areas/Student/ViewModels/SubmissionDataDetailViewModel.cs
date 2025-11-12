@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Student.ViewModels
 {
-    public class SubmissionDataDetailViewModel :BaseDto<SubmissionDataDetailViewModel,StudentFormSubmissionScore,int>
+    public class SubmissionDataDetailViewModel :BaseDto<SubmissionDataDetailViewModel,StudentFormSubmission,int>
     {
         /// شناسه فرم اصلی (مثلاً فرم اطلاعات زبان، فرم سوابق پژوهشی)
         public int FormItemId { get; set; }

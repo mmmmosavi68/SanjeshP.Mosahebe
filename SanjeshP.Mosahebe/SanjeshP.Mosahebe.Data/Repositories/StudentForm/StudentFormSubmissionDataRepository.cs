@@ -19,7 +19,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         public async Task<IEnumerable<StudentFormSubmissionData>> GetByStudentFormSubmissionValueIdAsync(int submissionId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                .Where(v => v.StudentFormSubmissionScoreId == submissionId && !v.IsDeleted)
+                .Where(v => v.StudentFormSubmissionId == submissionId && !v.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
 
@@ -57,7 +57,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
         {
             return await TableNoTracking
                 .Where(v => v.Id == submissionDataId && !v.IsDeleted)                
-                .Include(d => d.StudentFormSubmissionScore) // اگر نیاز دارید اطلاعات والد را هم داشته باشید
+                .Include(d => d.StudentFormSubmission) // اگر نیاز دارید اطلاعات والد را هم داشته باشید
                 .FirstOrDefaultAsync(cancellationToken);
         }
     }

@@ -13,7 +13,7 @@ namespace SanjeshP.Mosahebe.Entities.File
         public int StudentId { get; set; }
 
         // شناسه Submission مرتبط
-        public int? StudentFormSubmissionScoreId { get; set; }
+        public int? StudentFormSubmissionId { get; set; }
         // شناسه Submission مرتبط
         public int? StudentFormSubmissionDataId { get; set; }
 

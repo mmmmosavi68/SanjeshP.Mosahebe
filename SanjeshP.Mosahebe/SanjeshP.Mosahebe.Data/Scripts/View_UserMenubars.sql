@@ -235,7 +235,7 @@ BEGIN
                 WHEN SUM(ISNULL(SFSS.Score, 0)) > FI.AllMaxScore THEN FI.AllMaxScore
                 ELSE SUM(ISNULL(SFSS.Score, 0))
             END AS FinalItemScore
-        FROM StudentFormSubmissionScores AS SFSS
+        FROM StudentFormSubmissions AS SFSS
         INNER JOIN FormItems AS FI 
             ON FI.Id = SFSS.FormItemId
             AND FI.IsActive = 1 AND FI.IsDeleted = 0

@@ -9,7 +9,7 @@
     var token = User.Claims.FirstOrDefault(c => c.Type == "Token")?.Value;
 }
 
-<div class="bg-light rounded p-4">
+<div class="bg-light rounded p-4 table-responsive">
     <h3>لیست کاربران</h3>
     @if (memoryCache.HasAccess(token, "CreateUser"))
     {

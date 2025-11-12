@@ -34,7 +34,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.File
         public async Task<IEnumerable<UploadedFile>> GetBySubmissionIdAsync(int submissionId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                .Where(x => !x.IsDeleted && x.StudentFormSubmissionScoreId == submissionId)
+                .Where(x => !x.IsDeleted && x.StudentFormSubmissionId == submissionId)
                 .OrderByDescending(x => x.CreatedDate)
                 .ToListAsync(cancellationToken);
         }
@@ -54,10 +54,10 @@ namespace SanjeshP.Mosahebe.Data.Repositories.File
             await UpdateAsync(file, cancellationToken);
         }
 
-        public async Task<IEnumerable<UploadedFile>> GetByStudentIdAndStudentFormSubmissionScoreIdAsync(int studentId, int StudentFormSubmissionScoreId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<UploadedFile>> GetByStudentIdAndStudentFormSubmissionIdAsync(int studentId, int StudentFormSubmissionId, CancellationToken cancellationToken)
         {
             return await TableNoTracking
-                 .Where(x => !x.IsDeleted && x.StudentId == studentId && x.StudentFormSubmissionScoreId==StudentFormSubmissionScoreId)
+                 .Where(x => !x.IsDeleted && x.StudentId == studentId && x.StudentFormSubmissionId==StudentFormSubmissionId)
                  .OrderByDescending(x => x.CreatedDate)
                  .ToListAsync(cancellationToken);
         }

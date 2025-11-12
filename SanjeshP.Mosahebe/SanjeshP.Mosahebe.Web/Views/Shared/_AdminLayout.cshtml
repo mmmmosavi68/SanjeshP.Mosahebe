@@ -16,7 +16,8 @@
     <link rel="stylesheet" href="~/Admin/plugins/iziToast/iziToast.min.css" />
     @* jalalidatepicker *@
     <link href="~/admin/plugins/jalalidatepicker-main/jalalidatepicker.min.css" rel="stylesheet" />
-
+    <link href="~/admin/plugins/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/admin/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css" rel="stylesheet" />
     <style>
         .wrapper {
             font-size: 14px
@@ -176,6 +177,7 @@
             margin: -1rem -1rem -1rem auto;
             margin: -1rem auto -1rem -1rem;
         }
+
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -304,12 +306,50 @@
     @* jalalidatepicker *@
     <script src="~/admin/plugins/jalalidatepicker-main/jalalidatepicker.min.js"></script>
 
+
+    <script src="~/admin/plugins/select2/js/select2.min.js"></script>
+
     <script>
         var lastmodalid = ''
-        $(function () {
-            $('a').tooltip();
-            $('i').tooltip()
-        })
+        function initializePlugins(context) {
+
+            // 🟩 فعال‌سازی Select2 (با تشخیص خودکار مودال)
+            $(context).find('select').each(function () {
+                const $select = $(this);
+
+                // اگه Select2 قبلاً اعمال شده، دوباره نساز
+                if ($select.hasClass('select2-hidden-accessible')) return;
+
+                // بررسی کن آیا این select داخل modal هست؟
+                const $modalParent = $select.closest('.modal');
+
+                $select.select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    placeholder: $select.attr('placeholder') || 'انتخاب کنید...',
+                    allowClear: true,
+                    dir: 'rtl',
+                    dropdownParent: $modalParent.length ? $modalParent : $(document.body),
+                    minimumResultsForSearch: 0  // ← اینجا اضافه کن
+                });
+               
+            });
+
+
+
+            // 🟦 فعال‌سازی تقویم جلالی (در صورت وجود)
+            if (typeof jalaliDatepicker !== 'undefined') {
+                jalaliDatepicker.startWatch({
+                    container: context,
+                    time: true,
+                    date: true
+                });
+            }
+
+            // 🟨 فعال‌سازی Tooltipها
+            $(context).find('[data-toggle="tooltip"], [title]').tooltip();
+        }
+
         var Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -418,7 +458,11 @@
                 url: url,
                 method: 'GET',
                 success: function (data) {
-                    $(`#body_${modalId}`).html(data);
+                    const $modalBody = $(`#body_${modalId}`);
+                    $modalBody.html(data);
+
+                    initializePlugins($modalBody); // ✅ حالا درسته
+                    
                 },
                 error: function (xhr) {
                     if (xhr.status === 403) {
@@ -516,6 +560,13 @@
         //     });
         // });
     </script>
+
+    <script>
+        $(document).ready(function () {
+            initializePlugins(document);
+        });
+    </script>
+
     @RenderSection("Scripts", required: false)
 </body>
 </html>
