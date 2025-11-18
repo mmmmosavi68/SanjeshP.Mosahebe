@@ -108,4 +108,19 @@
     <ProjectReference Include="..\SanjeshP.Mosahebe.WebFramework\SanjeshP.Mosahebe.WebFramework.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Aspose.Cells">
+      <HintPath>..\..\..\Portal_Olympiad_V2\Bin\Aspose.Cells.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.License">
+      <HintPath>..\..\..\Portal_Olympiad_V2\Bin\Aspose.License.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Pdf">
+      <HintPath>..\..\..\Portal_Olympiad_V2\Bin\Aspose.Pdf.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Words">
+      <HintPath>..\..\..\Portal_Olympiad_V2\Bin\Aspose.Words.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
