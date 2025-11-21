@@ -12,7 +12,6 @@ using Aspose.Cells;
 
 namespace SanjeshP.Mosahebe.Web.Areas.Report.Controllers
 {
-    [AllowAnonymous]
     [Area("Report")]
     public class ReportController : Controller
     {

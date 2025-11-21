@@ -36,7 +36,6 @@
                     $('#fieldSelect').html('<option value="">-- ابتدا آزمون را انتخاب کنید --</option>');
                     return;
                 }
-                console.log * ('/StudentForm/ManageStudents/FieldDropdown?examId=' + examId)
                 // درخواست AJAX برای گرفتن رشته‌های آزمون
                 $("#fieldContainer").load('/StudentForm/ManageStudents/FieldDropdown?examId=' + examId);
             });

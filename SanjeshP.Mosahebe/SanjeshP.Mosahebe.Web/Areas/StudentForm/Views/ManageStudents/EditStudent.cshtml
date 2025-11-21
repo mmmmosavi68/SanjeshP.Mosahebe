@@ -47,7 +47,12 @@
                     if (response.isSuccess) {
                         $('#Modal_AddEdit').modal('hide');
                         iziToast.success({ message: response.message });
-                        $("#StudentList").load("/StudentForm/ManageStudents/StudentsList", function () { });
+                        // رفرش لیست داوطلبان پشت صفحه
+                        var fieldId = $('#fieldSelect').val();
+                        if (fieldId) {
+                            $("#StudentList").load('/StudentForm/ManageStudents/StudentsList?fieldId=' + encodeURIComponent(fieldId));
+                        }
+
                     } else {
                         iziToast.error({ message: response.message });
                     }
