@@ -1,6 +1,7 @@
 ﻿@using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User
 @using SanjeshP.Mosahebe.Web.SharedViewModels
 @using System.ComponentModel.DataAnnotations
+@using SanjeshP.Mosahebe.Common.Utilities
 @model PagedListAccessViewModel<UserViewModel>
 
 @{
@@ -77,7 +78,7 @@
                     }
                     <th>عملیات</th>
                 </tr>
-                <tr class="filter-row d-none">
+                <tr class="filter-row active">
                     <td></td>
                     <td></td>
                     @foreach (var prop in properties)
@@ -112,7 +113,15 @@
                             if (visibleFields.Contains(prop.Name))
                             {
                                 var value = prop.GetValue(item.Data);
-                                <td>@(value ?? "-")</td>
+
+                                if (value is Enum enumValue)
+                                {
+                                    <td>@enumValue.ToDisplay()</td>
+                                }
+                                else
+                                {
+                                    <td>@(value ?? "-")</td>
+                                }
                             }
                         }
                         <td>

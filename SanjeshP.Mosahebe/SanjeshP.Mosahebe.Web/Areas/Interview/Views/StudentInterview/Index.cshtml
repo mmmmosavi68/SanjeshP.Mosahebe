@@ -33,6 +33,12 @@
                 $('#stationSelect').val(activeStation);
 
                 $("#StudentList").load('/Interview/StudentInterview/StudentsList?stationId=' + activeStation);
+                $('select').select2({
+                    theme: 'bootstrap4',
+                    width: '100%', // تا اندازه‌ی کامل container رو بگیره
+                    placeholder: 'انتخاب کنید...',
+                    // allowClear: true
+                });
             }
         })
         $(document).ready(function () {
@@ -44,6 +50,8 @@
                 $("#StudentList").load('/Interview/StudentInterview/StudentsList?stationId=' + stationId);
             });
         });
+
+
     </script>
 }
 

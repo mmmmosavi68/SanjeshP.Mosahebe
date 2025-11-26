@@ -73,7 +73,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
                         !s.IsDeleted &&
                         s.StudentId == studentId &&
                         s.StationId == stationId &&
-                        s.QuestionId == questionId)
+                        s.QuestionId == questionId &&
+                        s.UserId==userId)
                     .FirstOrDefaultAsync(cancellationToken);
 
                 double calculatedScore = (double)score * maxValue;
