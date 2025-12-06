@@ -1245,12 +1245,64 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("StudentTokenId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("StudentTokenId");
+
                     b.ToTable("StudentOtps");
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.StudentToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HostIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentTokens");
                 });
 
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.StudentForm.Coefficient", b =>
@@ -1615,7 +1667,7 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("StudentId")
+                    b.Property<int>("StudentId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
@@ -2349,6 +2401,22 @@ namespace SanjeshP.Mosahebe.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.StudentOtp", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Student.StudentToken", null)
+                        .WithMany("StudentOtps")
+                        .HasForeignKey("StudentTokenId");
+                });
+
+            modelBuilder.Entity("SanjeshP.Mosahebe.Entities.Student.StudentToken", b =>
+                {
+                    b.HasOne("SanjeshP.Mosahebe.Entities.Student.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.StudentForm.Coefficient", b =>
                 {
                     b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.FormItemCoefficientDefinition", null)
@@ -2418,7 +2486,7 @@ namespace SanjeshP.Mosahebe.Data.Migrations
             modelBuilder.Entity("SanjeshP.Mosahebe.Entities.StudentForm.StudentFormSubmissionScore", b =>
                 {
                     b.HasOne("SanjeshP.Mosahebe.Entities.StudentForm.StudentFormSubmission", "StudentFormSubmission")
-                        .WithMany("studentFormSubmissionScores")
+                        .WithMany("StudentFormSubmissionScores")
                         .HasForeignKey("StudentFormSubmissionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

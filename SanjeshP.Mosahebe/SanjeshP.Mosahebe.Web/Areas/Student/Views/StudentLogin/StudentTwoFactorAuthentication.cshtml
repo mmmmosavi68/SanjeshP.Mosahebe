@@ -9,7 +9,7 @@
     <div class="form-group">
         <div class="input-group neu-input">
             <input asp-for="TwoFactorCode"
-                   placeholder=" " 
+                   placeholder=" "
                    maxlength="6"
                    pattern="[0-9]{1,6}"
                    inputmode="numeric"
@@ -28,7 +28,7 @@
             <label for="CaptchaCode">کد امنیتی</label>
             <div class="input-icon">
                 <img id="captchaImg" src="@Url.Content("~/student/captcha-image")" alt="کپچا"
-                     onclick="this.src='@Url.Content("~/student/captcha-image?")' + Math.random();"
+                     onclick="this.src='@Url.Content("~/student/captcha-image")?rnd=' + Math.random();"
                      alt="کپچا"
                      title="برای بارگذاری مجدد کلیک کنید"
                      style="position: relative;left: 75px;top: -10px;height: 42px;" role="button" />
@@ -36,5 +36,10 @@
         </div>
         <span asp-validation-for="CaptchaCode" class="error-message"></span>
     </div>
+
+    <div class="alert alert-danger mt-4 mb-4">
+        <div asp-validation-summary="ModelOnly" class="error-message"></div>
+    </div>
+
     <button type="submit" class="neu-button login-btn">تایید کد / ورود به سیستم</button>
 </form>

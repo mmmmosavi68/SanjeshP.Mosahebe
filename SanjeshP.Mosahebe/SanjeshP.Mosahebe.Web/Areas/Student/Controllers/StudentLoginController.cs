@@ -35,6 +35,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         private readonly IStudentOtpRepository _studentOtpRepository;
         private readonly IPayamSMS _payamSMS;
         private readonly IMemoryCache _memoryCache;
+        private readonly IStudentTokenRepository _studentTokenRepository;
         private readonly SiteSettings _siteSetting;
 
         public StudentLoginController(
@@ -43,7 +44,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             IStudentOtpRepository studentOtpRepository,
             IPayamSMS payamSMS,
             IMemoryCache memoryCache,
-            IOptionsSnapshot<SiteSettings> siteSetting
+            IOptionsSnapshot<SiteSettings> siteSetting,
+            IStudentTokenRepository studentTokenRepository
             )
         {
             this._logger = logger;
@@ -51,6 +53,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             _studentOtpRepository = studentOtpRepository;
             _payamSMS = payamSMS;
             _memoryCache = memoryCache;
+            this._studentTokenRepository = studentTokenRepository;
             this._siteSetting = siteSetting.Value;
         }
 
@@ -92,7 +95,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                 return PartialView(model);
             }
 
-            await SignInStudent(student);
+            await SignInStudent(student,cancellationToken);
             return Json(new { redirectToUrl = Url.Action("Index", "StudentHome", new { area = "Student" }) });
 
             //return RedirectToAction("Index", "StudentHome", new { area = "Student" });
@@ -180,14 +183,16 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.NationalCode = nationalCode;
-                return PartialView(model);
+                return PartialView("StudentTwoFactorAuthentication", model);
             }
 
             var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
             if (string.IsNullOrEmpty(sessionCaptcha) || model.CaptchaCode != sessionCaptcha)
             {
+                ViewBag.NationalCode = nationalCode;
                 ModelState.AddModelError("CaptchaCode", "کد امنیتی اشتباه است");
-                return PartialView(model);
+                model.CaptchaCode = ""; // خالی کردن فیلد
+                return PartialView("StudentTwoFactorAuthentication", model);
             }
 
             var student = await _studentRepository.GetStudentByNationalCodeAsync(nationalCode, cancellationToken);
@@ -195,19 +200,21 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             {
                 ModelState.AddModelError("", "داوطلب یافت نشد.");
                 ViewBag.NationalCode = nationalCode;
-                _logger.LogWarning("StudentTwoFactorAuthentication failed (student == null) for StudentId={StudentId}, Code={Code}", student.Id, model.TwoFactorCode);
-                return PartialView(model);
+                model.CaptchaCode = ""; // خالی کردن فیلد
+                _logger.LogWarning("StudentTwoFactorAuthentication failed (student == null) for Code={Code}", model.TwoFactorCode);
+                return PartialView("StudentTwoFactorAuthentication", model);
             }
 
             var otp = await _studentOtpRepository.GetValidOtpAsync(student.Id, model.TwoFactorCode, cancellationToken);
             if (otp == null || otp.IsUsed == true || otp.ExpiresAt <= DateTime.Now || otp.IsDeleted == true)
 
             {
-                ModelState.AddModelError("", "کد وارد شده صحیح نیست یا منقضی شده است.");
                 ViewBag.NationalCode = nationalCode;
                 _logger.LogWarning("OTP validation failed for StudentId={StudentId}, Code={Code}", student.Id, model.TwoFactorCode);
                 ModelState.AddModelError("", "کد وارد شده صحیح نیست یا منقضی شده است.");
-                return PartialView(model);
+                model.CaptchaCode = ""; // خالی کردن فیلد
+
+                return PartialView("StudentTwoFactorAuthentication", model);
             }
 
             // علامت‌گذاری OTP به عنوان مصرف‌شده
@@ -216,13 +223,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             await _studentOtpRepository.SaveChangesAsync(cancellationToken);
 
             // ایجاد Claims و لاگین
-            await SignInStudent(student);
+            await SignInStudent(student, cancellationToken);
             return Json(new { redirectToUrl = Url.Action("Index", "StudentHome", new { area = "Student" }) });
             //return RedirectToAction("Index", "StudentHome", new { area = "Student" });
         }
 
         // ================= متد کمکی SignIn =================
-        private async Task SignInStudent(SanjeshP.Mosahebe.Entities.Student.Student student)
+        private async Task SignInStudent(SanjeshP.Mosahebe.Entities.Student.Student student, CancellationToken cancellationToken)
         {
             // رشته‌ها رو از student.StudentFields بخون
             var fieldTitles = student.StudentFields?
@@ -244,6 +251,24 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
+
+
+            // ساخت توکن و ثبت اطلاعات
+            var token = new StudentToken
+            {
+                Id = Guid.NewGuid(),
+                StudentId = student.Id,
+                SessionId = HttpContext.Session.Id,
+                UserAgent = Request.Headers["User-Agent"].ToString(),
+                IsDeleted = false,
+                CreatedDate = DateTime.Now,
+                ExpirationDate = DateTime.Now.AddMinutes(_siteSetting.authenticationSettings.ExpireTimeSpanInMinutes),
+                HostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown"
+            };
+
+            await _studentTokenRepository.AddStudentTokenAsync(token, cancellationToken);
+
+
 
             await HttpContext.SignInAsync("StudentScheme", principal);
             //await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
@@ -298,7 +323,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             using var image = surface.Snapshot();
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
-            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
             return File(data.ToArray(), "image/png");
         }
 
