@@ -46,12 +46,15 @@ namespace SanjeshP.Mosahebe.Data.Repositories.File
 
         public async Task DeleteUploadedFileAsync(int id, CancellationToken cancellationToken)
         {
-            var file = await GetByIdAsync(id, cancellationToken);
+            var file = await GetBySubmissionIdAsync(id, cancellationToken);
             if (file is null)
                 throw new KeyNotFoundException("فایل یافت نشد");
-
-            file.IsDeleted = true;
-            await UpdateAsync(file, cancellationToken);
+            foreach (var item in file)
+            {
+                item.IsDeleted = true;
+                await UpdateAsync(item, cancellationToken);
+            }
+           
         }
 
         public async Task<IEnumerable<UploadedFile>> GetByStudentIdAndStudentFormSubmissionIdAsync(int studentId, int StudentFormSubmissionId, CancellationToken cancellationToken)

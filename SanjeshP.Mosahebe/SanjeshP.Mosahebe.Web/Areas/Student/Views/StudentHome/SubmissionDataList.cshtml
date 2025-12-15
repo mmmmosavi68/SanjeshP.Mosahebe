@@ -60,7 +60,7 @@
 
 <script type="text/javascript">
     $(function () {
-        $('#tbl_data').DataTable({
+        var table = $('#tbl_data').DataTable({
             paging: true,
             searching: true,
             lengthChange: true,
@@ -68,23 +68,33 @@
             info: true,
             autoWidth: false,
             buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
-        }).buttons().container().appendTo('#tbl_data_wrapper .col-md-6:eq(0)');
+        });
+
+// حذف با SweetAlert2 و دکمه رنگی
+        $(document).on('click', '[data-toggle="DeleteSubmissionData"]', function () {
+            var id = $(this).attr('id');
+            Swal.fire({
+                title: 'آیا از حذف مطمئن هستید؟',
+                showCancelButton: true,
+                confirmButtonText: 'حذف',
+                cancelButtonText: 'انصراف',
+                icon: 'warning'
+
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    DeleteSubmissionData(id);
+                }
+            });
+        });
+
+
 
         $('.selectAll').click(function () {
             var table = $(this).closest('table');
             $('input:checkbox', table).prop('checked', this.checked);
         });
 
-        $('[data-toggle="DeleteSubmissionData"]').confirmation({
-            title: 'آیا از حذف مطمئن هستید؟',
-            btnCancelClass: 'btn btn-sm btn-primary',
-            btnCancelLabel: 'انصراف',
-            btnOkClass: 'btn btn-sm btn-danger',
-            btnOkLabel: 'حذف',
-            onConfirm: function () {
-                DeleteSubmissionData($(this).attr('id'));
-            }
-        });
+
     });
     function SubmissionDataDetail(id, title) {
           console.log(id)

@@ -173,7 +173,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
                     else if (file != null && file.Length > 0)
                     {
                         var UploadedFiles = await _uploadedFileRepository.GetByStudentIdAsync(studentId, cancellationToken);
-                        var exist = UploadedFiles.Any(ss => ss.OriginalFileName == file.FileName && ss.Size == file.Length);
+                        var exist = UploadedFiles.Any(ss => ss.OriginalFileName == file.FileName && ss.Size == file.Length && ss.IsDeleted==false);
                         if (exist == true)
                         {
                             errors.Add($"قبلا فایلی با این نام و حجم ثبت شده است.");
@@ -494,6 +494,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
                 await _submissionScoreRepository.DeleteStudentFormSubmissionAsync(submissionId, cancellationToken);
                 await _submissionDataRepository.DeleteStudentFormSubmissionValueAsync(submissionId, cancellationToken);
+                await _uploadedFileRepository.DeleteUploadedFileAsync(submissionId, cancellationToken);
 
                 return Json(new { isSuccess = true, message = "فرم با موفقیت حذف شد." });
             }
