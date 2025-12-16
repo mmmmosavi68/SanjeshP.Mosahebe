@@ -61,6 +61,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            return Redirect("/SharedError/AccessDenied");
+
             return View(); // صفحه‌ای که انتخاب روش ورود را نمایش می‌دهد
         }
 
@@ -68,6 +70,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [HttpGet]
         public IActionResult LoginCodeRahgiri()
         {
+            return Redirect("/SharedError/AccessDenied");
+
             return PartialView();
         }
 
@@ -75,6 +79,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LoginCodeRahgiri(LoginCodeRahgiriViewModel model, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             if (!ModelState.IsValid)
                 return PartialView(model);
 
@@ -105,6 +111,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [HttpGet]
         public IActionResult LoginOTP()
         {
+            return Redirect("/SharedError/AccessDenied");
+
             return PartialView();
         }
 
@@ -112,6 +120,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LoginOTP(LoginOTPViewModel model, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             if (!ModelState.IsValid)
                 return PartialView(model);
 
@@ -126,7 +136,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
             if (student == null)
             {
                 ModelState.AddModelError("", "کد ملی یافت نشد.");
-                _logger.LogWarning("LoginOTP failed for StudentId={StudentId}, NationalCode={NationalCode}", student.Id, model.NationalCode);
+                _logger.LogWarning("LoginOTP failed for  NationalCode={NationalCode}",  model.NationalCode);
                 return PartialView(model);
             }
 
@@ -180,6 +190,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> StudentTwoFactorAuthentication(StudentTwoFactorAuthenticationViewModel model, string nationalCode, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             if (!ModelState.IsValid)
             {
                 ViewBag.NationalCode = nationalCode;
@@ -231,6 +243,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         // ================= متد کمکی SignIn =================
         private async Task SignInStudent(SanjeshP.Mosahebe.Entities.Student.Student student, CancellationToken cancellationToken)
         {
+
             // رشته‌ها رو از student.StudentFields بخون
             var fieldTitles = student.StudentFields?
                 .Select(sf => sf.ExamField?.Title)        // یا .Name بسته به مدل

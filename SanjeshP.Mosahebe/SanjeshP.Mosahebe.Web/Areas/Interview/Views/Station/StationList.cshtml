@@ -72,18 +72,18 @@
         function FieldStationList(stationId, name) {
             openModal('رشته های ایستگاه _ ' + name, '/Interview/FieldStation/Index?stationId=' + stationId, true);
         }
-    // $('[data-toggle="DeleteStation"]').confirmation({
-    //     title: 'آیا از حذف مطمئن هستید؟',
-    //     onConfirm: function () {
-    //         var id = $(this).data('id');
-    //         $.post('/Interview/Station/DeleteStation?stationId=' + id, function (res) {
-    //             if (res.isSuccess) {
-    //                 $("#tr_" + id).hide('slow');
-    //                 Toast.fire({ icon: 'success', title: res.message });
-    //             } else {
-    //                 Toast.fire({ icon: 'error', title: res.message });
-    //             }
-    //         });
-    //     }
-    // });
+    $('[data-toggle="DeleteStation"]').confirmation({
+        title: 'آیا از حذف مطمئن هستید؟',
+        onConfirm: function () {
+            var id = $(this).data('id');
+            $.post('/Interview/Station/DeleteStation?stationId=' + id, function (res) {
+                if (res.isSuccess) {
+                    $("#tr_" + id).hide('slow');
+                    Toast.fire({ icon: 'success', title: res.message });
+                } else {
+                    Toast.fire({ icon: 'error', title: res.message });
+                }
+            });
+        }
+    });
 </script>

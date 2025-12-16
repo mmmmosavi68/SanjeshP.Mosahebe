@@ -30,6 +30,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using SanjeshP.Mosahebe.Data.Contracts.Interview;
 using SanjeshP.Mosahebe.Entities.Student;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using SanjeshP.Mosahebe.Data.Repositories.Users;
 
 namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
 {
@@ -48,6 +52,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
         private readonly IUserRoleRepository _userRoleReository;
         private readonly IMemoryCache _memoryCache;
         private readonly IStationRepository _stationRepository;
+        private readonly IUserFieldRepository _userFieldRepository;
+        private readonly DbContext _dbContext;
         private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -62,7 +68,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                                 , IAccessMenusRepository accessMenuRepository
                                 , IUserRoleRepository userRoleReository
                                 , IMemoryCache memoryCache
-                                , IStationRepository stationRepository)
+                                , IStationRepository stationRepository
+                                , IUserFieldRepository userFieldRepository
+                                , DbContext dbContext)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -76,6 +84,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
             _userRoleReository = userRoleReository;
             _memoryCache = memoryCache;
             this._stationRepository = stationRepository;
+            this._userFieldRepository = userFieldRepository;
+            this._dbContext = dbContext;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -860,5 +870,298 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
 
             return Ok(new { success = true, message = "ایستگاه با موفقیت ذخیره شد." });
         }
+
+        #region CreateUser Excel
+
+        [HttpGet]
+        public IActionResult UploadUserExcel()
+        {
+            return PartialView("UploadUserExcel");
+        }
+
+        [HttpPost]
+        public IActionResult UploadUserExcel(IFormFile file)
+        {
+            // 1. بررسی اعتبار فایل
+            if (file == null || file.Length == 0)
+                return BadRequest("فایل نامعتبر است");
+
+            // 2. پردازش فایل اکسل
+            using var stream = file.OpenReadStream();
+
+            // 💡 نکته: در صورت استفاده از Aspose.Cells، اطمینان حاصل کنید که فایل آن را در مسیر پروژه یا
+            // به عنوان یک پکیج Nuget به درستی اضافه کرده‌اید.
+            var workbook = new Aspose.Cells.Workbook(stream);
+            var sheet = workbook.Worksheets[0];
+
+            // 3. استخراج سربرگ ستون‌ها
+            var columns = new List<string>();
+            // فرض می‌شود که سطر اول (Index 0) شامل سربرگ‌ها است
+            for (int c = 0; c <= sheet.Cells.MaxDataColumn; c++)
+            {
+                var header = sheet.Cells[0, c].StringValue?.Trim();
+                if (!string.IsNullOrEmpty(header))
+                {
+                    columns.Add(header);
+                }
+            }
+
+            // 4. ذخیره فایل در Session و تولید کلید موقت
+            var key = Guid.NewGuid().ToString();
+            var sessionKey = $"IMPORT_USER_EXCEL_{key}";
+
+            using var ms = new MemoryStream();
+            workbook.Save(ms, Aspose.Cells.SaveFormat.Xlsx);
+            // 💡 نکته: برای این خط، نیاز به using Microsoft.AspNetCore.Http دارید.
+            HttpContext.Session.Set(sessionKey, ms.ToArray());
+
+            // 5. ساخت ViewModel نهایی
+            var model = new ImportUserExcelMappingViewModel
+            {
+                TempKey = sessionKey,
+                ExcelColumns = columns,
+                // 💡 نکته: فرض بر این است که _eFRepositoryRole یک کلاس Repository معتبر برای نقش‌ها است.
+                Roles = _eFRepositoryRole.TableNoTracking
+                             .Select(r => new SelectListItem { Value = r.Id.ToString(), Text = r.RoleNameFa })
+                             .ToList()
+            };
+
+            // 6. بازگشت محتوا به عنوان PartialView
+            // این اقدام از بازگشت تگ‌های <html> و <body> جلوگیری کرده و خطای جاوا اسکریپت را رفع می‌کند.
+            return PartialView("UploadUserExcelMapping", model);
+        }
+        [HttpPost]
+        public IActionResult UploadUserExcelMapping()
+        {
+            return PartialView("UploadUserExcelMapping");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveUsersFromExcel(
+      ImportUserExcelMappingViewModel model,
+      CancellationToken cancellationToken)
+        {
+            // 0. اعتبارسنجی اولیه و بازیابی داده‌ها (همانند قبل)
+            if (!ModelState.IsValid)
+            {
+                return new BadRequestObjectResult(ModelState);
+            }
+
+            // ... (منطق بازیابی فایل از Session و بررسی انقضا) ...
+            if (!HttpContext.Session.TryGetValue(model.TempKey, out byte[] bytes) || bytes == null)
+            {
+                return BadRequest("فایل اکسل منقضی شده است.");
+            }
+
+            using var ms = new MemoryStream(bytes);
+            var workbook = new Aspose.Cells.Workbook(ms);
+            var sheet = workbook.Worksheets[0];
+
+            // 1. تعریف تابع کمکی برای استخراج شماره ستون (همانند قبل)
+            // ... (تابع GetColIndex) ...
+            int GetColIndex(string colName)
+            {
+                if (string.IsNullOrWhiteSpace(colName)) return -1;
+                for (int i = 0; i <= sheet.Cells.MaxDataColumn; i++)
+                {
+                    if (sheet.Cells[0, i].StringValue?.Trim() == colName.Trim())
+                        return i;
+                }
+                return -1;
+            }
+
+            // 2. پیدا کردن ایندکس تمام ستون‌های مورد نیاز
+            int firstNameCol = GetColIndex(model.FirstNameColumn);
+            int lastNameCol = GetColIndex(model.LastNameColumn);
+            int phoneNumberCol = GetColIndex(model.PhoneNumberColumn);
+            int nationalCodeCol = GetColIndex(model.NationalCodeColumn);
+            int emailAddressCol = GetColIndex(model.EmailAddressColumn);
+            int userNameCol = GetColIndex(model.UserNameColumn);
+            int passwordCol = GetColIndex(model.PasswordColumn);
+            int isActiveCol = GetColIndex(model.IsActiveColumn);
+            int fieldCodesCol = GetColIndex(model.FieldCodesColumn);
+
+            // 3. اعتبارسنجی ستون‌های اجباری
+            if (firstNameCol == -1 || lastNameCol == -1 || userNameCol == -1 || passwordCol == -1)
+            {
+                return BadRequest("لطفاً ستون‌های نام، نام خانوادگی، نام کاربری و رمز عبور را انتخاب کنید.");
+            }
+
+            // 4. دریافت اطلاعات کاربر ایجادکننده
+            var curentUserToken = User.Identity.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(curentUserToken), cancellationToken);
+            var createdByUserId = token.UserId;
+            var creatorUser = token.User;
+            var hostIp = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            var createdDate = DateTime.Now;
+
+            // 5. متغیرهای شمارشی
+            int successCount = 0;
+            var failedRows = new List<string>();
+
+            // 6. حلقه برای پردازش سطر به سطر کاربران (شروع از سطر ۱)
+            for (int r = 1; r <= sheet.Cells.MaxDataRow; r++)
+            {
+                // 6.1. استخراج داده‌ها (همانند قبل)
+                var firstName = sheet.Cells[r, firstNameCol].StringValue?.Trim();
+                var lastName = sheet.Cells[r, lastNameCol].StringValue?.Trim();
+                var phoneNumber = phoneNumberCol != -1 ? sheet.Cells[r, phoneNumberCol].StringValue?.Trim() : null;
+                var nationalCode = nationalCodeCol != -1 ? sheet.Cells[r, nationalCodeCol].StringValue?.Trim() : null;
+                var emailAddress = emailAddressCol != -1 ? sheet.Cells[r, emailAddressCol].StringValue?.Trim() : null;
+                var userName = userNameCol != -1 ? sheet.Cells[r, userNameCol].StringValue?.Trim() : null;
+                var password = passwordCol != -1 ? sheet.Cells[r, passwordCol].StringValue?.Trim() : null;
+                var isActiveString = isActiveCol != -1 ? sheet.Cells[r, isActiveCol].StringValue?.Trim() : null;
+                var isActive = isActiveString?.ToLower() == "فعال" || isActiveString == "1" || bool.TryParse(isActiveString, out bool activeResult) && activeResult;
+                string fieldCodesString = fieldCodesCol != -1 ? sheet.Cells[r, fieldCodesCol].StringValue?.Trim() : null;
+
+                // 6.2. اعتبارسنجی ساده هر سطر
+                if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) ||
+                    string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
+                {
+                    failedRows.Add($"ردیف {r}: اطلاعات نام، نام خانوادگی، نام کاربری یا رمز عبور کامل نیست.");
+                    continue;
+                }
+
+                // 6.3. شروع تراکنش برای این کاربر خاص
+                using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+                try
+                {
+                    // 6.3.1. ایجاد Entities (همانند قبل)
+                    var userId = Guid.NewGuid();
+
+                    // Entity User
+                    Entities.User.User user = new Entities.User.User()
+                    {
+                        Id = userId,
+                        UserName = userName,
+                        NormalizedUserName = userName.FixTextUpper(),
+                        EmailAddress = emailAddress,
+                        NormalizedEmailAddress = emailAddress?.FixTextUpper(),
+                        PasswordHash = PasswordHelper.HashPasswordBCrypt(password),
+                        ConcurrencyStamp = Guid.NewGuid(),
+                        PhoneNumberConfirmed = false,
+                        TwoFactorEnabled = false,
+                        LockoutEnd = null,
+                        LockoutEnabled = false,
+                        AccessFailedCount = 0,
+                        CreatedBy = createdByUserId,
+                        CreatorUser = creatorUser,
+                        HostIp = hostIp
+                    };
+
+                    // Entity UserProfile
+                    UserProfile userProfile = new UserProfile()
+                    {
+                        UserId = userId,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        NationalCode = nationalCode,
+                        IsActive = isActive,
+                        // ... سایر فیلدهای profile
+                        CreatedBy = createdByUserId,
+                        CreatedDate = createdDate,
+                        HostIp = hostIp
+                    };
+
+                    // Entity UserRole
+                    UserRole userRole = new UserRole()
+                    {
+                        UserId = userId,
+                        RoleId = model.RoleId,
+                        IsActive = true,
+                        // ... سایر فیلدهای role
+                        CreatedBy = createdByUserId,
+                        CreatedDate = createdDate,
+                        HostIp = hostIp
+                    };
+
+                    // 6.3.2. افزودن به Repository (بدون ذخیره نهایی)
+                    await _userRepository.AddAsync(user, cancellationToken, false);
+                    await _userProfilesRepository.AddAsync(userProfile, cancellationToken, false);
+                    await _userRoleReository.AddAsync(userRole, cancellationToken, false);
+
+                    // 6.3.3. تخصیص رشته‌ها (UserField)
+                    if (!string.IsNullOrWhiteSpace(fieldCodesString))
+                    {
+                        var codes = fieldCodesString.Split(new char[] { '-', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        var fieldsToSave = new List<UserField>();
+
+                        foreach (var code in codes)
+                        {
+                            if (int.TryParse(code, out int fieldId))
+                            {
+                                fieldsToSave.Add(new UserField
+                                {
+                                    UserID = userId,
+                                    ExamFieldID = fieldId,
+                                    IsActive = true,
+                                    CreatedBy = createdByUserId,
+                                    CreatedDate = createdDate,
+                                    HostIp = hostIp
+                                });
+                            }
+                        }
+                        if (fieldsToSave.Any())
+                        {
+                            await _userFieldRepository.AddRangeAsync(fieldsToSave, cancellationToken, false);
+                        }
+                    }
+
+                    // 6.3.4. ذخیره کردن (یک بار برای تمام تغییرات) و Commit کردن
+                    await _userRepository.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+
+                    successCount++;
+                }
+                catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                {
+                    // 6.4. در صورت بروز خطا: Rollback و ثبت خطا
+                    await transaction.RollbackAsync(cancellationToken);
+
+                    string errorDetail = "خطای دیتابیس (تکراری بودن نام کاربری/کد ملی/ایمیل)";
+                    if (ex.InnerException?.Message != null && ex.InnerException.Message.ToLower().Contains("duplicate key"))
+                    {
+                        errorDetail = $"تکراری بودن کلید یکتا (نام کاربری/کد ملی/ایمیل)";
+                    }
+
+                    failedRows.Add($"ردیف {r} ({firstName} {lastName}): {errorDetail}");
+
+                    // 💡 در اینجا می‌توانید جزئیات خطا را لاگ کنید.
+                }
+                catch (Exception ex)
+                {
+                    // 6.4. خطاهای دیگر
+                    await transaction.RollbackAsync(cancellationToken);
+                    failedRows.Add($"ردیف {r} ({firstName} {lastName}): خطای نامشخص ({ex.Message})");
+                }
+            }
+
+            // 7. حذف فایل از Session
+            HttpContext.Session.Remove(model.TempKey);
+
+            // 8. بازگشت نتیجه نهایی
+            if (failedRows.Any())
+            {
+                string finalMessage = $"تعداد {successCount} کاربر با موفقیت ثبت شدند. اما ثبت {failedRows.Count} کاربر با خطا مواجه شد:<br>" +
+                                      string.Join("<br>", failedRows.Take(10)); // نمایش ۱۰ خطای اول
+
+                // اگر هیچ کاربر موفقی نداشتیم، BadRequest می‌دهیم.
+                if (successCount == 0)
+                {
+                    return BadRequest(new { isSuccess = false, message = "هیچ کاربری با موفقیت ثبت نشد. جزئیات خطا در پیام موجود است." });
+                }
+
+                // اگر برخی موفق و برخی ناموفق بودند، یک پیام موفقیت‌آمیز با اخطار برمی‌گردانیم.
+                return Ok(new { isSuccess = true, message = finalMessage });
+            }
+
+            return Ok(new { isSuccess = true, message = $"تعداد {successCount} کاربر با موفقیت ثبت شدند." });
+        }
+
+        // 💡 نکته مهم: اگر از Dapper یا متدهای EF Core SaveChangesAsync استفاده می‌کنید،
+        // استفاده از یک Transaction برای تضمین اتمیک بودن عملیات (همه یا هیچ) بسیار توصیه می‌شود.
+        #endregion
+
     }
 }

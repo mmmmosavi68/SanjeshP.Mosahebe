@@ -51,6 +51,10 @@
         <div class="row mb-3">
             <input type="button" class="btn btn-outline-primary" onclick="CreateUser()" value="افزودن کاربر" />
         </div>
+
+        <div class="row mb-3">
+            <input type="button" class="btn btn-outline-primary" onclick="CreateUserList()" value="افزودن کاربر از لیست" />
+        </div>
     }
     <div style="overflow-x: auto;">
         <table class="table-sm table-bordered table-hover table-striped table text-center" id="tbl_user">
@@ -236,6 +240,10 @@
     function CreateUser() {
         openModal('افزودن کاربر ', window.__env.baseUrl + window.routes.users.users_createuser, false);
     };
+    function CreateUserList() {
+        openModal('افزودن کاربر از لیست ', '/User/Users/UploadUserExcel', false);
+    };
+
     function EditUser(UserID) {
         openModal('ویرایش کاربراصلاح سطح دسترسی', window.__env.baseUrl + window.routes.users.users_edituser + '?userid=' + UserID, false);
     };

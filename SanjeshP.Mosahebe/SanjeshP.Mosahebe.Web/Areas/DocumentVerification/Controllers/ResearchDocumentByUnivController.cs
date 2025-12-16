@@ -23,7 +23,6 @@ using System.Security.Claims;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
-    [AllowAnonymous]
     [Area("DocumentVerification")]
     public class ResearchDocumentByUnivController : Controller
     {

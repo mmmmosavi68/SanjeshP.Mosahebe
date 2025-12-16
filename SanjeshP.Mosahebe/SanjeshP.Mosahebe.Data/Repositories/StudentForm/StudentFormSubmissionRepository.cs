@@ -173,7 +173,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.StudentForm
                     .ThenInclude(d => d.FormItemDefinition)
                 .Include(s => s.StudentFormSubmissionDatas)
                     .ThenInclude(d => d.FormItemCoefficientDefinition)
-                .Where(s => s.StudentId == studentId && s.IsActive && !s.IsDeleted)
+                .Where(s => s.StudentId == studentId && !s.IsDeleted)
                 .OrderByDescending(s => s.CreatedDate)
                 .ToListAsync(cancellationToken);
 

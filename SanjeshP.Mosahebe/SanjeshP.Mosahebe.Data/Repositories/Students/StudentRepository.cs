@@ -36,7 +36,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
         {
             return await Table
                     .Where(s => !s.IsDeleted && s.IsActive &&
-                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId))
+                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId && !sf.IsDeleted && sf.IsActive))
                     .Include(s => s.Exam)
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
@@ -61,7 +61,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
         public async Task<IEnumerable<Student>> GetAllStudentsPajoheshiByFieldIdAsync(int fieldId, CancellationToken cancellationToken)
         {
             return await Table
-                    .Where(s => !s.IsDeleted && s.IsActive && s.IsPajoheshi == true &&
+                    .Where(s => !s.IsDeleted && s.IsPajoheshi == true &&
                                 s.StudentFields.Any(sf => sf.ExamFieldId == fieldId))
                     .Include(s => s.Exam)
                     .Include(s => s.ResearchDocumentScore)
@@ -71,7 +71,6 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
         }
-
         public async Task<IEnumerable<Student>> GetAllStudentsNoTrackingAsync(CancellationToken cancellationToken)
         {
             return await TableNoTracking
@@ -90,7 +89,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                  .Include(s => s.Exam)
                  .Include(s => s.StudentFields)                         // شامل جدول واسط
                        .ThenInclude(sf => sf.ExamField)                   // شامل رشته‌های واقعی
-                 .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted == false && s.IsActive == true, cancellationToken)
+                 .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted == false , cancellationToken)
                  .ConfigureAwait(false);
         }
 

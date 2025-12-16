@@ -71,6 +71,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         // GET: /Student/StudentHome
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
             var forms = await _formItemRepository.GetFormItemsWithIncludesAsync(cancellationToken);
             return View(forms.OrderBy(f => f.FormItemCategory.Order));
         }
@@ -114,6 +115,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
         public async Task<IActionResult> SubmitForm(FormSubmissionViewModel model, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             if (!ModelState.IsValid)
                 return BadRequest("اطلاعات فرم ناقص است");
 
@@ -354,6 +357,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
         public async Task<IActionResult> SubmissionDataList(CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             try
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -429,6 +434,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [HttpGet]
         public async Task<IActionResult> SubmissionDataDetail(int id, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             try
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -485,6 +492,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
 
         public async Task<IActionResult> DeleteSubmissionData(int submissionId, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             try
             {
                 if (submissionId == 0)
@@ -507,6 +516,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Student.Controllers
         [Authorize]
         public async Task<IActionResult> DownloadSubmissionFile(int submissionDataId, CancellationToken cancellationToken)
         {
+            return Redirect("/SharedError/AccessDenied");
+
             // دریافت داده‌ی دقیق submission-data (نام فایل در data.Value)
             var data = await _submissionDataRepository.GetSubmissionDataByIdAsync(submissionDataId, cancellationToken);
             if (data == null) return NotFound();

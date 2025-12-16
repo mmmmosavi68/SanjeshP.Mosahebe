@@ -20,7 +20,6 @@ using AutoMapper;
 
 namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 {
-    [AllowAnonymous]
     [Area("StudentForm")]
     public class ManageStudentsController : Controller
     {

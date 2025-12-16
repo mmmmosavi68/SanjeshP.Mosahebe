@@ -1,9 +1,11 @@
 using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SanjeshP.Mosahebe.Common;
+using SanjeshP.Mosahebe.Data;
 using SanjeshP.Mosahebe.WebFramework.Configuration;
 using SanjeshP.Mosahebe.WebFramework.Middlewares;
 using System;
@@ -47,7 +49,7 @@ namespace SanjeshP.Mosahebe.Web
             //    options.InstanceName = "MyAppCache_";
             //});
 
-
+            services.AddScoped<DbContext, ApplicationDbContext>();
 
             //services.AddSingleton<IFieldModelRepository, FieldModelRepository>();
             //services.AddScoped<IFieldService, FieldService>();

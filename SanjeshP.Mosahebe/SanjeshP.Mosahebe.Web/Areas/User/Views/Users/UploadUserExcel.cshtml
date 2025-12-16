@@ -1,0 +1,56 @@
+﻿@{
+    Layout = null;
+}
+
+<form id="upload-excel-form" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>انتخاب فایل اکسل</label>
+        <input type="file" name="file" class="form-control" accept=".xls,.xlsx" />
+    </div>
+
+    <button type="button" id="upload-excel-btn" class="btn btn-primary">
+        بارگذاری فایل
+    </button>
+</form>
+
+<script>
+    // توجه: این اسکریپت باید در ویو UploadUserExcel.cshtml قرار داشته باشد
+
+    $('#upload-excel-btn').click(function () {
+        var formData = new FormData($('#upload-excel-form')[0]);
+
+        // موقتاً دکمه را غیرفعال کنید
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('در حال بارگذاری...');
+
+        $.ajax({
+            url: '/User/Users/UploadUserExcel', // ✅ اکشن مرحله دوم (POST)
+            type: 'POST',
+            data: formData,
+            dataType: 'html', // ← مهم
+            processData: false,
+            contentType: false,
+            success: function (html) {
+                // فرض بر این است که این اسکریپت داخل مودال 'dynamicModal1' است.
+                // اگر می‌خواهید محتوا را در همان مودال جایگزین کنید:
+
+                // 1. عنوان مودال را تنظیم کنید (اختیاری، اگرچه عنوان در این مرحله عوض نمی‌شود)
+                $('#lbl_dynamicModal1').text('تطبیق ستون‌های اکسل');
+
+                // 2. محتوای بدنه مودال را با ویو Mapping جایگزین کنید
+                $('#body_dynamicModal1').html(html);
+
+                // 3. نیاز به openModal یا $('#dynamicModal1').modal('show') ندارید، چون مودال از قبل باز است.
+            },
+            error: function (xhr) {
+                // اگر خطایی رخ داد، مودال بسته نمی‌شود، فقط پیام خطا نمایش داده می‌شود
+                var message = xhr.responseJSON ? xhr.responseJSON.message : xhr.responseText;
+                iziToast.error({ message: message || 'خطایی در بارگذاری فایل رخ داد.' });
+            },
+            complete: function () {
+                // دکمه را دوباره فعال کنید
+                $btn.prop('disabled', false).text('بارگذاری فایل');
+            }
+        });
+    });
+</script>

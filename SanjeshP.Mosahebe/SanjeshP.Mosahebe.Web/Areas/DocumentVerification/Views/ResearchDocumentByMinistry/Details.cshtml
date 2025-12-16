@@ -153,6 +153,10 @@
 </form>
 
 <script>
+    function PreviewSubmissionFile(title, id, StudentId) {
+        openModal('مشاهده فایل ' + title, '/DV/ResearchDocumentByMinistry/PreviewSubmissionFile?submissionDataId=' + id + '&studentId=' + StudentId, true);
+    }
+
     $(document).ready(function () {
         const rejectReason = $("#RejectReason");
         const btnSave = $("#btnSaveApproval");
