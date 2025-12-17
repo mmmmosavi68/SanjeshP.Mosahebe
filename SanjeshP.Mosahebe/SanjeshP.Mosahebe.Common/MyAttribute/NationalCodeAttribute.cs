@@ -24,7 +24,7 @@ namespace SanjeshP.Mosahebe.Common.MyAttribute
             return true;
         }
 
-        public bool IsValidNationalCode(string nationalcode)
+        public bool IsValidNationalCode1(string nationalcode)
         {
             if (string.IsNullOrEmpty(nationalcode)) return false;
             if (!new Regex(@"\d{10}").IsMatch(nationalcode)) return false;
@@ -47,6 +47,42 @@ namespace SanjeshP.Mosahebe.Common.MyAttribute
             }
             var temp = Math.Abs(diff - 11);
             return temp == Int32.Parse(array[9].ToString(CultureInfo.InvariantCulture));
+        }
+
+        public bool IsValidNationalCode(string nationalcode)
+        {
+            if (string.IsNullOrEmpty(nationalcode)) return false;
+
+            // ۱. بررسی طول ۱۰ رقم و فقط عدد بودن
+            if (!Regex.IsMatch(nationalcode, @"^\d{10}$")) return false;
+
+            // ۲. بررسی تکراری نبودن همه ارقام (مثل 1111111111)
+            if (Regex.IsMatch(nationalcode, @"^(\d)\1{9}$")) return false;
+
+            var chars = nationalcode.ToCharArray();
+
+            // ۳. محاسبه مجموع حاصلضرب ارقام در موقعیت آن‌ها
+            var sum = 0;
+            for (var i = 0; i < 9; i++)
+            {
+                sum += (chars[i] - '0') * (10 - i);
+            }
+
+            // ۴. به دست آوردن باقیمانده تقسیم بر ۱۱
+            var remainder = sum % 11;
+
+            // ۵. رقم کنترل (رقم دهم)
+            var controlDigit = chars[9] - '0';
+
+            // ۶. شرط نهایی طبق استاندارد ثبت احوال
+            if (remainder < 2)
+            {
+                return controlDigit == remainder;
+            }
+            else
+            {
+                return controlDigit == (11 - remainder);
+            }
         }
     }
 }

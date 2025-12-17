@@ -78,7 +78,17 @@
                             .Cast<DisplayAttribute>()
                             .FirstOrDefault();
                             var displayName = displayAttr?.Name ?? prop.Name;
-                            <th>@displayName</th>
+                            <th onclick="sortUsers('@prop.Name')" style="cursor:pointer;">
+                                @displayName
+                                @if (Model.SortColumn == prop.Name)
+                                {
+                                    <i class="fa fa-sort-@(Model.SortAscending ? "up" : "down") text-danger"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa fa-sort text-muted"></i>
+                                }
+                            </th>
                         }
                     }
                     <th>عملیات</th>
@@ -201,11 +211,10 @@
     </div>
 </div>
 <script src="~/js/bootstrap-confirmation.min.js"></script>  <!-- For confirmed delete -->
+
 <script>
     // ✅ تابع اصلی بارگذاری کاربران با فیلترها و صفحه‌بندی
-    function loadUsers(pageIndex = 1) {
-        listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged, pageIndex);
-    }
+
 
     $(".toggle-filter-row").on("click", function () {
         console.log('asdas')
@@ -296,5 +305,45 @@
                 title: 'کاربری جهت حذف ارسال نشده است یا خطایی رخ داده.',
             });
         }
+    }
+
+</script>
+
+
+<script>
+    // مقداردهی اولیه
+    if (typeof window.userSortColumn === 'undefined') {
+        window.userSortColumn = '@Model.SortColumn' || 'UserName';
+        window.userSortAscending = @(Model.SortAscending.ToString().ToLower());
+    }
+
+    // تابع سورت
+    function sortUsers(column) {
+        if (window.userSortColumn === column) {
+            window.userSortAscending = !window.userSortAscending;
+        } else {
+            window.userSortColumn = column;
+            window.userSortAscending = true;
+        }
+        loadUsers(1);
+    }
+
+    function loadUsers(pageIndex = 1) {
+        var params = new URLSearchParams();
+        params.append("pageIndex", pageIndex);
+        params.append("pageSize", 10);
+        params.append("sortColumn", window.userSortColumn || "");
+        params.append("sortAscending", window.userSortAscending);
+
+        $('.column-filter').each(function () {
+            var val = $(this).val();
+            var field = $(this).data('field');
+            if (val && field) { params.append(field, val.trim()); }
+        });
+
+        var finalUrl = window.__env.baseUrl + window.routes.users.users_listPaged + "?" + params.toString();
+
+        // استفاده از لودر پیش‌فرض جی‌کوئری به جای listLoader
+        $("#usersList").load(finalUrl);
     }
 </script>

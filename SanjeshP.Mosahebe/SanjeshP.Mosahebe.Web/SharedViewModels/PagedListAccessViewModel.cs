@@ -9,6 +9,8 @@ namespace SanjeshP.Mosahebe.Web.SharedViewModels
         public int TotalCount { get; set; }
         public int PageIndex { get; set; }
         public int PageSize { get; set; }
+        public string SortColumn { get; set; }
+        public bool SortAscending { get; set; }
         public int StartRow => ((PageIndex - 1) * PageSize) + 1;
         public int EndRow => Math.Min(PageIndex * PageSize, TotalCount);
         public int PageCount => (int)Math.Ceiling((double)TotalCount / PageSize);

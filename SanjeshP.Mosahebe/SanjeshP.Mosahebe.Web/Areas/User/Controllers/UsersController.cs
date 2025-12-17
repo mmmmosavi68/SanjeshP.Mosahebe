@@ -132,28 +132,49 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                 throw;
             }
         }
-
-        public async Task<IActionResult> UsersListPaged(int pageIndex = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        public class UserSearchFilter
         {
+            [FromQuery(Name = "pageIndex")]
+            public int PageIndex { get; set; } = 1;
+
+            [FromQuery(Name = "pageSize")]
+            public int PageSize { get; set; } = 10;
+
+            [FromQuery(Name = "sortColumn")]
+            public string SortColumn { get; set; }
+
+            [FromQuery(Name = "sortAscending")]
+            public bool SortAscending { get; set; } 
+        }
+        public async Task<IActionResult> UsersListPaged([FromQuery] UserSearchFilter filter, CancellationToken cancellationToken = default)
+        {
+            // جلوگیری از نال بودن مدل
+            filter ??= new UserSearchFilter();
+
             var token = User.Claims.FirstOrDefault(c => c.Type == "Token")?.Value;
             var memoryCache = HttpContext.RequestServices.GetService<IMemoryCache>();
 
             // سطح دسترسی برای دکمه "افزودن کاربر"
             ViewData["CreateUser"] = memoryCache.HasAccess(token, "CreateUser");
 
+
+            var mainParams = new[] { "pageIndex", "pageSize", "sortColumn", "sortAscending", "_" };
+
             // دریافت همه QueryStringها بجز pageIndex/pageSize
             var filters = Request.Query
                 .Where(kv => kv.Key != "pageIndex" && kv.Key != "pageSize")
                 .ToDictionary(kv => kv.Key, kv => kv.Value.ToString()?.Trim());
 
-            // آماده‌سازی پارامترهای صفحه‌بندی و فیلترها
             var parameters = new SearchPagingParameters
             {
-                PageIndex = pageIndex,
-                PageSize = pageSize,
-                Filters = filters
+                PageIndex = filter.PageIndex,
+                PageSize = filter.PageSize,
+                Filters = filters,
+                SortColumn = filter.SortColumn,
+                SortAscending = filter.SortAscending
             };
 
+            parameters.SortAscending= filter.SortAscending;
             // دریافت کاربران با جستجوهای چندفیلدی و صفحه‌بندی
             var (users, totalCount) = await _userRepository.GetPagedUsersAsync(parameters, cancellationToken);
 
@@ -200,8 +221,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
             {
                 Items = viewModels,
                 TotalCount = totalCount,
-                PageIndex = pageIndex,
-                PageSize = pageSize
+                PageIndex = filter.PageIndex, // تغییر از pageIndex به filter.PageIndex
+                PageSize = filter.PageSize,   // تغییر از pageSize به filter.PageSize
+                SortColumn = filter.SortColumn, // اضافه کنید به کلاس مدل
+                SortAscending = filter.SortAscending // اضافه کنید به کلاس مدل
             };
 
             return PartialView("UsersListPaged", result);
@@ -1076,10 +1099,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                         NormalizedUserName = userName.FixTextUpper(),
                         EmailAddress = emailAddress,
                         NormalizedEmailAddress = emailAddress?.FixTextUpper(),
-                        EmailAddressConfirmed=false,
+                        EmailAddressConfirmed = false,
                         PasswordHash = PasswordHelper.HashPasswordBCrypt(password),
                         ConcurrencyStamp = Guid.NewGuid(),
-                        PhoneNumber=phoneNumber,
+                        PhoneNumber = phoneNumber,
                         PhoneNumberConfirmed = false,
                         TwoFactorEnabled = false,
                         LockoutEnd = null,

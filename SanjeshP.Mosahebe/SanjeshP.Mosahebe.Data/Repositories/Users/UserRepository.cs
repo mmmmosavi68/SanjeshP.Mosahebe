@@ -57,12 +57,11 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
             var query = TableNoTracking.Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
-                .Include(ue=>ue.UserFields)
-                    .ThenInclude(ue=>ue.ExamFields)
-                .OrderByDescending(u => u.CreatedDate) // مرتب‌سازی براساس CreatedDate به‌صورت نزولی
+                .Include(ue => ue.UserFields)
+                    .ThenInclude(ue => ue.ExamFields)
                 .Where(u => !u.IsDeleted);
-            // جستجوی عمومی (SearchTerm)، اگر هنوز ازش استفاده می‌کنی
-            if (!string.IsNullOrEmpty(parameters.SearchTerm))
+
+            if (!string.IsNullOrWhiteSpace(parameters.SearchTerm))
             {
                 var keyword = parameters.SearchTerm.Trim().ToLower();
 
@@ -74,10 +73,13 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
                         EF.Functions.Like(p.FirstName, $"%{keyword}%") ||
                         EF.Functions.Like(p.LastName, $"%{keyword}%") ||
                         EF.Functions.Like(p.NationalCode, $"%{keyword}%")
-                    ));
+                    ) ||
+                    u.UserFields.Any(uf =>
+                        EF.Functions.Like(uf.ExamFields.Title.ToLower(), $"%{keyword}%")
+                    )
+                );
             }
 
-            // اعمال فیلترهای چندستونی دینامیک
             if (parameters.Filters?.Any() == true)
             {
                 foreach (var filter in parameters.Filters)
@@ -117,21 +119,78 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
                                 EF.Functions.Like(u.EmailAddress, $"%{keyword}%"));
                             break;
 
-                            // می‌تونی فیلترهای اضافه مثل RoleName یا IsActive رو هم اضافه کنی
+                        case "UserFieldsTitles":
+                            query = query.Where(u =>
+                                u.UserFields.Any(uf =>
+                                    EF.Functions.Like(uf.ExamFields.Title.ToLower(), $"%{keyword}%")
+                                ));
+                            break;
                     }
                 }
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
 
+            // -------------------------------
+            //    مرتب‌سازی داینامیک اصلاح شده
+            // -------------------------------
+            if (!string.IsNullOrWhiteSpace(parameters.SortColumn))
+            {
+                switch (parameters.SortColumn)
+                {
+                    case "FirstName":
+                        query = parameters.SortAscending
+                            ? query.OrderBy(u => u.UserProfiles.Select(x => x.FirstName).FirstOrDefault())
+                            : query.OrderByDescending(u => u.UserProfiles.Select(x => x.FirstName).FirstOrDefault());
+                        break;
+
+                    case "LastName":
+                        query = parameters.SortAscending
+                            ? query.OrderBy(u => u.UserProfiles.Select(x => x.LastName).FirstOrDefault())
+                            : query.OrderByDescending(u => u.UserProfiles.Select(x => x.LastName).FirstOrDefault());
+                        break;
+
+                    case "UserFieldsTitles":
+                        query = parameters.SortAscending
+                            ? query.OrderBy(u => u.UserFields.Select(x => x.ExamFields.Title).FirstOrDefault())
+                            : query.OrderByDescending(u => u.UserFields.Select(x => x.ExamFields.Title).FirstOrDefault());
+                        break;
+
+                    case "UserName":
+                        query = parameters.SortAscending ? query.OrderBy(u => u.UserName) : query.OrderByDescending(u => u.UserName);
+                        break;
+
+                    case "EmailAddress":
+                        query = parameters.SortAscending ? query.OrderBy(u => u.EmailAddress) : query.OrderByDescending(u => u.EmailAddress);
+                        break;
+
+                    case "PhoneNumber":
+                        query = parameters.SortAscending ? query.OrderBy(u => u.PhoneNumber) : query.OrderByDescending(u => u.PhoneNumber);
+                        break;
+
+                    case "IsActiveName": // اگر بر اساس وضعیت فعال بودن سورت می‌کنید
+                        query = parameters.SortAscending ? query.OrderBy(u => u.IsActive) : query.OrderByDescending(u => u.IsActive);
+                        break;
+
+                    default:
+                        query = query.OrderByDescending(u => u.Id);
+                        break;
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(u => u.Id);
+            }
+
+            // ⚠️ این قسمت باید فقط Skip + Take باشد
             var users = await query
-                .OrderByDescending(u => u.CreatedDate)
                 .Skip((parameters.PageIndex - 1) * parameters.PageSize)
                 .Take(parameters.PageSize)
                 .ToListAsync(cancellationToken);
 
             return (users, totalCount);
         }
+
 
 
 

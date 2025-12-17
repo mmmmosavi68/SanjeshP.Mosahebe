@@ -12,6 +12,8 @@ namespace SanjeshP.Mosahebe.Common
 
         // تعداد آیتم‌ها در هر صفحه
         public int PageSize { get; set; } = 10;
+        public string SortColumn { get; set; }
+        public bool SortAscending { get; set; } = true;
 
         // فیلترهای اختصاصی برای هر ستون جدول
         public Dictionary<string, string> Filters { get; set; } = new();
