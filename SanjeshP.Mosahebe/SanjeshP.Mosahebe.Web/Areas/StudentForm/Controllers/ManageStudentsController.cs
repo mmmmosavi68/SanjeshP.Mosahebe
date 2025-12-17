@@ -205,7 +205,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
             if (!ModelState.IsValid)
                 return new BadRequestObjectResult(ModelState);
 
-            var existing = await _studentRepository.GetStudentByIdAsync(model.Id, cancellationToken);
+            var existing = await _studentRepository.GetStudentByIdDontRelationAsync(model.Id, cancellationToken);
             if (existing == null)
                 return NotFound();
 

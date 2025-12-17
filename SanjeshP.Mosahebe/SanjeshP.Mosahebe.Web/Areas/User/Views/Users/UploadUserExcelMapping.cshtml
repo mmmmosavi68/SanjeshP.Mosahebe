@@ -72,7 +72,8 @@
             success: function (response) {
                 // فرض بر این است که اکشن شما یک آبجکت شامل { isSuccess: true/false, message: "..." } برمی‌گرداند.
                 if (response.isSuccess) {
-                    iziToast.success({ message: 'کاربران با موفقیت ثبت شدند.' });
+                    iziToast.success({ message: response.message });
+                    listLoader.load("usersList", window.__env.baseUrl + window.routes.users.users_listPaged);
 
                     // بستن مودال (با توجه به شناسه مودال شما که در کامنت قبل استفاده شد)
                     $('#dynamicModal1').modal('hide');

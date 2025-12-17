@@ -160,5 +160,11 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
         {
             await UpdateAsync(student, cancellationToken);
         }
+
+        public async Task<Student> GetStudentByIdDontRelationAsync(int id, CancellationToken cancellationToken)
+        {
+            return await Table // بدون NoTracking و Includeهای اضافی
+         .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, cancellationToken);
+        }
     }
 }

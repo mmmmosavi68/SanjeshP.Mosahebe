@@ -43,5 +43,14 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
         {
             throw new NotImplementedException();
         }
+
+        public async Task<List<string>> GetAllNationalCodesAsync(CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Where(x => x.NationalCode != null)
+                .Select(x => x.NationalCode)
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

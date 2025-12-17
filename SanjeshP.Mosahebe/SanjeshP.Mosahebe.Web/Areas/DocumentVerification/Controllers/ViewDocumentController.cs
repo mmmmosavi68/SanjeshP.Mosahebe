@@ -22,7 +22,6 @@ using SanjeshP.Mosahebe.Common;
 
 namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 {
-    [AllowAnonymous]
     [Area("DocumentVerification")]
     public class ViewDocumentController : Controller
     {

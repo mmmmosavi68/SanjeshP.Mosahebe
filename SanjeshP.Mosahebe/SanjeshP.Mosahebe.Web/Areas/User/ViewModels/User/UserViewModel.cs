@@ -31,5 +31,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User
         public bool IsActive { get; set; }
         [Display(Name = "وضعیت ( فعال/غیرفعال)")]
         public IsActiveNameType IsActiveName { get; set; }
+        [Display(Name = "رشته")]
+
+        public string UserFieldsTitles { get; set; }
+
     }
 }

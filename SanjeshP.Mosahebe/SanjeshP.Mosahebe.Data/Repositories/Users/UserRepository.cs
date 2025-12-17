@@ -57,6 +57,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
             var query = TableNoTracking.Include(ur => ur.UserRoles)
                 .ThenInclude(r => r.Role)
                 .Include(up => up.UserProfiles)
+                .Include(ue=>ue.UserFields)
+                    .ThenInclude(ue=>ue.ExamFields)
                 .OrderByDescending(u => u.CreatedDate) // مرتب‌سازی براساس CreatedDate به‌صورت نزولی
                 .Where(u => !u.IsDeleted);
             // جستجوی عمومی (SearchTerm)، اگر هنوز ازش استفاده می‌کنی
@@ -259,5 +261,31 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Users
                 .Where(u => !u.IsDeleted && u.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
+
+
+        public async Task<List<string>> GetAllEmailsAsync(CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Where(x => x.EmailAddress != null)
+                .Select(x => x.EmailAddress)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<string>> GetAllUserNamesAsync(CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Select(x => x.UserName)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<string>> GetAllPhonesAsync(CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Where(x => x.PhoneNumber != null)
+                .Select(x => x.PhoneNumber)
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

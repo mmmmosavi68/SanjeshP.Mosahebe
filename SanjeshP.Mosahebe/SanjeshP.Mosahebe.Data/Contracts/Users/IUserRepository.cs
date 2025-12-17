@@ -30,5 +30,11 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Users
         Task DeleteUserAsync(User user, CancellationToken cancellationToken);
         Task UpdateUserSecurityStampAsync(User user, CancellationToken cancellationToken);
         Task UpdateUserLastLoginDateAsync(User user, CancellationToken cancellationToken);
+
+        Task<List<string>> GetAllEmailsAsync(CancellationToken cancellationToken);
+        Task<List<string>> GetAllUserNamesAsync(CancellationToken cancellationToken);
+        Task<List<string>> GetAllPhonesAsync(CancellationToken cancellationToken);
+
+
     }
 }

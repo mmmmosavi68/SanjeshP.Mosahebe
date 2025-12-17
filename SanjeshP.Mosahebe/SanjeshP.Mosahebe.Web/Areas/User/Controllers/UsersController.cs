@@ -34,6 +34,8 @@ using Microsoft.AspNetCore.Http;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SanjeshP.Mosahebe.Data.Repositories.Users;
+using SkiaSharp;
+using SanjeshP.Mosahebe.Data.Contracts.Exam;
 
 namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
 {
@@ -54,6 +56,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
         private readonly IStationRepository _stationRepository;
         private readonly IUserFieldRepository _userFieldRepository;
         private readonly DbContext _dbContext;
+        private readonly IExamFieldRepository _examFieldRepository;
         private readonly IViewUserMenubarRepository _view_UserMenubarRepository;
 
         public UsersController(IMapper mapper
@@ -70,7 +73,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                                 , IMemoryCache memoryCache
                                 , IStationRepository stationRepository
                                 , IUserFieldRepository userFieldRepository
-                                , DbContext dbContext)
+                                , DbContext dbContext
+                                , IExamFieldRepository examFieldRepository)
         {
             _mapper = mapper;
             _viewEngine = viewEngine;
@@ -86,6 +90,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
             this._stationRepository = stationRepository;
             this._userFieldRepository = userFieldRepository;
             this._dbContext = dbContext;
+            this._examFieldRepository = examFieldRepository;
             _view_UserMenubarRepository = view_UserMenubarRepository;
         }
 
@@ -167,6 +172,10 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                     PhoneNumber = user.PhoneNumber,
                     IsActive = user.IsActive,
                     IsActiveName = (IsActiveNameType)(user.IsActive ? 1 : 0),
+                    UserFieldsTitles = string.Join(" - ",
+                    user.UserFields
+                        .Select(uf => uf.ExamFields.Title) // مستقیم به Title دسترسی پیدا کنید
+                        .Distinct())
                 };
 
                 var lastRole = user.UserRoles.LastOrDefault();
@@ -937,17 +946,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveUsersFromExcel(
-      ImportUserExcelMappingViewModel model,
-      CancellationToken cancellationToken)
+        public async Task<IActionResult> SaveUsersFromExcel(ImportUserExcelMappingViewModel model, CancellationToken cancellationToken)
         {
-            // 0. اعتبارسنجی اولیه و بازیابی داده‌ها (همانند قبل)
-            if (!ModelState.IsValid)
-            {
-                return new BadRequestObjectResult(ModelState);
-            }
-
-            // ... (منطق بازیابی فایل از Session و بررسی انقضا) ...
             if (!HttpContext.Session.TryGetValue(model.TempKey, out byte[] bytes) || bytes == null)
             {
                 return BadRequest("فایل اکسل منقضی شده است.");
@@ -957,8 +957,6 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
             var workbook = new Aspose.Cells.Workbook(ms);
             var sheet = workbook.Worksheets[0];
 
-            // 1. تعریف تابع کمکی برای استخراج شماره ستون (همانند قبل)
-            // ... (تابع GetColIndex) ...
             int GetColIndex(string colName)
             {
                 if (string.IsNullOrWhiteSpace(colName)) return -1;
@@ -969,6 +967,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                 }
                 return -1;
             }
+
+            var existEmails = (await _userRepository.GetAllEmailsAsync(cancellationToken)).Select(x => x.FixTextUpper()).ToHashSet();
+            var existUserNames = (await _userRepository.GetAllUserNamesAsync(cancellationToken)).Select(x => x.FixTextUpper()).ToHashSet();
+            var existPhones = (await _userRepository.GetAllPhonesAsync(cancellationToken)).Select(x => x.FixTextUpper()).ToHashSet();
+            var existNationalCodes = (await _userProfilesRepository.GetAllNationalCodesAsync(cancellationToken)).Select(x => x.FixTextUpper()).ToHashSet();
 
             // 2. پیدا کردن ایندکس تمام ستون‌های مورد نیاز
             int firstNameCol = GetColIndex(model.FirstNameColumn);
@@ -999,6 +1002,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
             int successCount = 0;
             var failedRows = new List<string>();
 
+            var examFields = await _examFieldRepository.GetAllFieldsByExamIdAsync(cancellationToken);
+
             // 6. حلقه برای پردازش سطر به سطر کاربران (شروع از سطر ۱)
             for (int r = 1; r <= sheet.Cells.MaxDataRow; r++)
             {
@@ -1022,6 +1027,39 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                     continue;
                 }
 
+                var validationResult = ValidateUserForImport(
+                                        new UserCreateViewModel
+                                        {
+                                            EmailAddress = emailAddress,
+                                            UserName = userName,
+                                            PhoneNumber = phoneNumber,
+                                            NationalCode = nationalCode,
+                                            RoleId = model.RoleId
+                                        },
+                                        existEmails,
+                                        existUserNames,
+                                        existPhones,
+                                        existNationalCodes
+                                    );
+
+                if (!validationResult.IsValid)
+                {
+                    failedRows.Add($"ردیف {r}: {string.Join("، ", validationResult.Errors)}");
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(nationalCode))
+                {
+                    nationalCode = nationalCode.Trim(); // حذف space و invisible chars
+
+                    if (nationalCode.Length > 10)
+                    {
+                        failedRows.Add($"ردیف {r}: طول کد ملی بیشتر از 10 کاراکتر است ({nationalCode})");
+                        continue;
+                    }
+                }
+
+
                 // 6.3. شروع تراکنش برای این کاربر خاص
                 using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -1038,15 +1076,20 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                         NormalizedUserName = userName.FixTextUpper(),
                         EmailAddress = emailAddress,
                         NormalizedEmailAddress = emailAddress?.FixTextUpper(),
+                        EmailAddressConfirmed=false,
                         PasswordHash = PasswordHelper.HashPasswordBCrypt(password),
                         ConcurrencyStamp = Guid.NewGuid(),
+                        PhoneNumber=phoneNumber,
                         PhoneNumberConfirmed = false,
                         TwoFactorEnabled = false,
                         LockoutEnd = null,
                         LockoutEnabled = false,
                         AccessFailedCount = 0,
+
+                        CreatedDate = createdDate,
+                        IsActive = true,
+                        IsDeleted = false,
                         CreatedBy = createdByUserId,
-                        CreatorUser = creatorUser,
                         HostIp = hostIp
                     };
 
@@ -1057,10 +1100,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                         FirstName = firstName,
                         LastName = lastName,
                         NationalCode = nationalCode,
-                        IsActive = isActive,
-                        // ... سایر فیلدهای profile
-                        CreatedBy = createdByUserId,
+
                         CreatedDate = createdDate,
+                        IsActive = true,
+                        IsDeleted = false,
+                        CreatedBy = createdByUserId,
                         HostIp = hostIp
                     };
 
@@ -1069,10 +1113,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                     {
                         UserId = userId,
                         RoleId = model.RoleId,
-                        IsActive = true,
-                        // ... سایر فیلدهای role
-                        CreatedBy = createdByUserId,
+
                         CreatedDate = createdDate,
+                        IsActive = true,
+                        IsDeleted = false,
+                        CreatedBy = createdByUserId,
                         HostIp = hostIp
                     };
 
@@ -1081,36 +1126,77 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                     await _userProfilesRepository.AddAsync(userProfile, cancellationToken, false);
                     await _userRoleReository.AddAsync(userRole, cancellationToken, false);
 
+
                     // 6.3.3. تخصیص رشته‌ها (UserField)
                     if (!string.IsNullOrWhiteSpace(fieldCodesString))
                     {
-                        var codes = fieldCodesString.Split(new char[] { '-', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        var codes = fieldCodesString
+                            .Split(new[] { '-', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x =>
+                            {
+                                //bool ok = int.TryParse(x.Trim(), out int val);
+                                var cleaned = new string(x.Where(char.IsDigit).ToArray());
+                                bool ok = int.TryParse(cleaned, out int val);
+                                return new { ok, val };
+                            })
+                            .Where(x => x.ok)
+                            .Select(x => x.val)
+                            .Distinct()
+                            .ToList();
+
+
+                        // 🔑 تبدیل Code → Id واقعی از DB
+                        var examFieldMap = examFields.Where(x => codes.Contains(x.StandardCode)).ToDictionary(x => x.StandardCode, x => x.Id);
                         var fieldsToSave = new List<UserField>();
 
                         foreach (var code in codes)
                         {
-                            if (int.TryParse(code, out int fieldId))
+                            if (!examFieldMap.TryGetValue(code, out var examFieldId))
                             {
-                                fieldsToSave.Add(new UserField
-                                {
-                                    UserID = userId,
-                                    ExamFieldID = fieldId,
-                                    IsActive = true,
-                                    CreatedBy = createdByUserId,
-                                    CreatedDate = createdDate,
-                                    HostIp = hostIp
-                                });
+                                // ❗ کد استاندارد در دیتابیس وجود ندارد
+                                // این رشته را رد می‌کنیم (یا لاگ می‌گیریم)
+                                continue;
                             }
+
+                            fieldsToSave.Add(new UserField
+                            {
+                                UserID = userId,
+                                ExamFieldID = examFieldId, // ✅ Id واقعی
+
+                                CreatedDate = createdDate,
+                                IsActive = true,
+                                IsDeleted = false,
+                                CreatedBy = createdByUserId,
+                                HostIp = hostIp
+                            });
                         }
+
                         if (fieldsToSave.Any())
                         {
                             await _userFieldRepository.AddRangeAsync(fieldsToSave, cancellationToken, false);
                         }
                     }
 
+
                     // 6.3.4. ذخیره کردن (یک بار برای تمام تغییرات) و Commit کردن
                     await _userRepository.SaveChangesAsync(cancellationToken);
+                    await _userProfilesRepository.SaveChangesAsync(cancellationToken);
+                    await _userRoleReository.SaveChangesAsync(cancellationToken);
+                    await _userFieldRepository.SaveChangesAsync(cancellationToken);
+                    //await _dbContext.SaveChangesAsync(cancellationToken);
                     await transaction.CommitAsync(cancellationToken);
+
+                    if (!string.IsNullOrWhiteSpace(user.EmailAddress))
+                        existEmails.Add(user.EmailAddress.FixTextUpper());
+
+                    if (!string.IsNullOrWhiteSpace(user.UserName))
+                        existUserNames.Add(user.UserName.FixTextUpper());
+
+                    if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+                        existPhones.Add(user.PhoneNumber.FixTextUpper());
+
+                    if (!string.IsNullOrWhiteSpace(userProfile.NationalCode))
+                        existNationalCodes.Add(userProfile.NationalCode.FixTextUpper());
 
                     successCount++;
                 }
@@ -1162,6 +1248,41 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
         // 💡 نکته مهم: اگر از Dapper یا متدهای EF Core SaveChangesAsync استفاده می‌کنید،
         // استفاده از یک Transaction برای تضمین اتمیک بودن عملیات (همه یا هیچ) بسیار توصیه می‌شود.
         #endregion
+        private ImportValidationResult ValidateUserForImport(
+                                                        UserCreateViewModel model,
+                                                        HashSet<string> existEmails,
+                                                        HashSet<string> existUserNames,
+                                                        HashSet<string> existPhones,
+                                                        HashSet<string> existNationalCodes)
+        {
+            var result = new ImportValidationResult();
 
+            if (model.RoleId == 0)
+                result.Errors.Add("نوع کاربری مشخص نشده");
+
+            if (!string.IsNullOrWhiteSpace(model.EmailAddress) &&
+                existEmails.Contains(model.EmailAddress.FixTextUpper()))
+                result.Errors.Add("ایمیل تکراری است");
+
+            if (existUserNames.Contains(model.UserName.FixTextUpper()))
+                result.Errors.Add("نام کاربری تکراری است");
+
+            if (!string.IsNullOrWhiteSpace(model.PhoneNumber) &&
+                existPhones.Contains(model.PhoneNumber.FixTextUpper()))
+                result.Errors.Add("شماره همراه تکراری است");
+
+            if (!string.IsNullOrWhiteSpace(model.NationalCode) &&
+                existNationalCodes.Contains(model.NationalCode.FixTextUpper()))
+                result.Errors.Add("کد ملی تکراری است");
+
+            return result;
+        }
+
+        public class ImportValidationResult
+        {
+            public List<string> Errors { get; set; } = new();
+
+            public bool IsValid => !Errors.Any();
+        }
     }
 }

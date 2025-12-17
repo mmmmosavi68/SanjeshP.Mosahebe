@@ -26,5 +26,8 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Students
 
         Task AddStudentAsync(Student student, CancellationToken cancellationToken);
         Task UpdateStudentAsync(Student student, CancellationToken cancellationToken);
+        Task<Student> GetStudentByIdDontRelationAsync(int id, CancellationToken cancellationToken);
+
+        
     }
 }

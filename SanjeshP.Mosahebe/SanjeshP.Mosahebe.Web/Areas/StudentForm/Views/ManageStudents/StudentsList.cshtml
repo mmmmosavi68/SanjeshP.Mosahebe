@@ -18,6 +18,7 @@
                 <th>@Html.DisplayNameFor(model => model.First().FatherName)</th>
                 <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
                 <th>@Html.DisplayNameFor(model => model.First().InterviewProcessStatus)</th>
+                <th>@Html.DisplayNameFor(model => model.First().IsPajoheshi)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
@@ -32,11 +33,17 @@
                     _ => string.Empty
                 };
 
+                var nationalCode = item.NationalCode;
+                var userPhotoPath = Url.Content($"~/uploads/{nationalCode}/{nationalCode}.jpg");
+                var defaultPhoto = Url.Content("~/img/user.jpg");
+
                 <tr id="tr_@(item.Id)" class="@rowClass">
                     <td>@i</td>
                     <td>
-                        <img src="~/img/user.jpg" class="img-thumbnail rounded-circle"
-                             style="width:50px; height:50px; object-fit:cover;"
+                        <img src="@userPhotoPath"
+                             onerror="this.onerror=null;this.src='@defaultPhoto';"
+                             class="img-thumbnail rounded-circle"
+                             style="width:50px;height:50px;object-fit:cover;"
                              alt="user photo" />
                     </td>
                     <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
@@ -57,6 +64,7 @@
                                 break;
                         }
                     </td>
+                    <td>@(item.IsPajoheshi ? "پژوهشی" : "آموزشی")</td>
                     <td>
                         <a class="btn btn-sm btn-outline-dark" onclick="Detail('@item.Id')" title="اصطلاعات داوطلب"><i class="fa fa-info"></i></a>
                         <a class="btn btn-sm btn-outline-primary" onclick="Edit('@item.Id')" title="ویرایش داوطلب"><i class="fa fa-edit"></i></a>

@@ -14,7 +14,6 @@ using System.Linq;
 using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.UserField;
 namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
 {
-    [AllowAnonymous]
     [Area("User")]
     public class UserFieldController : Controller
     {
