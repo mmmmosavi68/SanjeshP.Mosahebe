@@ -14,7 +14,7 @@ namespace SanjeshP.Mosahebe.Data.Contracts.Interview
         Task AddScoreAsync(InterviewScore score, CancellationToken cancellationToken);
         Task UpdateScoreAsync(InterviewScore score, CancellationToken cancellationToken);
         Task DeleteScoreAsync(int id, CancellationToken cancellationToken);
-        Task SaveInterviewScoresAsync(Guid userId, int studentId,int stationId,Dictionary<int, double> scores,CancellationToken cancellationToken);
+        Task SaveInterviewScoresAsync(Guid userId, int studentId, int stationId, Dictionary<int, decimal> scores, string hostIP, CancellationToken cancellationToken);
         Task<List<InterviewScore>> GetInterviewScoresAsync(IEnumerable<int> studentIds, int stationId, CancellationToken cancellationToken);
     }
 }

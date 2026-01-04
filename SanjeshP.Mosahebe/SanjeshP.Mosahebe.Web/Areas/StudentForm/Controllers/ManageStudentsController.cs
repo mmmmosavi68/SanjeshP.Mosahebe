@@ -17,6 +17,14 @@ using SanjeshP.Mosahebe.Entities.Student;
 using SanjeshP.Mosahebe.WebFramework.Api;
 using System.Security.Claims;
 using AutoMapper;
+using SanjeshP.Mosahebe.Data.Contracts.Interview;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using SanjeshP.Mosahebe.Common;
+using SanjeshP.Mosahebe.Data.Repositories.Users;
+using SanjeshP.Mosahebe.Web.Areas.User.ViewModels.User;
+using SanjeshP.Mosahebe.Web.SharedViewModels;
+using static SanjeshP.Mosahebe.Web.Areas.User.Controllers.UsersController;
 
 namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 {
@@ -29,13 +37,17 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
         private readonly IStudentRepository _studentRepository;
         private readonly IExamRepository _examRepository;
         private readonly IExamFieldRepository _examFieldRepository;
+        private readonly IStationRepository _stationRepository;
+        private readonly IInterviewScoreRepository _interviewScoreRepository;
 
         public ManageStudentsController(IMapper mapper,
             ILogger<ManageStudentsController> logger,
             IUserTokenRepository userTokenRepository,
             IStudentRepository studentRepository,
             IExamRepository examRepository,
-            IExamFieldRepository examFieldRepository)
+            IExamFieldRepository examFieldRepository,
+            IStationRepository stationRepository,
+            IInterviewScoreRepository interviewScoreRepository)
         {
             this._mapper = mapper;
             _logger = logger;
@@ -43,6 +55,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
             _studentRepository = studentRepository;
             _examRepository = examRepository;
             _examFieldRepository = examFieldRepository;
+            this._stationRepository = stationRepository;
+            this._interviewScoreRepository = interviewScoreRepository;
         }
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
@@ -62,6 +76,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
         {
             try
             {
+                //آی دی کاربری که لاگین شده
+                var currentUserToken = User.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
+                var userPajoheshi = token.User?.IsPajoheshi ?? false;
+
+                var CountStationField = await _stationRepository.GetStationsByFieldIdAsync(fieldId, cancellationToken);
+
                 // دریافت همه دانشجویان فعال
                 var students = await _studentRepository.GetAllStudentsByFieldIdAsync(fieldId, cancellationToken);
 
@@ -70,7 +91,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 
 
                 // نگاشت دانشجویان به ViewModel
-                var result = students.Select(e =>
+                var result = students.Where(s => s.IsPajoheshi == userPajoheshi).Select(e =>
                 {
                     return new StudentListViewModel
                     {
@@ -101,10 +122,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
                         Fields = e.StudentFields != null && e.StudentFields.Any()
                                     ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
                                     : "",
+                        CountStationField = CountStationField.Count(),
+                        PassedStation = e.InterviewScores?.Select(i => i.StationId).Distinct().Count() ?? 0
                     };
                 })
                 .OrderBy(s => s.LastName)
                 .ThenBy(s => s.FirstName)
+                .ThenBy(s => s.IsPajoheshi)
                 .ToList();
 
                 return PartialView("StudentsList", result);
@@ -115,6 +139,111 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
                 return StatusCode(500, "خطا در سرور");
             }
         }
+
+        public class StudentSearchFilter
+        {
+            [FromQuery(Name = "pageIndex")]
+            public int PageIndex { get; set; } = 1;
+
+            [FromQuery(Name = "pageSize")]
+            public int PageSize { get; set; } = 10;
+
+            [FromQuery(Name = "sortColumn")]
+            public string SortColumn { get; set; }
+
+            [FromQuery(Name = "sortAscending")]
+            public bool SortAscending { get; set; }
+        }
+                                         
+        public async Task<IActionResult> StudentsListPaged([FromQuery] StudentSearchFilter filter, int fieldId, CancellationToken cancellationToken = default)
+        {
+            ViewBag.FieldId = fieldId; 
+            // جلوگیری از نال بودن مدل
+            filter ??= new StudentSearchFilter();
+
+            var mainParams = new[] { "pageIndex", "pageSize", "sortColumn", "sortAscending", "_" };
+
+            // دریافت همه QueryStringها بجز pageIndex/pageSize
+            var filters = Request.Query
+                .Where(kv => kv.Key != "pageIndex" && kv.Key != "pageSize")
+                .ToDictionary(kv => kv.Key, kv => kv.Value.ToString()?.Trim());
+
+            var parameters = new SearchPagingParameters
+            {
+                PageIndex = filter.PageIndex,
+                PageSize = filter.PageSize,
+                Filters = filters,
+                SortColumn = filter.SortColumn,
+                SortAscending = filter.SortAscending
+            };
+
+            //آی دی کاربری که لاگین شده
+            var currentUserToken = User.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
+            var userPajoheshi = token.User?.IsPajoheshi ?? false;
+
+            parameters.SortAscending = filter.SortAscending;
+            // دریافت کاربران با جستجوهای چندفیلدی و صفحه‌بندی
+            var (students, totalCount) = await _studentRepository.GetPagedStudentsAsync(parameters, fieldId, userPajoheshi, cancellationToken);
+            var CountStationField = await _stationRepository.GetStationsByFieldIdAsync(fieldId, cancellationToken);
+
+            // ساخت لیست ViewModel با سطح دسترسی
+            var viewModels = students.Select(e =>
+            {
+                StudentListViewModel vm = new()
+                {
+                    Id = e.Id,
+                    RegId = e.RegId,
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    FatherName = e.FatherName,
+                    NationalCode = e.NationalCode,
+                    CodeRahgiri = e.CodeRahgiri,
+                    PhoneNumber = e.PhoneNumber,
+                    Email = e.Email,
+
+                    // تبدیل جنسیت عددی به متن
+                    Gender = e.Gender == 1 ? "مرد" : "زن",
+
+                    // تبدیل IsPajoheshi به بولین
+                    IsPajoheshi = e.IsPajoheshi,
+
+                    // نام آزمون از navigation property
+                    ExamName = e.Exam?.Title ?? "",
+
+                    // نوع دوره آزمون به متن
+                    //ExamCourseType = e.ExamCourseType == 1 ? "آموزشی" : "پژوهشی",
+
+                    InterviewProcessStatus = (InterviewProcessStatusView)e.InterviewProcessStatus,
+                    // رشته‌ها به صورت رشته کاما جدا شده
+                    Fields = e.StudentFields != null && e.StudentFields.Any()
+                                    ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
+                                    : "",
+                    CountStationField = CountStationField.Count(),
+                    PassedStation = e.InterviewScores?.Select(i => i.StationId).Distinct().Count() ?? 0
+                };
+
+                return new ListItemAccessViewModel<StudentListViewModel>
+                {
+                    Data = vm,
+                };
+            }).ToList();
+
+            // ساخت مدل نهایی همراه با اطلاعات صفحه‌بندی
+            var result = new PagedListAccessViewModel<StudentListViewModel>
+            {
+                Items = viewModels,
+                TotalCount = totalCount,
+                PageIndex = filter.PageIndex, // تغییر از pageIndex به filter.PageIndex
+                PageSize = filter.PageSize,   // تغییر از pageSize به filter.PageSize
+                SortColumn = filter.SortColumn, // اضافه کنید به کلاس مدل
+                SortAscending = filter.SortAscending, // اضافه کنید به کلاس مدل
+                AppliedFilters = filters
+            };
+
+            return PartialView("StudentsListPaged", result);
+        }
+
 
         #region جزئیات دانشجو
         [HttpGet]

@@ -50,5 +50,17 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
             station.IsDeleted = true;
             await UpdateAsync(station, cancellationToken);
         }
+
+        public async Task<IEnumerable<Station>> GetStationsByFieldIdAsync(int fieldId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                   .Include(s => s.FieldStations)
+                   .Where(s =>
+                       !s.IsDeleted &&
+                       s.FieldStations.Any(fs => fs.ExamFieldId == fieldId)
+                   )
+                   .OrderByDescending(s => s.CreatedDate)
+                   .ToListAsync(cancellationToken);
+        }
     }
 }

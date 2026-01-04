@@ -24,7 +24,6 @@
                 <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
                 <th>@Html.DisplayNameFor(model => model.First().ResearchDocumentScore.IsApproved)</th>
                 <th>@Html.DisplayNameFor(model => model.First().ResearchDocumentScore.RejectReason)</th>
-                <th>@Html.DisplayNameFor(model => model.First().ResearchDocumentScore.FinalTotalScore)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
@@ -52,7 +51,6 @@
                     <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
                     <td>@Html.DisplayFor(modelItem => item.ResearchDocumentScore.IsApproved)</td>
                     <td>@Html.DisplayFor(modelItem => item.ResearchDocumentScore.RejectReason)</td>
-                    <td>@Html.DisplayFor(modelItem => item.ResearchDocumentScore.FinalTotalScore)</td>
                     <td>
                         <a class="@colorClass" onclick="Detail('@item.Id')" title="اطلاعات داوطلب"><i class="fa fa-info"></i></a>
                     </td>

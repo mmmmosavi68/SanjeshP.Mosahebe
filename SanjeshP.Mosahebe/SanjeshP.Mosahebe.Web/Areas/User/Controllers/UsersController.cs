@@ -224,7 +224,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.User.Controllers
                 PageIndex = filter.PageIndex, // تغییر از pageIndex به filter.PageIndex
                 PageSize = filter.PageSize,   // تغییر از pageSize به filter.PageSize
                 SortColumn = filter.SortColumn, // اضافه کنید به کلاس مدل
-                SortAscending = filter.SortAscending // اضافه کنید به کلاس مدل
+                SortAscending = filter.SortAscending, // اضافه کنید به کلاس مدل
+                AppliedFilters = filters
             };
 
             return PartialView("UsersListPaged", result);

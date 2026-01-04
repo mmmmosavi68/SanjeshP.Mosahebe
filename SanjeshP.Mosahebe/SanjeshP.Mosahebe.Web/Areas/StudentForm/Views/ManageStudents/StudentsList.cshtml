@@ -7,7 +7,7 @@
     int i = 1;
 }
 
-<div class="bg-light rounded p-4  table-responsive">
+<div class="bg-light table-responsive rounded p-4">
     <table class="table-hover table-striped table text-center" id="tbl_exam">
         <thead>
             <tr class='trhead'>
@@ -19,6 +19,9 @@
                 <th>@Html.DisplayNameFor(model => model.First().NationalCode)</th>
                 <th>@Html.DisplayNameFor(model => model.First().InterviewProcessStatus)</th>
                 <th>@Html.DisplayNameFor(model => model.First().IsPajoheshi)</th>
+                <th>@Html.DisplayNameFor(model => model.First().CountStationField)</th>
+
+                <th>@Html.DisplayNameFor(model => model.First().PassedStation)</th>
                 <th>عملیات</th>
             </tr>
         </thead>
@@ -37,39 +40,42 @@
                 var userPhotoPath = Url.Content($"~/uploads/{nationalCode}/{nationalCode}.jpg");
                 var defaultPhoto = Url.Content("~/img/user.jpg");
 
-                <tr id="tr_@(item.Id)" class="@rowClass">
-                    <td>@i</td>
-                    <td>
-                        <img src="@userPhotoPath"
-                             onerror="this.onerror=null;this.src='@defaultPhoto';"
-                             class="img-thumbnail rounded-circle"
-                             style="width:50px;height:50px;object-fit:cover;"
-                             alt="user photo" />
-                    </td>
-                    <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
-                    <td>@Html.DisplayFor(modelItem => item.LastName)</td>
-                    <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
-                    <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
-                    <td>
-                        @switch (item.InterviewProcessStatus)
-                        {
-                            case InterviewProcessStatusView.NotStarted:
-                                <span>هنوز شروع نشده</span>
-                                break;
-                            case InterviewProcessStatusView.Active:
-                                <span>فعال برای مصاحبه</span>
-                                break;
-                            case InterviewProcessStatusView.Completed:
-                                <span>مصاحبه تمام شده</span>
-                                break;
-                        }
-                    </td>
-                    <td>@(item.IsPajoheshi ? "پژوهشی" : "آموزشی")</td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-dark" onclick="Detail('@item.Id')" title="اصطلاعات داوطلب"><i class="fa fa-info"></i></a>
-                        <a class="btn btn-sm btn-outline-primary" onclick="Edit('@item.Id')" title="ویرایش داوطلب"><i class="fa fa-edit"></i></a>
-                    </td>
-                </tr>
+            <tr id="tr_@(item.Id)" class="@rowClass">
+                <td>@i</td>
+                <td>
+                    <img src="@userPhotoPath"
+                         onerror="this.onerror=null;this.src='@defaultPhoto';"
+                         class="img-thumbnail rounded-circle"
+                         style="width:50px;height:50px;object-fit:cover;"
+                         alt="user photo" />
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
+                <td>@Html.DisplayFor(modelItem => item.NationalCode)</td>
+                <td>
+                    @switch (item.InterviewProcessStatus)
+                    {
+                        case InterviewProcessStatusView.NotStarted:
+                            <span>هنوز شروع نشده</span>
+                            break;
+                        case InterviewProcessStatusView.Active:
+                            <span>فعال برای مصاحبه</span>
+                            break;
+                        case InterviewProcessStatusView.Completed:
+                            <span>مصاحبه تمام شده</span>
+                            break;
+                    }
+                </td>
+                <td>@(item.IsPajoheshi ? "پژوهشی" : "آموزشی")</td>
+                <td>@(item.CountStationField)</td>
+
+                <td>@(item.PassedStation)</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-dark" onclick="Detail('@item.Id')" title="اصطلاعات داوطلب"><i class="fa fa-info"></i></a>
+                    <a class="btn btn-sm btn-outline-primary" onclick="Edit('@item.Id')" title="ویرایش داوطلب"><i class="fa fa-edit"></i></a>
+                </td>
+            </tr>
                 i++;
             }
         </tbody>

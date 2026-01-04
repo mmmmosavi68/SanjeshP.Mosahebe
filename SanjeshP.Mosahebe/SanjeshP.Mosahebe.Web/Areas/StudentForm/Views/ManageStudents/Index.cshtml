@@ -1,16 +1,15 @@
 ﻿@model IEnumerable<SanjeshP.Mosahebe.Entities.Exam.Exams>
 
-<div class="bg-light rounded p-4" ">
+<div class="bg-light rounded p-4">
     <div class="row mb-3">
         <div class="col-md-4">
             نام آزمون :
             <select id="examSelect" class="form-control">
-
                 <option value="">-- یک آزمون انتخاب کنید --</option>
-@foreach (var exam in Model)
-{
+                @foreach (var exam in Model)
+                {
                     <option value="@exam.Id">@exam.Title</option>
-}
+                }
             </select>
         </div>
 
@@ -22,33 +21,67 @@
                 </select>
             </div>
         </div>
+        
     </div>
 </div>
 
-<div id="StudentList"></div>
+<div id="StudentListContainer"></div>
 
 @section scripts {
     <script>
         $(document).ready(function () {
+            // فعال‌سازی Select2 برای آزمون
+            $('#examSelect').select2({ theme: 'bootstrap4' });
+
+            // تغییر آزمون
             $('#examSelect').change(function () {
                 var examId = $(this).val();
                 if (!examId) {
                     $('#fieldSelect').html('<option value="">-- ابتدا آزمون را انتخاب کنید --</option>');
                     return;
                 }
-                // درخواست AJAX برای گرفتن رشته‌های آزمون
-                $("#fieldContainer").load('/StudentForm/ManageStudents/FieldDropdown?examId=' + examId);
+
+                // آدرس را با کنترلر خودت چک کن (من اینجا طبق اکشن قبلی گذاشتم)
+                $("#fieldContainer").load('/StudentForm/ManageStudents/FieldDropdown?examId=' + examId, function () {
+                     // هندل کردن انتخاب خودکار اولین رشته در صورت نیاز
+                     var firstField = $('#fieldSelect option:eq(1)').val();
+                     if(firstField) {
+                         $('#fieldSelect').val(firstField).trigger('change');
+                     }
+                });
             });
 
-            // وقتی رشته انتخاب شد، لیست دانشجویان لود شود
+            // رویداد تغییر رشته (چون داینامیک لود می‌شود از on استفاده میکنیم)
             $(document).on('change', '#fieldSelect', function () {
                 var fieldId = $(this).val();
-                if (fieldId) {
-                    $("#StudentList").load('/StudentForm/ManageStudents/StudentsList?fieldId=' + fieldId);
-                }
+                if (!fieldId) return;
+
+                // فراخوانی لود اولیه لیست داوطلبان
+                loadStudentsData(1, fieldId);
             });
+
+            // انتخاب پیش‌فرض اولین آزمون
+            var firstExam = $('#examSelect option:eq(1)').val();
+            if (firstExam) {
+                $('#examSelect').val(firstExam).trigger('change');
+            }
         });
+
+        // تابع کمکی برای لود اولیه
+        function loadStudentsData(page, fieldId) {
+            if(typeof on === "function") on(); // اسپینر اگر وجود دارد
+
+            var params = new URLSearchParams({
+                fieldId: fieldId,
+                pageIndex: page,
+                pageSize: 10,
+                sortColumn: 'RegId',
+                sortAscending: true
+            });
+
+            $("#StudentListContainer").load('/StudentForm/ManageStudents/StudentsListPaged?' + params.toString(), function() {
+                if(typeof off === "function") off();
+            });
+        }
     </script>
 }
-
-

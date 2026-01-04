@@ -35,22 +35,36 @@
 @{
     await Html.RenderPartialAsync("_ValidationScriptsPartial");
 }
-
 <script>
     $(function () {
         $('#save-edit-student').click(function () {
+            var $form = $('#edit-student-form');
+
+            // ابتدا اعتبارسنجی کلاینت‌ساید را چک کنید
+            if (!$form.valid()) return false;
+
             $.ajax({
                 url: '@Url.Action("EditStudent", "ManageStudents")',
                 type: 'POST',
-                data: $('#edit-student-form').serialize(),
+                data: $form.serialize(),
                 success: function (response) {
                     if (response.isSuccess) {
+                        // بستن مودال (نام آیدی مودال را طبق پروژه خود چک کنید)
                         $('#Modal_AddEdit').modal('hide');
+
+                        // نمایش پیام موفقیت
                         iziToast.success({ message: response.message });
-                        // رفرش لیست داوطلبان پشت صفحه
-                        var fieldId = $('#fieldSelect').val();
-                        if (fieldId) {
-                            $("#StudentList").load('/StudentForm/ManageStudents/StudentsList?fieldId=' + encodeURIComponent(fieldId));
+
+                        // رفرش لیست با حفظ فیلترها و صفحه فعلی
+                        // ما از متغیر global به نام Model.PageIndex در صفحه اصلی استفاده می‌کنیم
+                        if (typeof loadStudents === "function") {
+                            // فراخوانی تابع لود با صفحه فعلی
+                            // اگر متغیر currentPageIndex را در اسکریپت صفحه اصلی دارید از آن استفاده کنید
+                            // در غیر این صورت loadStudents() بدون پارامتر، صفحه را طبق آخرین وضعیت لود می‌کند
+                            loadStudents(typeof currentPageIndex !== 'undefined' ? currentPageIndex : 1);
+                        } else {
+                            // راه حل جایگزین اگر تابع در دسترس نبود (فورس رفرش کانتینر)
+                            location.reload();
                         }
 
                     } else {

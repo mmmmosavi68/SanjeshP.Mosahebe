@@ -1,0 +1,273 @@
+﻿@using SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
+@using SanjeshP.Mosahebe.Web.SharedViewModels
+@using System.ComponentModel.DataAnnotations
+@using SanjeshP.Mosahebe.Common.Utilities
+@using System.Reflection
+@model PagedListAccessViewModel<StudentListViewModel>
+
+@{
+    // فیلدهایی که می‌خواهید در جدول نمایش داده شوند (بر اساس ترتیب نمایش)
+    var visibleFields = new List<string>
+    {
+        nameof(StudentListViewModel.FirstName),
+        nameof(StudentListViewModel.LastName),
+        nameof(StudentListViewModel.FatherName),
+        nameof(StudentListViewModel.NationalCode),
+        nameof(StudentListViewModel.InterviewProcessStatus),
+        nameof(StudentListViewModel.IsPajoheshi),
+                nameof(StudentListViewModel.CountStationField),
+
+        nameof(StudentListViewModel.PassedStation),
+    };
+
+    var properties = typeof(StudentListViewModel).GetProperties();
+}
+
+<style>
+    .column-filter {
+        height: 28px;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .img-circle-custom {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+    }
+</style>
+
+<div class="bg-light table-responsive rounded p-4">
+    <h4 class="mb-3">لیست داوطلبان</h4>
+    <div style="overflow-x: auto;">
+        <table class="table-sm table-bordered table-striped table text-center align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>تصویر</th>
+                    @foreach (var fieldName in visibleFields)
+                    {
+                        var prop = properties.FirstOrDefault(p => p.Name == fieldName);
+                        var displayName = prop?.GetCustomAttribute<DisplayAttribute>()?.Name ?? fieldName;
+
+                        <th style="cursor:pointer" onclick="sortStudents('@fieldName')">
+                            @displayName
+                            @if (Model.SortColumn == fieldName)
+                            {
+                                <i class="fa text-danger fa-sort-@(Model.SortAscending ? "up" : "down")"></i>
+                            }
+                            else
+                            {
+                                <i class="fa fa-sort text-muted"></i>
+                            }
+                        </th>
+                    }
+                    <th>عملیات</th>
+                </tr>
+
+                @* ردیف فیلترها *@
+                <tr>
+                    <td></td>
+                    <td></td>
+                    @foreach (var fieldName in visibleFields)
+                    {
+                        string filterValue = (Model.AppliedFilters != null && Model.AppliedFilters.TryGetValue(fieldName, out var val)) ? val : "";
+
+                        <td>
+                            @if (fieldName == nameof(StudentListViewModel.InterviewProcessStatus))
+                            {
+                                <select class="form-control column-filter" data-field="@fieldName" onchange="loadStudents(1)">
+                                    <option value="">همه</option>
+                                    <option value="0" selected="@(filterValue == "0")">شروع نشده</option>
+                                    <option value="1" selected="@(filterValue == "1")">فعال</option>
+                                    <option value="2" selected="@(filterValue == "2")">تکمیل شده</option>
+                                </select>
+                            }
+                            else if (fieldName == nameof(StudentListViewModel.IsPajoheshi))
+                            {
+                                <select class="form-control column-filter" data-field="@fieldName" onchange="loadStudents(1)">
+                                    <option value="">همه</option>
+                                    <option value="true" selected="@(filterValue.ToLower() == "true")">پژوهشی</option>
+                                    <option value="false" selected="@(filterValue.ToLower() == "false")">آموزشی</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control column-filter"
+                                       data-field="@fieldName" value="@filterValue" placeholder="🔎" />
+                            }
+                        </td>
+                    }
+                    <td>
+                        <button class="btn btn-sm btn-outline-light"
+                                onclick="refreshStudents()"
+                                title="بروزرسانی لیست">
+                            <i class="fas fa-sync-alt"></i>
+
+                        </button>
+                    </td>
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                    var item = Model.Items[i].Data;
+                    string rowClass = item.InterviewProcessStatus switch
+                    {
+                        InterviewProcessStatusView.Active => "table-warning",
+                        InterviewProcessStatusView.Completed => "table-success",
+                        _ => ""
+                    };
+
+                    var userPhotoPath = Url.Content($"~/uploads/{item.NationalCode}/{item.NationalCode}.jpg");
+                    var defaultPhoto = Url.Content("~/img/user.jpg");
+
+                    <tr class="@rowClass">
+                        <td>@(Model.StartRow + i)</td>
+                        <td>
+                            <img src="@userPhotoPath" onerror="this.onerror=null;this.src='@defaultPhoto';"
+                                 class="rounded-circle img-circle-custom" alt="photo" />
+                        </td>
+
+                        @foreach (var fieldName in visibleFields)
+                        {
+                            var prop = properties.FirstOrDefault(p => p.Name == fieldName);
+                            var val = prop?.GetValue(item);
+
+                            <td>
+                                @if (fieldName == nameof(StudentListViewModel.InterviewProcessStatus))
+                                {
+                                    @(item.InterviewProcessStatus switch
+                                    {
+                                        InterviewProcessStatusView.NotStarted => "شروع نشده",
+                                        InterviewProcessStatusView.Active => "فعال",
+                                        InterviewProcessStatusView.Completed => "تکمیل شده",
+                                        _ => "-"
+                                    })
+                                }
+                                else if (fieldName == nameof(StudentListViewModel.IsPajoheshi))
+                                {
+
+                                    <span class="badge @(item.IsPajoheshi ? "bg-info" : "bg-secondary")">
+                                        @(item.IsPajoheshi ? "پژوهشی" : "آموزشی")
+                                    </span>
+                                }
+                                else
+                                {
+                                    @(val ?? "-")
+                                }
+                            </td>
+                        }
+
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-dark" onclick="Detail('@item.Id')" title="جزئیات">
+                                    <i class="fa fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="Edit('@item.Id')" title="ویرایش">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* بخش صفحه‌بندی اصلاح شده *@
+    <div class="d-flex justify-content-center align-items-center position-relative mt-3">
+        <div class="text-muted position-absolute" style="right:0">
+            نمایش @Model.StartRow تا @Model.EndRow از @Model.TotalCount ردیف
+        </div>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadStudents(1)">اول</a>
+                </li>
+                <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadStudents(@(Model.PageIndex - 1))">قبلی</a>
+                </li>
+
+                @for (int p = Math.Max(1, Model.PageIndex - 2); p <= Math.Min(Model.PageCount, Model.PageIndex + 2); p++)
+                {
+                    <li class="page-item @(p == Model.PageIndex ? "active" : "")">
+                        <a class="page-link" href="javascript:void(0)" onclick="loadStudents(@p)">@p</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.PageIndex == Model.PageCount ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadStudents(@(Model.PageIndex + 1))">بعدی</a>
+                </li>
+                <li class="page-item @(Model.PageIndex == Model.PageCount ? "disabled" : "")">
+                    <a class="page-link" href="javascript:void(0)" onclick="loadStudents(@Model.PageCount)">آخر</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<script>
+    var currentSortColumn = '@Model.SortColumn' || 'RegId';
+    var currentSortAscending = @(Model.SortAscending.ToString().ToLower());
+    var currentFieldId = '@ViewBag.FieldId';
+    var currentPageIndex = @Model.PageIndex;
+
+    function sortStudents(column) {
+        if (currentSortColumn === column) {
+            currentSortAscending = !currentSortAscending;
+        } else {
+            currentSortColumn = column;
+            currentSortAscending = true;
+        }
+        loadStudents(1);
+    }
+
+    function loadStudents(pageIndex = 1) {
+        currentPageIndex = pageIndex;
+        var params = new URLSearchParams({
+            pageIndex: pageIndex,
+            pageSize: 10,
+            sortColumn: currentSortColumn,
+            sortAscending: currentSortAscending,
+            fieldId: currentFieldId
+        });
+
+        $('.column-filter').each(function () {
+            if (this.value.trim()) {
+                params.append($(this).data('field'), this.value.trim());
+            }
+        });
+
+        if(typeof on === "function") on();
+        $("#StudentListContainer").load('/StudentForm/ManageStudents/StudentsListPaged?' + params.toString(), function() {
+            if(typeof off === "function") off();
+        });
+    }
+
+    $('.column-filter').keypress(function (e) {
+        if (e.which == 13) loadStudents(1);
+    });
+
+    // توابع دکمه‌ها (مطمئن شوید این توابع در Index یا فایل JS عمومی تعریف شده‌اند)
+    function Detail(id) {
+        if(typeof openModal === "function")
+            openModal('جزئیات داوطلب', '/StudentForm/ManageStudents/DetailStudent?id=' + id, true);
+    }
+
+    function Edit(id) {
+        if(typeof openModal === "function")
+            openModal('ویرایش داوطلب', '/StudentForm/ManageStudents/EditStudent?id=' + id, true);
+    }
+
+        function refreshStudents() {
+        if (typeof loadStudents === 'function') {
+            loadStudents(window.currentPageIndex || 1);
+        } else {
+            // fallback
+            loadStudents(1);
+        }
+    }
+</script>

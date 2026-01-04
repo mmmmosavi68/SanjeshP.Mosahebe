@@ -15,7 +15,7 @@
 <div class="warningMessages" style="display: none;"></div>
 
 
-<form asp-action="Login" method="post">
+<form asp-action="Login" method="post" autocomplete="off">
     <div class="row align-items-center">
         <div class="mt-2">
             <span asp-validation-for="Login.UserName" class="text-danger h6 d-md-block"></span>
@@ -36,7 +36,7 @@
             <div class="row align-items-center">
                 <div class="form-group">
                     <label asp-for="Login.UserName" placeholder="" class="control-label col-sm-4"></label>
-                    <input asp-for="Login.UserName" class="form-control col-sm-7 d-inline-block" placeholder=@Html.DisplayNameFor(m=>m.Login.UserName) />
+                    <input asp-for="Login.UserName" class="form-control col-sm-7 d-inline-block" autocomplete="off" placeholder=@Html.DisplayNameFor(m=>m.Login.UserName) />
 
                 </div>
             </div>
@@ -45,7 +45,7 @@
             <div class="row align-items-center">
                 <div class="form-group">
                     <label asp-for="Login.Password" placeholder="" class="control-label col-sm-4"></label>
-                    <input asp-for="Login.Password" class="form-control col-sm-7 d-inline-block" placeholder=@Html.DisplayNameFor(m=>m.Login.Password) />
+                    <input asp-for="Login.Password" class="form-control col-sm-7 d-inline-block" autocomplete="new-password" placeholder=@Html.DisplayNameFor(m=>m.Login.Password) />
                 </div>
             </div>
         </div>

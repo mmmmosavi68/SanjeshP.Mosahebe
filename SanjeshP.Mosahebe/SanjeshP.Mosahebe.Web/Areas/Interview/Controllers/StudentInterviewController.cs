@@ -75,7 +75,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             // گرفتن (distinct) ایستگاه های مرتبط
             var stations = fieldStations
                 .Select(fs => fs.Station)
-                .Where(s => s != null)
+                .Where(s => s != null && s.IsActive==true && s.IsDeleted==false)
+                //.Where(s => s != null && s.Id == token.User?.ActiveStation)
                 .GroupBy(s => s.Id)
                 .Select(g => g.First())
                 .ToList();
@@ -171,25 +172,19 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
                 return StatusCode(500, "خطا در سرور");
             }
         }
+        
         [HttpPost]
-        public async Task<IActionResult> SaveInterviewScores(int studentId, int stationId, Dictionary<int, double> scores, CancellationToken cancellationToken)
+        public async Task<IActionResult> SaveInterviewScores(int studentId,int stationId,Dictionary<int, decimal> scores,CancellationToken cancellationToken)
         {
-            //آی دی استادی که لاگین شده
             var currentUserToken = User.FindFirstValue("Token");
-            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
+            var token = await _userTokenRepository
+                .GetUserTokenByIdAsync(new Guid(currentUserToken), cancellationToken);
+
             var userId = token.UserId;
+            var hostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            await _interviewScoreRepository.SaveInterviewScoresAsync(userId, studentId, stationId, scores, cancellationToken);
-            //// اینجا می‌تونی نمرات رو تو جدول StudentStationScores یا مشابه ذخیره کنی
-            //foreach (var item in scores)
-            //{
-            //    var questionId = item.Key;
-            //    var score = item.Value;
-
-            //    // ذخیره‌سازی در DB
-            //}
-
-            //await _dbContext.SaveChangesAsync(cancellationToken);
+            await _interviewScoreRepository
+                .SaveInterviewScoresAsync(userId, studentId, stationId, scores, hostIp, cancellationToken);
 
             return Ok(new { success = true });
         }

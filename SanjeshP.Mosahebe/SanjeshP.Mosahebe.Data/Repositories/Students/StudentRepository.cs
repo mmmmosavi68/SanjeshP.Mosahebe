@@ -37,27 +37,28 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
             return await Table
                     .Where(s => !s.IsDeleted && s.IsActive &&
                                 s.StudentFields.Any(sf => sf.ExamFieldId == fieldId && !sf.IsDeleted && sf.IsActive))
-                    .Include(s => s.Exam)
+                    //.Include(s => s.Exam)
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
-                    .Include(s => s.EducationDocumentScores)
+                    //.Include(s => s.EducationDocumentScores)
+                    .Include(i => i.InterviewScores)
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
         }
         public async Task<IEnumerable<Student>> GetAllStudentsByFieldIdUserIdAsync(int fieldId, Guid UserId, CancellationToken cancellationToken)
         {
             return await Table
-                    .Where(s => !s.IsDeleted && s.IsActive &&
-                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId))
+                    .Where(s => !s.IsDeleted && s.IsActive && !s.IsPajoheshi &&
+                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId && sf.IsActive && !sf.IsDeleted))
                     .Include(s => s.Exam)
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
                     .Include(s => s.EducationDocumentScores)
-                        //.Where(e => e.CreatedBy == UserId)
+                    //.Where(e => e.CreatedBy == UserId)
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
         }
-        
+
         public async Task<IEnumerable<Student>> GetAllStudentsPajoheshiByFieldIdAsync(int fieldId, CancellationToken cancellationToken)
         {
             return await Table
@@ -87,12 +88,33 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
         {
             return await TableNoTracking
                  .Include(s => s.Exam)
-                 .Include(s => s.StudentFields)                         // شامل جدول واسط
+                 .Include(s => s.StudentFields)                       // شامل جدول واسط
                        .ThenInclude(sf => sf.ExamField)                   // شامل رشته‌های واقعی
-                 .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted == false , cancellationToken)
+                 .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted == false, cancellationToken)
                  .ConfigureAwait(false);
         }
-
+        public async Task<Student> GetStudentDetailsOnReviewDocument(int id, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+            .Where(s => s.Id == id && !s.IsDeleted)
+            .Select(s => new Student
+            {
+                Id = s.Id,
+                Exam = s.Exam,
+                FirstName = s.FirstName,
+                LastName = s.LastName,
+                NationalCode = s.NationalCode,
+                StudentFields = s.StudentFields
+            .Where(sf => sf.IsActive)
+            .Select(sf => new StudentField
+            {
+                Id = sf.Id,
+                IsActive = sf.IsActive,
+                ExamField = sf.ExamField
+            }).ToList()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+        }
         public async Task<Student> GetStudentByNationalCodeAsync(string nationalCode, CancellationToken cancellationToken)
         {
             return await TableNoTracking
@@ -165,6 +187,77 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
         {
             return await Table // بدون NoTracking و Includeهای اضافی
          .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, cancellationToken);
+        }
+
+        public async Task<(List<Student>, int totalCount)> GetPagedStudentsAsync(SearchPagingParameters parameters, int fieldId, bool IsPajoheshi, CancellationToken cancellationToken)
+        {
+            var query = TableNoTracking.Where(s => !s.IsDeleted && s.IsActive && s.IsPajoheshi == IsPajoheshi &&
+                        s.StudentFields.Any(sf => sf.ExamFieldId == fieldId && !sf.IsDeleted && sf.IsActive))
+                        .Include(ue => ue.StudentFields).ThenInclude(ue => ue.ExamField)
+                        .Include(i => i.InterviewScores)
+                        .AsQueryable();
+
+            // --- فیلترهای داینامیک ---
+            if (parameters.Filters?.Any() == true)
+            {
+                foreach (var filter in parameters.Filters)
+                {
+                    var keyword = filter.Value?.Trim().ToLower();
+                    if (string.IsNullOrEmpty(keyword)) continue;
+
+                    switch (filter.Key)
+                    {
+                        case "FirstName": query = query.Where(s => EF.Functions.Like(s.FirstName, $"%{keyword}%")); break;
+                        case "LastName": query = query.Where(s => EF.Functions.Like(s.LastName, $"%{keyword}%")); break;
+                        case "NationalCode": query = query.Where(s => EF.Functions.Like(s.NationalCode, $"%{keyword}%")); break;
+                        case "FatherName": query = query.Where(s => EF.Functions.Like(s.FatherName, $"%{keyword}%")); break;
+                        case "InterviewProcessStatus":
+                            if (int.TryParse(keyword, out int statusValue))
+                            {
+                                // تبدیل عدد به اینام اصلی
+                                var statusEnum = (Entities.Student.InterviewProcessStatus)statusValue;
+                                query = query.Where(s => s.InterviewProcessStatus == statusEnum);
+                            }
+                            else
+                            {
+                                // جستجو بر اساس کلمات فارسی (اگر کاربر دستی تایپ کرد)
+                                if ("فعال".Contains(keyword))
+                                    query = query.Where(s => s.InterviewProcessStatus == InterviewProcessStatus.Active);
+                                else if ("تکمیل".Contains(keyword))
+                                    query = query.Where(s => s.InterviewProcessStatus == InterviewProcessStatus.Completed);
+                                else if ("شروع".Contains(keyword) || "نشده".Contains(keyword))
+                                    query = query.Where(s => s.InterviewProcessStatus == InterviewProcessStatus.NotStarted);
+                            }
+                            break;
+                        case "PassedStation":
+                            if (int.TryParse(keyword, out int ps))
+                                query = query.Where(s => s.InterviewScores.Select(x => x.StationId).Distinct().Count() == ps);
+                            break;
+                    }
+                }
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            // --- مرتب‌سازی داینامیک ---
+            if (!string.IsNullOrWhiteSpace(parameters.SortColumn))
+            {
+                query = parameters.SortColumn switch
+                {
+                    "FirstName" => parameters.SortAscending ? query.OrderBy(u => u.FirstName) : query.OrderByDescending(u => u.FirstName),
+                    "LastName" => parameters.SortAscending ? query.OrderBy(u => u.LastName) : query.OrderByDescending(u => u.LastName),
+                    "NationalCode" => parameters.SortAscending ? query.OrderBy(u => u.NationalCode) : query.OrderByDescending(u => u.NationalCode),
+                    "InterviewProcessStatus" => parameters.SortAscending ? query.OrderBy(u => u.InterviewProcessStatus) : query.OrderByDescending(u => u.InterviewProcessStatus),
+                    "PassedStation" => parameters.SortAscending ?
+                        query.OrderBy(u => u.InterviewScores.Select(x => x.StationId).Distinct().Count()) :
+                        query.OrderByDescending(u => u.InterviewScores.Select(x => x.StationId).Distinct().Count()),
+                    _ => query.OrderByDescending(u => u.Id)
+                };
+            }
+            else { query = query.OrderByDescending(u => u.Id); }
+
+            var users = await query.Skip((parameters.PageIndex - 1) * parameters.PageSize).Take(parameters.PageSize).ToListAsync(cancellationToken);
+            return (users, totalCount);
         }
     }
 }

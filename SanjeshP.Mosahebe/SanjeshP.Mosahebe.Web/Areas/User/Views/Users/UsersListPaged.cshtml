@@ -100,12 +100,16 @@
                     {
                         if (visibleFields.Contains(prop.Name))
                         {
+                            // اضافه کردن این بخش برای استخراج مقدار قبلی فیلتر
+                            string currentFilterValue = "";
+                            Model.AppliedFilters?.TryGetValue(prop.Name, out currentFilterValue);
+
                             var displayAttr = prop.GetCustomAttributes(typeof(DisplayAttribute), false)
                             .Cast<DisplayAttribute>()
                             .FirstOrDefault();
                             var displayName = displayAttr?.Name ?? prop.Name;
                             <td>
-                                <input name="txt_search_@(prop.Name)" type="text" class="form-control column-filter w-100" data-field="@prop.Name" placeholder="@displayName" />
+                                <input name="txt_search_@(prop.Name)" type="text" class="form-control column-filter w-100" data-field="@prop.Name" placeholder="@displayName" value="@currentFilterValue" />
                             </td>
                         }
                     }

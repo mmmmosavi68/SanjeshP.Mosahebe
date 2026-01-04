@@ -95,6 +95,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         {
             try
             {
+
+                //آی دی استادی که لاگین شده
+                var currentUserToken = User.FindFirstValue("Token");
+                var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
+                var userPajoheshi = token.User?.IsPajoheshi ?? false;
                 // دریافت همه دانشجویان فعال
                 var students = await _studentRepository.GetAllStudentsByFieldIdAsync(fieldId, cancellationToken);
 
@@ -103,37 +108,38 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
 
                 // نگاشت دانشجویان به ViewModel
-                var result = students.Select(e =>
-                {
-                    return new StudentListViewModel
-                    {
-                        Id = e.Id,
-                        RegId = e.RegId,
-                        FirstName = e.FirstName,
-                        LastName = e.LastName,
-                        FatherName = e.FatherName,
-                        NationalCode = e.NationalCode,
-                        CodeRahgiri = e.CodeRahgiri,
-                        PhoneNumber = e.PhoneNumber,
-                        Email = e.Email,
+                var result = students.Where(s => s.IsDeleted == false && s.IsPajoheshi == userPajoheshi).Select(e =>
+                      {
+                          return new StudentListViewModel
+                          {
+                              Id = e.Id,
+                              RegId = e.RegId,
+                              FirstName = e.FirstName,
+                              LastName = e.LastName,
+                              FatherName = e.FatherName,
+                              NationalCode = e.NationalCode,
+                              CodeRahgiri = e.CodeRahgiri,
+                              PhoneNumber = e.PhoneNumber,
+                              Email = e.Email,
 
-                        // تبدیل جنسیت عددی به متن
-                        Gender = e.Gender == 1 ? "مرد" : "زن",
+                              // تبدیل جنسیت عددی به متن
+                              Gender = e.Gender == 1 ? "مرد" : "زن",
 
-                        // تبدیل IsPajoheshi به بولین
-                        IsPajoheshi = e.IsPajoheshi,
+                              // تبدیل IsPajoheshi به بولین
+                              IsPajoheshi = e.IsPajoheshi,
 
-                        // نام آزمون از navigation property
-                        ExamName = e.Exam?.Title ?? "",
+                              // نام آزمون از navigation property
+                              ExamName = e.Exam?.Title ?? "",
 
-                        // رشته‌ها به صورت رشته کاما جدا شده
-                        Fields = e.StudentFields != null && e.StudentFields.Any()
-                                    ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
-                                    : "",
-                        IsApproved = e.IsApproved,
-                        RejectReason = e.RejectReason,
-                    };
-                })
+                              // رشته‌ها به صورت رشته کاما جدا شده
+                              Fields = e.StudentFields != null && e.StudentFields.Any()
+                                          ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
+                                          : "",
+                              IsApproved = e.IsApproved,
+                              RejectReason = e.RejectReason,
+                          };
+
+                      })
                 .OrderBy(s => s.IsApproved)
                 .ThenBy(s => s.LastName)
                 .ThenBy(s => s.FirstName)
