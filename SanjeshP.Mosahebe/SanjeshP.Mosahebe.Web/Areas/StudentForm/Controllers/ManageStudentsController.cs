@@ -17,6 +17,7 @@ using SanjeshP.Mosahebe.Entities.Student;
 using SanjeshP.Mosahebe.WebFramework.Api;
 using System.Security.Claims;
 using AutoMapper;
+using SanjeshP.Mosahebe.Data.Contracts.Interview;
 
 namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
 {
@@ -29,13 +30,15 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
         private readonly IStudentRepository _studentRepository;
         private readonly IExamRepository _examRepository;
         private readonly IExamFieldRepository _examFieldRepository;
+        private readonly IStationRepository _stationRepository;
 
         public ManageStudentsController(IMapper mapper,
             ILogger<ManageStudentsController> logger,
             IUserTokenRepository userTokenRepository,
             IStudentRepository studentRepository,
             IExamRepository examRepository,
-            IExamFieldRepository examFieldRepository)
+            IExamFieldRepository examFieldRepository,
+            IStationRepository stationRepository)
         {
             this._mapper = mapper;
             _logger = logger;
@@ -43,6 +46,7 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
             _studentRepository = studentRepository;
             _examRepository = examRepository;
             _examFieldRepository = examFieldRepository;
+            this._stationRepository = stationRepository;
         }
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
@@ -62,6 +66,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
         {
             try
             {
+                var CountStationField = await _stationRepository.GetStationsByFieldIdAsync(fieldId,cancellationToken);
+
                 // دریافت همه دانشجویان فعال
                 var students = await _studentRepository.GetAllStudentsByFieldIdAsync(fieldId, cancellationToken);
 
@@ -101,10 +107,13 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.Controllers
                         Fields = e.StudentFields != null && e.StudentFields.Any()
                                     ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
                                     : "",
+                        CountStationField= CountStationField.Count(),
+                        PassedStation = e.InterviewScores?.Select(i=>i.StationId).Distinct().Count() ?? 0
                     };
                 })
                 .OrderBy(s => s.LastName)
                 .ThenBy(s => s.FirstName)
+                .ThenBy(s=>s.IsPajoheshi)
                 .ToList();
 
                 return PartialView("StudentsList", result);

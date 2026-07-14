@@ -51,7 +51,7 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
             await UpdateAsync(score, cancellationToken);
         }
 
-        public async Task SaveInterviewScoresAsync(Guid userId, int studentId, int stationId, Dictionary<int, double> scores, CancellationToken cancellationToken)
+        public async Task SaveInterviewScoresAsync(Guid userId, int studentId, int stationId, Dictionary<int, double> scores, string hostIP, CancellationToken cancellationToken)
         {
             foreach (var item in scores)
             {
@@ -96,7 +96,8 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Interview
                         QuestionScore = (double)score,
                         QuestionMaxValue = maxValue,
                         CalculatedScore = calculatedScore,
-                        UserId = userId
+                        UserId = userId,
+                        HostIp = hostIP
                     };
                     await AddAsync(newScore, cancellationToken);
                 }

@@ -71,6 +71,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.ViewModels
         [Display(Name = "‌نمره نهایی")]
         public double FinalTotalScore { get; set; }
 
+        [Display(Name = "تعداد دفعات بررسی شده")]
+        public int CountScoreByCurentUser { get; set; }
+
         public EducationDocumentScore EducationDocumentScore { get; set; }
         public ResearchDocumentScore ResearchDocumentScore { get; set; }
     }

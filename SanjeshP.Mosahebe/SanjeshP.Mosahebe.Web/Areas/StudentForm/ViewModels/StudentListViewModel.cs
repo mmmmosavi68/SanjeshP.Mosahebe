@@ -70,5 +70,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.StudentForm.ViewModels
 
         public string ProfileImageUrl { get; set; }
 
+        [Display(Name = "تعداد ایستگاه رشته")]
+        public int CountStationField { get; set; }
+
+        [Display(Name = "ایستگاه گذرانده شده")]
+        public int PassedStation { get; set; }
+
     }
 }

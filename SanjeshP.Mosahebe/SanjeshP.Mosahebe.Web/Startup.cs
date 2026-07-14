@@ -1,6 +1,7 @@
 using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,8 +86,17 @@ namespace SanjeshP.Mosahebe.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
-            // برای زمانی که میخواهیم پابلیش بگیریم
-            //app.UsePathBase("/UserPortal");
+            if (_siteSetting.IpFiltering == true)
+            {
+                // اگر پشت Proxy هستید
+                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                });
+
+                // IP Filtering با رنج‌ها از appsettings.json
+                app.UseMiddleware<IpRangeFilterMiddleware>((object)_siteSetting.AllowedIpRanges, (object)_siteSetting.RedirectURL);
+            }
 
             app.UseStaticFiles();                    // 1️⃣ فایل‌های استاتیک
             app.InitializeDatabase();               // 2️⃣ مقداردهی اولیه

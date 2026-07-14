@@ -12,7 +12,10 @@ namespace SanjeshP.Mosahebe.Common
         public AuthenticationStudentSettings authenticationStudentSettings { get; set; }
         public PayamSMS payamSMS { get; set; }
         public FileSettings FileSettings { get; set; }
+        public bool IpFiltering { get; set; }
+        public string[] AllowedIpRanges { get; set; }
 
+        public string RedirectURL { get; set; }
     }
 
     public class IdentitySettings

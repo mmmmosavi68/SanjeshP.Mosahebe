@@ -14,6 +14,7 @@ namespace SanjeshP.Mosahebe.Web.SharedViewModels
         public int StartRow => ((PageIndex - 1) * PageSize) + 1;
         public int EndRow => Math.Min(PageIndex * PageSize, TotalCount);
         public int PageCount => (int)Math.Ceiling((double)TotalCount / PageSize);
+        public Dictionary<string, string> AppliedFilters { get; set; } = new();
 
     }
 

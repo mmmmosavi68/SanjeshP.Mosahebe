@@ -46,6 +46,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         private readonly IExamFieldRepository _examFieldRepository;
         private readonly IExamRepository _examRepository;
         private readonly IStudentFormSubmissionScoreRepository _studentFormSubmissionScoreRepository;
+        private readonly IUserFieldRepository _userFieldRepository;
+
 
         public EducationDocumentController(IMapper mapper
                                         , IWebHostEnvironment env
@@ -59,7 +61,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                         , IEducationDocumentScoreRepository educationDocumentScoreRepository
                                         , IExamFieldRepository examFieldRepository
                                         , IExamRepository examRepository
-                                        , IStudentFormSubmissionScoreRepository studentFormSubmissionScoreRepository)
+                                        , IStudentFormSubmissionScoreRepository studentFormSubmissionScoreRepository
+            , IUserFieldRepository userFieldRepository)
         {
             _mapper = mapper;
             _env = env;
@@ -74,6 +77,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
             this._examFieldRepository = examFieldRepository;
             this._examRepository = examRepository;
             this._studentFormSubmissionScoreRepository = studentFormSubmissionScoreRepository;
+            _userFieldRepository = userFieldRepository;
+
         }
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -85,8 +90,17 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
         // لیست رشته‌ها بر اساس آزمون
         public async Task<IActionResult> FieldDropdown(int examId, CancellationToken cancellationToken)
         {
+            //var fields = await _examFieldRepository.GetAllFieldsByExamIdAsync(examId, cancellationToken);
+            //return PartialView("FieldDropdown", fields);
+            var currentUserToken = User.FindFirstValue("Token");
+            var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), cancellationToken);
+
             var fields = await _examFieldRepository.GetAllFieldsByExamIdAsync(examId, cancellationToken);
-            return PartialView("FieldDropdown", fields);
+            var userFields = await _userFieldRepository.GetExamFieldIdsByUserIdAsync(token.UserId, cancellationToken);
+
+            var result = fields.Where(f => userFields.Contains(f.Id)).ToList();
+
+            return PartialView("FieldDropdown", result);
         }
 
         [HttpGet]
@@ -147,6 +161,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
                                     ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
                                     : "",
                         EducationDocumentScore = activeScore, // اگر VM فیلد نوع collection لازم نیست
+                        CountScoreByCurentUser = e.EducationDocumentScores.Count(),
+
                         FinalTotalScore = scores.ContainsKey(e.Id) ? scores[e.Id] : (activeScore?.FinalTotalScore ?? 0)
                     };
                 })
@@ -646,12 +662,12 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
         private async Task<StudentFormSubmissionViewModel> FillStudentFormSubmissionViewModel(int studentId, IEnumerable<StudentFormSubmission> studentFormSubmissions, CancellationToken cancellationToken)
         {
-            var student = await _studentRepository.GetStudentByIdAsync(studentId, cancellationToken);
+            var student = await _studentRepository.GetStudentDetailsOnReviewDocument(studentId, cancellationToken);
 
             // رشته‌ها رو از student.StudentFields بخون
             var fieldTitles = student.StudentFields?
                 .Select(sf => sf.ExamField?.Title)        // یا .Name بسته به مدل
-                .Where(title => !string.IsNullOrEmpty(title))
+                .Where(title => !string.IsNullOrEmpty(title) )
                 .ToList() ?? new List<string>();
 
             // رشته‌ها رو با "-" جدا کن

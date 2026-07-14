@@ -41,23 +41,24 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
                     .Include(s => s.EducationDocumentScores)
+                    .Include(i => i.InterviewScores)
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
         }
         public async Task<IEnumerable<Student>> GetAllStudentsByFieldIdUserIdAsync(int fieldId, Guid UserId, CancellationToken cancellationToken)
         {
             return await Table
-                    .Where(s => !s.IsDeleted && s.IsActive &&
-                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId))
+                    .Where(s => !s.IsDeleted && s.IsActive && !s.IsPajoheshi &&
+                                s.StudentFields.Any(sf => sf.ExamFieldId == fieldId && sf.IsActive && !sf.IsDeleted))
                     .Include(s => s.Exam)
                     .Include(s => s.StudentFields)
                         .ThenInclude(sf => sf.ExamField)
                     .Include(s => s.EducationDocumentScores)
-                        //.Where(e => e.CreatedBy == UserId)
+                    //.Where(e => e.CreatedBy == UserId)
                     .OrderByDescending(s => s.CreatedDate)
                     .ToListAsync(cancellationToken);
         }
-        
+
         public async Task<IEnumerable<Student>> GetAllStudentsPajoheshiByFieldIdAsync(int fieldId, CancellationToken cancellationToken)
         {
             return await Table
@@ -87,12 +88,33 @@ namespace SanjeshP.Mosahebe.Data.Repositories.Students
         {
             return await TableNoTracking
                  .Include(s => s.Exam)
-                 .Include(s => s.StudentFields)                         // شامل جدول واسط
+                 .Include(s => s.StudentFields)                       // شامل جدول واسط
                        .ThenInclude(sf => sf.ExamField)                   // شامل رشته‌های واقعی
-                 .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted == false , cancellationToken)
+                 .FirstOrDefaultAsync(s => s.Id == id && s.IsDeleted == false, cancellationToken)
                  .ConfigureAwait(false);
         }
-
+        public async Task<Student> GetStudentDetailsOnReviewDocument(int id, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+            .Where(s => s.Id == id && !s.IsDeleted)
+            .Select(s => new Student
+            {
+                Id = s.Id,
+                Exam = s.Exam,
+                FirstName = s.FirstName,
+                LastName = s.LastName,
+                NationalCode = s.NationalCode,
+                StudentFields = s.StudentFields
+            .Where(sf => sf.IsActive)
+            .Select(sf => new StudentField
+            {
+                Id = sf.Id,
+                IsActive = sf.IsActive,
+                ExamField = sf.ExamField
+            }).ToList()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+        }
         public async Task<Student> GetStudentByNationalCodeAsync(string nationalCode, CancellationToken cancellationToken)
         {
             return await TableNoTracking

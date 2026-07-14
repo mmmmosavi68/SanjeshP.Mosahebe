@@ -75,7 +75,8 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             // گرفتن (distinct) ایستگاه های مرتبط
             var stations = fieldStations
                 .Select(fs => fs.Station)
-                .Where(s => s != null)
+                .Where(s => s != null && s.IsActive==true && s.IsDeleted==false)
+                //.Where(s => s != null && s.Id == token.User?.ActiveStation)
                 .GroupBy(s => s.Id)
                 .Select(g => g.First())
                 .ToList();
@@ -178,8 +179,9 @@ namespace SanjeshP.Mosahebe.Web.Areas.Interview.Controllers
             var currentUserToken = User.FindFirstValue("Token");
             var token = await _userTokenRepository.GetUserTokenByIdAsync(new Guid(currentUserToken), CancellationToken.None);
             var userId = token.UserId;
+            var hostIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            await _interviewScoreRepository.SaveInterviewScoresAsync(userId, studentId, stationId, scores, cancellationToken);
+            await _interviewScoreRepository.SaveInterviewScoresAsync(userId, studentId, stationId, scores, hostIp, cancellationToken);
             //// اینجا می‌تونی نمرات رو تو جدول StudentStationScores یا مشابه ذخیره کنی
             //foreach (var item in scores)
             //{

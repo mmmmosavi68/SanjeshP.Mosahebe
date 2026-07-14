@@ -111,20 +111,20 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
 
                 // نگاشت دانشجویان به ViewModel
-                var result = students.Where(s => s.IsApproved == true).Select(e =>
-                {
-                    return new StudentListViewModel
-                    {
-                        Id = e.Id,
-                        RegId = e.RegId,
-                        FirstName = e.FirstName,
-                        LastName = e.LastName,
-                        FatherName = e.FatherName,
-                        NationalCode = e.NationalCode,
-                        CodeRahgiri = e.CodeRahgiri,
-                        PhoneNumber = e.PhoneNumber,
-                        Email = e.Email,
-                        ResearchDocumentScore = e.ResearchDocumentScore,
+                var result = students.Where(s => s.IsApproved == true && s.IsPajoheshi == true).Select(e =>
+                  {
+                      return new StudentListViewModel
+                      {
+                          Id = e.Id,
+                          RegId = e.RegId,
+                          FirstName = e.FirstName,
+                          LastName = e.LastName,
+                          FatherName = e.FatherName,
+                          NationalCode = e.NationalCode,
+                          CodeRahgiri = e.CodeRahgiri,
+                          PhoneNumber = e.PhoneNumber,
+                          Email = e.Email,
+                          ResearchDocumentScore = e.ResearchDocumentScore,
                         // تبدیل جنسیت عددی به متن
                         Gender = e.Gender == 1 ? "مرد" : "زن",
 
@@ -136,11 +136,11 @@ namespace SanjeshP.Mosahebe.Web.Areas.DocumentVerification.Controllers
 
                         // رشته‌ها به صورت رشته کاما جدا شده
                         Fields = e.StudentFields != null && e.StudentFields.Any()
-                                    ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
-                                    : "",
-                        IsApproved = e.IsApproved ?? false,
-                    };
-                })
+                                      ? string.Join(", ", e.StudentFields.Select(f => f.ExamField.Title))
+                                      : "",
+                          IsApproved = e.IsApproved ?? false,
+                      };
+                  })
                 .OrderBy(s => s.IsApproved)
                 .ThenBy(s => s.LastName)
                 .ThenBy(s => s.FirstName)
